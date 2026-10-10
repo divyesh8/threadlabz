@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { StoreRepository } from '@/lib/db/store';
 import { ProductCard } from '@/components/product/ProductCard';
+import WorksWheelDemo from '@/components/ui/demo';
 import { STORE_CONFIG } from '@/lib/config';
 import {
   Sparkles,
@@ -95,6 +96,19 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="collection-wheel-title" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-widest text-brand-lime">In rotation</p>
+            <h2 id="collection-wheel-title" className="text-2xl sm:text-3xl font-black tracking-tight mt-1">Find your next look.</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">Scroll, drag, or use the arrow keys to explore.</p>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-canvas-border">
+          <WorksWheelDemo />
         </div>
       </section>
 
