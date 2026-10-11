@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { ProductForm } from "@/components/admin/product-form";
+import { ProductForm } from "@/features/admin/components/product-form";
 
 export const dynamic = "force-dynamic";
 

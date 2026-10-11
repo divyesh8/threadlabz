@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowDownWideNarrow, Search, X } from "lucide-react";
-import { getCatalogue, PAGE_SIZE } from "@/lib/catalogue/query";
-import { catalogueHref, type CatalogueFilters } from "@/lib/catalogue/validation";
-import { ProductCard } from "@/components/store/product-card";
+import { getCatalogue, PAGE_SIZE } from "@/features/catalogue/services/catalogue";
+import { catalogueHref, type CatalogueFilters } from "@/features/catalogue/schemas/catalogue";
+import { ProductCard } from "@/features/catalogue/components/product-card";
 
 export const metadata: Metadata = { title: "The Collection", description: "Explore ThreadLabz clothing, costumes and accessories. Ordering is not yet available." };
 export const dynamic = "force-dynamic";

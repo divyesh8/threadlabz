@@ -1,6 +1,20 @@
 # ThreadLabz progress
 
-Updated: 11 October 2026 (Asia/Calcutta)
+Updated: 12 October 2026 (Asia/Calcutta)
+
+## Domain structure refactor
+
+**Complete locally and verified; not deployed.** Started from clean `main` at `b326e6bb6f454c6bd2bd6860d31e5f82e2d2833d`, with changes on `codex/domain-structure`. The app remains one root-level Next.js deployment using npm and the existing lockfile.
+
+- Mapped all 167 tracked files and 85 source/script/config modules before moving code. Baseline lint, typecheck, 13 unit tests, production build and responsive layout QA passed.
+- Grouped existing auth, catalogue, admin and media code into `src/features`; retained shared shells/brand/UI under `src/components`, and Supabase/auth/config/utilities under `src/lib`.
+- Moved 27 files, separated catalogue UI types from server queries, and extracted canonical site-URL parsing. Updated consumers and test paths without changing function behavior.
+- Retained all five unreferenced legacy query modules in a documented legacy area and retained the unreferenced server-only service-role client. Historical database files, artwork, styles and framework/deployment configuration are preserved.
+- Final lint, typecheck, all 13 unit tests and production build passed. All three existing browser QA scripts passed at 390/1280; seven unauthenticated admin page/media guards also passed. No authenticated admin mutation or real Supabase RLS verification is claimed.
+- All 85 original module implementations/types and 79 other preserved files match the baseline. The 87-module import graph resolves without a client/server-only leak. All 23 app-route manifest entries are identical; full-page homepage screenshots are pixel-identical at both widths.
+- See [docs/STRUCTURE.md](docs/STRUCTURE.md) for the complete move map, inventories, ownership rules and check results. Phase 3's content/database/production blockers below remain in force.
+
+No commit, push, deployment or production data/configuration change was performed.
 
 ## Phase 3 — customer catalogue
 

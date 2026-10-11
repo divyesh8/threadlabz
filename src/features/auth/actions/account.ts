@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { parseSiteUrl } from "@/lib/supabase/config";
+import { parseSiteUrl } from "@/lib/config/site";
 import {
   signInSchema,
   signUpSchema,
@@ -12,8 +12,8 @@ import {
   safeNext,
   type AuthInput,
   type AuthResult,
-} from "@/lib/auth/validation";
-import { ensureProfile } from "@/lib/auth/profile";
+} from "@/features/auth/schemas/auth";
+import { ensureProfile } from "@/features/auth/services/profile";
 
 export async function signIn(input: AuthInput, next: string): Promise<AuthResult> {
   const parsed = signInSchema.safeParse(input);

@@ -1,27 +1,17 @@
 import "server-only";
 import { cache } from "react";
+import type { CatalogueCard, CatalogueResult } from "../types/catalogue";
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
 import { getSupabaseConfig } from "@/lib/supabase/config";
-import type { Category, Festival, Product, ProductImage, ProductVariant } from "@/lib/supabase/database.types";
-import { catalogueFilters, literalSearch, productSlugSchema, type CatalogueFilters } from "./validation";
-import { productStoragePath } from "./media";
+import type { Category, Product, ProductImage, ProductVariant } from "@/lib/supabase/database.types";
+import { catalogueFilters, literalSearch, productSlugSchema } from "../schemas/catalogue";
+import { productStoragePath } from "@/features/media/services/product-media";
 
 // The deployed schema uses is_active as publication and source as provenance.
 // Unknown imports and seed/demo records remain private until owner curation.
 export const PUBLIC_SOURCES = ["admin", "manual"];
 export const PAGE_SIZE = 24;
 type Client = NonNullable<ReturnType<typeof createPublicSupabaseClient>>;
-export type CatalogueImageData = { id: string; alt: string };
-export type CatalogueCard = {
-  id: string; slug: string; name: string; description: string | null;
-  category: string; categorySlug: string; price_paise: number;
-  images: CatalogueImageData[]; variants: { id: string; size: string; colour: string; stock: number }[];
-};
-export type CatalogueResult = {
-  state: "preview" | "empty" | "ready" | "unavailable" | "invalid";
-  products: CatalogueCard[]; categories: Category[]; festivals: Festival[];
-  sizes: string[]; total: number; page: number; hasMore: boolean; filters: CatalogueFilters;
-};
 
 function visibleProducts(client: Client) {
   return client.from("products").select("*, categories!inner(id, name, slug, is_active), product_festivals(festival_id), available:product_variants(), sized:product_variants()", { count: "exact" })

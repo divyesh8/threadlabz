@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProductDetail } from "@/lib/catalogue/query";
-import { parseSiteUrl } from "@/lib/supabase/config";
+import { getProductDetail } from "@/features/catalogue/services/catalogue";
+import { parseSiteUrl } from "@/lib/config/site";
 import { formatPrice } from "@/lib/utils";
-import { ProductGallery } from "@/components/store/product-gallery";
-import { ProductOptions, ProductActions } from "@/components/store/product-options";
-import { ProductCard } from "@/components/store/product-card";
+import { ProductGallery } from "@/features/catalogue/components/product-gallery";
+import { ProductOptions, ProductActions } from "@/features/catalogue/components/product-options";
+import { ProductCard } from "@/features/catalogue/components/product-card";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };

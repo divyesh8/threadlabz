@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Box, ShieldCheck, Truck, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "./section-heading";
-import { categories, festivals, festivalSlug, previews } from "@/lib/catalog-preview";
-import { getCatalogue } from "@/lib/catalogue/query";
-import { ProductCard } from "./product-card";
+import { categories, festivals, festivalSlug, previews } from "@/features/catalogue/data/preview";
+import { getCatalogue } from "@/features/catalogue/services/catalogue";
+import { ProductCard } from "@/features/catalogue/components/product-card";
 
 export function TrustStrip() {
   return <div className="trust-strip" aria-label="Our approach">

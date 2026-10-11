@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AuthForm, SignOutButton } from "@/components/auth/auth-form";
+import { AuthForm, SignOutButton } from "@/features/auth/components/auth-form";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSupabaseConfig, parseSiteUrl } from "@/lib/supabase/config";
-import { safeNext } from "@/lib/auth/validation";
-import { ensureProfile } from "@/lib/auth/profile";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { parseSiteUrl } from "@/lib/config/site";
+import { safeNext } from "@/features/auth/schemas/auth";
+import { ensureProfile } from "@/features/auth/services/profile";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Your account — ThreadLabz" };

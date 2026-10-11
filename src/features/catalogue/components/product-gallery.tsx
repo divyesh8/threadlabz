@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { CatalogueImageData } from "@/lib/catalogue/query";
-import { CatalogueImage, PhotoUnavailable } from "./catalogue-image";
+import type { CatalogueImageData } from "@/features/catalogue/types/catalogue";
+import { CatalogueImage, PhotoUnavailable } from "@/features/media/components/catalogue-image";
 
 export function ProductGallery({ images, name }: { images: CatalogueImageData[]; name: string }) {
   const [selected, setSelected] = useState(0);

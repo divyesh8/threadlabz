@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AuthForm } from "@/components/auth/auth-form";
-import { safeNext } from "@/lib/auth/validation";
+import { AuthForm } from "@/features/auth/components/auth-form";
+import { safeNext } from "@/features/auth/schemas/auth";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { Button } from "@/components/ui/button";
 

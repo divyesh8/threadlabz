@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { ensureProfile } from "@/lib/auth/profile";
-import { parseSiteUrl } from "@/lib/supabase/config";
+import { ensureProfile } from "@/features/auth/services/profile";
+import { parseSiteUrl } from "@/lib/config/site";
 
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get("token_hash");

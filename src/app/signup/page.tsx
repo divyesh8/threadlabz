@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AuthForm } from "@/components/auth/auth-form";
-import { safeNext } from "@/lib/auth/validation";
-import { getSupabaseConfig, parseSiteUrl } from "@/lib/supabase/config";
+import { AuthForm } from "@/features/auth/components/auth-form";
+import { safeNext } from "@/features/auth/schemas/auth";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { parseSiteUrl } from "@/lib/config/site";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {

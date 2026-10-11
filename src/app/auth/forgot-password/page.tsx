@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ForgotPasswordForm } from "@/components/auth/auth-form";
+import { ForgotPasswordForm } from "@/features/auth/components/auth-form";
 
 export const metadata: Metadata = {
   title: "Forgot Password — ThreadLabz",

@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseSupabaseConfig, parseSiteUrl } from "../src/lib/supabase/config.ts";
-import { safeNext, signInSchema, signUpSchema } from "../src/lib/auth/validation.ts";
-import { catalogueFilters, literalSearch, imageIdSchema } from "../src/lib/catalogue/validation.ts";
+import { parseSupabaseConfig } from "../src/lib/supabase/config.ts";
+import { parseSiteUrl } from "../src/lib/config/site.ts";
+import { safeNext, signInSchema, signUpSchema } from "../src/features/auth/schemas/auth.ts";
+import { catalogueFilters, literalSearch, imageIdSchema } from "../src/features/catalogue/schemas/catalogue.ts";
 
 test("configuration is optional and privileged/legacy keys are rejected", () => {
   for (const key of [undefined, "", "sb_secret_not-a-real-key", "eyJ.not-a-real-jwt.value"]) {

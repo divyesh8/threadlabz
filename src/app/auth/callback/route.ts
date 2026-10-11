@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { safeNext } from "@/lib/auth/validation";
-import { ensureProfile } from "@/lib/auth/profile";
-import { parseSiteUrl } from "@/lib/supabase/config";
+import { safeNext } from "@/features/auth/schemas/auth";
+import { ensureProfile } from "@/features/auth/services/profile";
+import { parseSiteUrl } from "@/lib/config/site";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");

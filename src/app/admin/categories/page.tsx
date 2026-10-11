@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { CategoryManager, type CategoryItem } from "@/components/admin/category-manager";
+import { CategoryManager, type CategoryItem } from "@/features/admin/components/category-manager";
 
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import type { CatalogueCard } from "@/lib/catalogue/query";
-import { CatalogueImage, PhotoUnavailable } from "./catalogue-image";
+import type { CatalogueCard } from "@/features/catalogue/types/catalogue";
+import { CatalogueImage, PhotoUnavailable } from "@/features/media/components/catalogue-image";
 import { formatPrice } from "@/lib/utils";
 
 export function ProductCard({ product: p }: { product: CatalogueCard }) {

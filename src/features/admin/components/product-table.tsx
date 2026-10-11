@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AdminImage as Image } from "./admin-image";
+import { AdminImage as Image } from "@/features/media/components/admin-image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
-import { toggleProductActive, deleteOrDeactivateProduct } from "@/app/admin/actions";
+import { toggleProductActive, deleteOrDeactivateProduct } from "@/features/admin/actions/catalogue";
 import {
   Edit3,
   Trash2,

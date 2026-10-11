@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn, signUp, signOut, requestPasswordReset, updatePassword } from "@/app/account/actions";
+import { signIn, signUp, signOut, requestPasswordReset, updatePassword } from "@/features/auth/actions/account";
 import {
   signInSchema,
   signUpSchema,
@@ -14,7 +14,7 @@ import {
   type ResetPasswordInput,
   type UpdatePasswordInput,
   type AuthResult,
-} from "@/lib/auth/validation";
+} from "@/features/auth/schemas/auth";
 import { Button } from "@/components/ui/button";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 

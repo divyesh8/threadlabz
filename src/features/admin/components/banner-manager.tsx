@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AdminImage as Image } from "./admin-image";
+import { AdminImage as Image } from "@/features/media/components/admin-image";
 import {
   saveBanner,
   toggleBannerActive,
   deleteBanner,
   uploadAdminImage,
-} from "@/app/admin/actions";
-import type { AdminBannerInput } from "@/lib/admin/validation";
+} from "@/features/admin/actions/catalogue";
+import type { AdminBannerInput } from "@/features/admin/schemas/admin";
 import {
   Plus,
   Edit3,

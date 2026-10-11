@@ -60,13 +60,16 @@ No reset or remote apply is needed. See the Phase 3 guide before reviewing the u
 
 ## Structure
 
-- src/app/shop and src/app/products/[slug]: server-rendered browsing and product pages.
-- src/lib/catalogue: validation, query boundaries, stable URLs and media validation.
-- src/components/store: catalogue cards, gallery, variant controls and brand UI.
-- src/app/catalogue-image/[id]: public image lookup through visible product records and Storage RLS.
-- src/app/admin/media: verified-admin private previews; no privileged credential.
-- supabase/migrations: current baseline, legacy incompatible design, and unapplied Phase 3 policy proposal.
-- scripts: existing layout/auth QA plus Phase 3 tests and isolated database preparation.
+The app uses a domain-oriented layout within the existing single Next.js project. See [docs/STRUCTURE.md](docs/STRUCTURE.md) for ownership rules, the move map, legacy-code findings and before/after verification.
+
+- `src/app`: existing routes, layouts, metadata and HTTP handlers, including `/shop`, `/products/[slug]`, `/catalogue-image/[id]` and protected `/admin/media`.
+- `src/features/auth`: account Server Actions, forms, schemas and profile initialization.
+- `src/features/catalogue`: public catalogue queries, filters, product UI, types and labelled moodboard data. Older unused queries are retained under `services/legacy`.
+- `src/features/admin`: guarded mutations/uploads, management forms and validation.
+- `src/features/media`: image components and shared Storage-path/raster validation.
+- `src/components`: shared storefront/admin shells, brand presentation and UI primitives.
+- `src/lib`: auth guards, Supabase adapters, canonical site config and utilities; `src/types/database.ts` remains the generated shared database contract.
+- `supabase` and `scripts`: unchanged database layout and existing QA/seed workflows; npm unit-test imports follow the moved modules.
 
 No application dependency was added. Next.js 16.4.0, React 19.3.0 and Supabase packages remain pinned with the existing lockfile.
 

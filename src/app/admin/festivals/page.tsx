@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { FestivalManager, type FestivalItem } from "@/components/admin/festival-manager";
+import { FestivalManager, type FestivalItem } from "@/features/admin/components/festival-manager";
 
 export const dynamic = "force-dynamic";
 

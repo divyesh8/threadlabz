@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { BannerManager, type BannerItem } from "@/components/admin/banner-manager";
+import { BannerManager, type BannerItem } from "@/features/admin/components/banner-manager";
 
 export const dynamic = "force-dynamic";
 

@@ -1,8 +1,8 @@
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
-import { imageIdSchema } from "@/lib/catalogue/validation";
+import { imageIdSchema } from "@/features/catalogue/schemas/catalogue";
 import { getSupabaseConfig } from "@/lib/supabase/config";
-import { PUBLIC_SOURCES } from "@/lib/catalogue/query";
-import { isRaster, productStoragePath } from "@/lib/catalogue/media";
+import { PUBLIC_SOURCES } from "@/features/catalogue/services/catalogue";
+import { isRaster, productStoragePath } from "@/features/media/services/product-media";
 
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/guards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSupabaseConfig } from "@/lib/supabase/config";
-import { isRaster, productStoragePath } from "@/lib/catalogue/media";
+import { isRaster, productStoragePath } from "@/features/media/services/product-media";
 
 export const dynamic = "force-dynamic";
 export async function GET(request: Request) {

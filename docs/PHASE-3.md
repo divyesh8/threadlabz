@@ -75,6 +75,8 @@ References consulted: [Supabase Storage access models](https://supabase.com/docs
 
 ## Changed files
 
+These paths record the original Phase 3 implementation. Some source files subsequently moved during the structural refactor; see the [current structure and move map](STRUCTURE.md).
+
 - PROGRESS.md
 - README.md
 - docs/PHASE-1.md

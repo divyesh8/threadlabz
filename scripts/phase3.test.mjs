@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { catalogueFilters, catalogueHref } from "../src/lib/catalogue/validation.ts";
-import { productStoragePath, isRaster } from "../src/lib/catalogue/media.ts";
+import { catalogueFilters, catalogueHref } from "../src/features/catalogue/schemas/catalogue.ts";
+import { productStoragePath, isRaster } from "../src/features/media/services/product-media.ts";
 
 test("price, size, sort and availability filters reject duplicates and unsafe bounds", () => {
   for (const input of [{ min: "-1" }, { min: "NaN" }, { min: "1e4" }, { max: "1000001" }, { min: "2", max: "1" }, { min: "1.999" }, { size: ["S", "M"] }, { sort: "popular" }, { availability: "yes" }, { page: [1] }, { page: "1e2" }, { page: null }, { size: "M,stock.gt.0" }]) assert.equal(catalogueFilters.safeParse(input).success, false, JSON.stringify(input));

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AdminImage as Image } from "./admin-image";
+import { AdminImage as Image } from "@/features/media/components/admin-image";
 import {
   saveFestival,
   toggleFestivalActive,
   deleteFestival,
   uploadAdminImage,
-} from "@/app/admin/actions";
-import type { AdminFestivalInput } from "@/lib/admin/validation";
+} from "@/features/admin/actions/catalogue";
+import type { AdminFestivalInput } from "@/features/admin/schemas/admin";
 import {
   Plus,
   Edit3,

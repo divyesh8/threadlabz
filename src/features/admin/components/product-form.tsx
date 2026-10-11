@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AdminImage as Image } from "./admin-image";
+import { AdminImage as Image } from "@/features/media/components/admin-image";
 import Link from "next/link";
-import { saveProduct, uploadAdminImage } from "@/app/admin/actions";
-import type { AdminProductInput } from "@/lib/admin/validation";
+import { saveProduct, uploadAdminImage } from "@/features/admin/actions/catalogue";
+import type { AdminProductInput } from "@/features/admin/schemas/admin";
 import {
   ArrowLeft,
   Plus,

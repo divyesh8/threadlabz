@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { ProductTable, type AdminProductRow } from "@/components/admin/product-table";
+import { ProductTable, type AdminProductRow } from "@/features/admin/components/product-table";
 import { Plus, Search, Filter } from "lucide-react";
 
 export const dynamic = "force-dynamic";

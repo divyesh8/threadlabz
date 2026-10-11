@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { CatalogueCard } from "@/lib/catalogue/query";
+import type { CatalogueCard } from "@/features/catalogue/types/catalogue";
 import { Heart, Minus, Plus } from "lucide-react";
 
 export function ProductActions() {

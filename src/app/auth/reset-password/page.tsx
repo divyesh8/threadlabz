@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ResetPasswordForm } from "@/components/auth/auth-form";
+import { ResetPasswordForm } from "@/features/auth/components/auth-form";
 
 export const metadata: Metadata = {
   title: "Set New Password — ThreadLabz",

@@ -1,7 +1,7 @@
 "use client";
 import Image, { type ImageProps } from "next/image";
 import { useState } from "react";
-import { productStoragePath } from "@/lib/catalogue/media";
+import { productStoragePath } from "@/features/media/services/product-media";
 
 export function AdminImage({ src, alt, ...props }: Omit<ImageProps, "src"> & { src: string }) {
   const [failed, setFailed] = useState(false);

@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/guards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { isRaster } from "@/lib/catalogue/media";
+import { isRaster } from "@/features/media/services/product-media";
 import {
   adminProductSchema,
   adminCategorySchema,
@@ -13,7 +13,7 @@ import {
   type AdminCategoryInput,
   type AdminFestivalInput,
   type AdminBannerInput,
-} from "@/lib/admin/validation";
+} from "@/features/admin/schemas/admin";
 
 export type ActionResponse = {
   success?: boolean;
