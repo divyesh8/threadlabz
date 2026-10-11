@@ -259,3 +259,25 @@ button, input { border-radius: 0; }
 }
 @media (max-width: 370px) { .brand-wordmark { width: 165px; }.brand-wordmark>img { width: 165px; top: -5px; }.hero h1,.hero h2 { font-size: 48px; }.hero-slide { min-height: 455px; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+/* Phase 1: extend the existing brand layout for accounts and real catalogue. */
+.account-page { max-width: 680px; padding-block: 42px 70px; }
+.account-page>h1 { font-size: clamp(32px, 5vw, 48px); color: var(--rust); line-height: 1.1; letter-spacing: -.035em; margin: 10px 0 28px; }
+.account-panel { background: var(--card); border: 1px solid var(--border); padding: 28px; border-radius: 16px; }
+.account-panel h2 { font-size: 26px; margin-bottom: 18px; }
+.account-panel>p { line-height: 1.8; color: var(--muted); margin-bottom: 20px; overflow-wrap: anywhere; }
+.auth-form { display: grid; gap: 20px; }
+.account-panel button[data-slot="button"] { border-radius: 999px; }
+.auth-form label, .catalogue-filters label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.auth-form input, .catalogue-filters input, .catalogue-filters select { min-height: 48px; width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid var(--input); border-radius: 8px; background: var(--cream); font-size: 16px; color: var(--charcoal); }
+.field-hint { font-size: 11px; color: var(--muted); line-height: 1.7; margin-top: 8px; }
+.field-error { color: var(--destructive); font-size: 12px; margin-top: 8px; line-height: 1.6; }
+.auth-message { padding: 12px 14px; background: var(--cream); border-radius: 8px; line-height: 1.8; overflow-wrap: anywhere; }
+.auth-switch { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; color: var(--rust); text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
+.catalogue-filters { display: grid; grid-template-columns: 2fr 1fr 1fr auto auto; gap: 14px; align-items: end; margin-top: 26px; }
+.catalogue-filters button { min-height: 48px; padding: 10px 18px; border-radius: 24px; background: var(--button); color: white; font-size: 12px; }
+.catalogue-filters>a, .catalogue-pagination>a { min-height: 48px; min-width: 44px; display: flex; align-items: center; text-decoration: underline; text-underline-offset: 4px; font-size: 12px; }
+.catalogue-results { margin-top: 24px; }.catalogue-results .product-caption { line-height: 1.7; overflow-wrap: anywhere; }
+.catalogue-image-empty { height: 100%; display: grid; place-items: center; text-align: center; padding: 20px; color: var(--muted); font-size: 12px; }
+.catalogue-price { margin-top: 12px; font-weight: 600; }.catalogue-pagination { display: flex; gap: 25px; margin-top: 24px; }
+@media (max-width: 760px) { .account-page { padding-top: 28px; }.account-panel { padding: 22px; }.catalogue-filters { grid-template-columns: 1fr 1fr; }.catalogue-filters>div:first-child { grid-column: 1 / -1; } }

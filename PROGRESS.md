@@ -38,22 +38,50 @@ Status: COMPLETE. Required code and responsive browser checks passed.
 - Source stack remains as requested. Playwright is a preinstalled QA tool only, not an app dependency.
 - Retained ESLint 9.39.5 because the Next lint plugin dependency tree does not yet support ESLint 10 cleanly. ESLint 10 was evaluated and reverted; no invalid peer dependencies remain. Track the ESLint maintenance upgrade alongside the upstream advisory.
 
-## Phase 1 — database and authentication
+## Phase 1 — local database and authentication foundation
 
-Status: BLOCKED before database implementation; target project selection required.
+Status: IMPLEMENTED LOCALLY; real Supabase integration verification is BLOCKED. Not deployed or production-ready.
 
-Plan:
+### Inspect and plan
 
-1. Create `supabase/config.toml`, a CLI-generated migration, seed and SQL access tests for all thirteen requested tables.
-2. Add product/catalogue, ownership and admin RLS, stock/price constraints and Storage policies.
-3. Add `src/lib/supabase/` browser/server clients and session refresh using current Supabase guidance.
-4. Add account authentication forms and callback/sign-out routes with server verification.
-5. Add a names-only `.env.example`, update README and this log.
-6. Run database/RLS/Auth checks plus lint, TypeScript, build and both browser widths before phase 2.
+- Began on clean `main`, commit `7c37720`, with the user-configured `origin` pointing to `https://github.com/divyesh8/threadlabz`. Preserved existing work/assets; no push or commit performed.
+- Read the repository and checked current official Supabase changelog/SSR/Storage/testing docs, PostgREST filtering docs, pgTAP docs and installed Next 16.4 cookie/proxy/action/logging docs.
+- Narrowed this run to the user's new Phase 1 scope: catalogue, personal-data ownership, auth and safe read integration. Payments/orders/coupons/email collection/admin mutation flows remain deferred.
 
-Environment discovery: no `.env.local` or linked Supabase config was present. Connected Supabase account lists only an inactive project named “divyesh's Project” (`jzyrcyzygtoecszmiywr`), with no evidence identifying it as ThreadLabz. No remote database changes made. Local Docker CLI exists, but its Linux engine is unreachable (`dockerDesktopLinuxEngine` named pipe missing); launching installed Docker Desktop did not make the engine available. Supabase CLI is installed. Current Supabase changelog was inspected; implementation will use current SSR/Auth documentation when the target is available.
+### Build
 
-One question: should ThreadLabz use the existing inactive “divyesh's Project” (restore it), or a different Supabase project? A project choice is needed to avoid altering an unrelated database. No credentials need to be pasted into chat.
+- CLI-created config, additive migration `20261011061713_phase_1_catalogue_auth.sql`, demo seed and pgTAP tests. Nine public tables have RLS and explicit grants; price/stock belong to variants. Demo products cannot be published.
+- Customer profile/address/wishlist rows are owner-only, with immutable ownership columns. Trusted `app_metadata.threadlabz_role` controls admin draft inspection and scoped Storage writes; user metadata cannot grant privileges. No security-definer helpers or catalogue write endpoints.
+- Private raster-only product bucket with publication checks and operation-aware public download policies. Public list/sign operations are denied. Anonymous, uncached image-serving route never bypasses RLS.
+- Pinned Supabase JS/SSR, Zod, React Hook Form/resolver and server-only; updated lockfile. Minimum Node 22.18 supports native TypeScript tests; Node 24 recommended. No new app stack beyond the brief.
+- Added typed browser/server/public clients, guarded environment parsing, `getClaims` cookie refresh, verified `getUser` account flows, signup/signin/signout and confirmation/PKCE callbacks. Tokens are removed from redirect destinations; no privileged key is needed.
+- Added names-only `.env.example`; no `.env.local` or real credentials were created, read or printed.
+- `/shop` now queries real, active, published, non-demo records when configured, with literal search, category/festival filtering, paging, paise formatting and variant sizes. Missing config preserves the preview; empty/error states never substitute demo products.
+- Preserved homepage/brand assets. Added only account/filter styling and truthful availability copy. Disabled Next development logging of auth arguments/requests to prevent passwords and callback tokens entering logs.
+- Added unit tests, isolated HTTP/UI contract tests, optional offline SQL/TOML syntax checker, and `docs/PHASE-1.md`. Next dev generated a small AGENTS.md pointing to its installed version's docs; retained it so it is not repeatedly recreated.
+
+### Verification results
+
+- `npm run lint`: passed, zero warnings.
+- `npm run typecheck`: passed.
+- `npm test`: 9 validation tests passed (configuration, unsafe keys/origins, redirect allowlist, auth bounds, filter validation/wildcards and image IDs).
+- `npm run build`: passed, including account/auth/image routes and Proxy.
+- `npm audit --omit=dev`: zero vulnerabilities. The previously documented dev-only braces chain remains; no forced downgrade applied.
+- `python scripts/check-sql.py`: local TOML checked; migration 67 statements, seed 5 statements, pgTAP 72 statements plus 26 embedded SQL queries parsed successfully. This is syntax validation, NOT PostgreSQL/RLS execution.
+- `supabase migration list --local`, `supabase db lint --local --schema public,private --fail-on warning`, and `supabase test db --local`: attempted, all blocked by `ECONNREFUSED 127.0.0.1:54322`.
+- `supabase start`: attempted, failed because Docker's Linux-engine named pipe is missing. No containers/database were altered, no reset was run, and no remote project was linked.
+- Production browser checks at 390px and 1280px: passed; no overflow, broken images, undersized interactive controls or runtime exceptions; navigation, carousel, preview search, routes and 404 passed.
+- Isolated HTTP-mock browser contracts at 390px and 1280px: passed signup feedback, invalid and valid signin, verified-user lookup, signout, configured empty/populated/error catalogue, filters, paise display, image responses and safe callback redirects. These results do NOT establish real Auth/email/Storage/RLS correctness.
+- Visual review retained brand/layout and caught square auth buttons, corrected to the shared pill shape. Contract tests caught localhost/127.0.0.1 callback origin drift; fixed by using canonical SITE_URL. A dev 404-streaming mismatch was fixed with static destination restrictions.
+- A reference-source checkout under ignored tmp initially entered TypeScript's broad include; fixed by excluding tmp/artifacts, then rebuilt successfully. This did not require adding any reference-repo dependencies to the app.
+
+### Blockers and next action
+
+- Connected project discovery still returns only inactive “divyesh's Project” (`jzyrcyzygtoecszmiywr`). It is not verified as ThreadLabz. It was NOT restored, modified or deployed to.
+- Need the intended Supabase project ID, or a working local Docker engine, to run migration/RLS tests, advisors, generated-type comparison, actual confirmation/session-refresh/signout tests and publication/Storage integration checks.
+- The current database types are explicitly migration-derived, not generated from a running database. Follow docs/PHASE-1.md to replace the Database shape after successful CLI generation.
+- No supplied PDF photo became a purchasable SKU; no prices/stock/discounts/bestseller facts were invented. Synthetic prices exist only inside rolled-back SQL tests and isolated HTTP mocks.
+- Complete real Phase 1 verification before starting Phase 2 admin mutations. Review target schema/Storage-helper compatibility, Auth URL/template/confirmation/rate limits and deployment-log redaction first.
 
 ## Remaining phases
 

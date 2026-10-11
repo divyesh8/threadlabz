@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 
 const sections: Record<string, { title: string; text: string }> = {
   customize: { title: "Your ideas. Your ThreadLabz.", text: "Our T-shirt and hoodie design studio is being stitched together. Text, artwork and your own little signature — all in one place." },
-  account: { title: "A space that’s all yours.", text: "Sign-in, saved addresses and your favourites will be ready when the store opens." },
   orders: { title: "Good things are on their way.", text: "Order history and delivery tracking will appear here once checkout opens. This preview does not accept orders." },
   wishlist: { title: "Keep your favourites close.", text: "Your saved styles will have a home here when accounts and the live catalogue are connected." },
   cart: { title: "Room for your next favourite.", text: "The shopping bag will be ready with our live catalogue. This preview does not collect payments." },
@@ -16,6 +15,7 @@ const sections: Record<string, { title: string; text: string }> = {
 };
 
 export function generateStaticParams() { return Object.keys(sections).map(section => ({ section })); }
+export const dynamicParams = false;
 export async function generateMetadata({ params }: { params: Promise<{ section: string }> }): Promise<Metadata> {
   const { section } = await params; return { title: sections[section]?.title ?? "Page not found" };
 }

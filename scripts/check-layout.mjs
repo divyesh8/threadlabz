@@ -5,17 +5,18 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+const baseUrl = process.env.QA_BASE_URL || "http://127.0.0.1:3000";
 
 (async () => {
   const browser = await chromium.launch({ headless: true, channel: "msedge" });
-  const output = path.resolve("artifacts/phase-0");
+  const output = path.resolve(process.env.QA_OUTPUT || "artifacts/phase-0");
   fs.mkdirSync(output, { recursive: true });
   const report = [];
   for (const width of [390, 1280]) {
     const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
     const errors = [];
     page.on("pageerror", error => errors.push(error.message));
-    const response = await page.goto("http://127.0.0.1:3000", { waitUntil: "networkidle" });
+    const response = await page.goto(baseUrl, { waitUntil: "networkidle" });
     assert.equal(response.status(), 200);
     await page.evaluate(() => document.fonts.ready);
     await page.evaluate(() => { for (const img of document.images) img.loading = "eager"; });
@@ -51,10 +52,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
     await page.waitForURL("**/shop?q=hoodie");
     assert.equal(await page.getByRole("status").isVisible(), true);
     for (const route of ["/customize", "/account", "/cart", "/wishlist", "/orders", "/about", "/contact", "/shipping"]) {
-      const r = await page.goto(`http://127.0.0.1:3000${route}`);
+      const r = await page.goto(`${baseUrl}${route}`);
       assert.equal(r.status(), 200, route);
     }
-    const missing = await page.goto("http://127.0.0.1:3000/this-page-does-not-exist");
+    const missing = await page.goto(`${baseUrl}/this-page-does-not-exist`);
     assert.equal(missing.status(), 404);
     assert.deepEqual(errors, [], "Browser errors");
     report.push({ width, ...layout, browserErrors: errors, interactions: "passed" });

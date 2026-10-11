@@ -11,11 +11,12 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Phase 0 runs without any service credentials.
+Open http://localhost:3000. The preview runs without service credentials. Node 22.18+ is required for the built-in TypeScript tests; Node 24 LTS is recommended.
 
 ```powershell
 npm run lint
-npx tsc --noEmit
+npm run typecheck
+npm test
 npm run build
 npm run start
 ```
@@ -24,9 +25,9 @@ Do not run `dev` and `start` on the same port simultaneously.
 
 ## Current state
 
-This is a store preview, not a transactional store. The layout shell includes all requested homepage sections, responsive navigation, a controllable Embla slider, brand assets, fonts, loading/error pages and a web app manifest. Collection cards are visual fixtures; search, accounts, wishlist, checkout and newsletter explicitly explain their preview status. No payment or email collection is simulated. Indexing stays disabled until launch.
+This is a store preview with a local Phase 1 foundation, not a transactional store. The design and supplied assets are preserved. Supabase schema/RLS, private product imagery, SSR auth and a real catalogue query path are implemented. Without configuration, accounts remain unavailable and the shop keeps clearly labelled preview photos. When configured, `/shop` reads only published non-demo products, or shows an explicit empty/error state. Wishlist/address UI, payments, orders, newsletter collection and admin mutations remain unavailable. Indexing stays disabled until launch.
 
-Follow `PROGRESS.md` for completed phases, verification, blockers and next work. The project starts without a remote Git repository; connect the intended origin before publishing.
+Follow `PROGRESS.md` for exact verification and blockers, and [docs/PHASE-1.md](docs/PHASE-1.md) for the schema, access model, configuration and non-destructive local database verification commands. The existing Git remote is `https://github.com/divyesh8/threadlabz`; this run does not push or deploy changes.
 
 ## Project structure
 
@@ -36,6 +37,10 @@ src/components/brand/       Supplied logo and loading monogram
 src/components/store/       Header, footer, mobile nav, homepage sections
 src/components/ui/          shadcn-compatible component primitives
 src/lib/                    Shared utilities and labelled catalogue fixtures
+src/lib/supabase/           Typed browser/server/public clients and session refresh
+src/lib/auth/               Auth validation and verified profile initialization
+src/lib/catalogue/          Validated server-side catalogue queries
+supabase/                  Local config, additive migration, demo seed and pgTAP tests
 public/brand/               Original user-supplied logo files
 public/images/previews/     Photography extracted from user-supplied PDFs
 public/images/placeholders/ Original SVG collection illustrations
@@ -45,7 +50,7 @@ docs/                      Brand provenance and implementation decisions
 
 ## Secrets
 
-Store credentials in `.env.local` only. `.env*` is ignored except the empty template `.env.example`. Never add service-role, Razorpay or Resend secrets to any `NEXT_PUBLIC_*` variable. Local previews do not need credentials. Deployment environment configuration will be handled in the deployment phase.
+Store credentials in `.env.local` only. `.env*` is ignored except the names-only `.env.example`. The app uses a Supabase URL, publishable key and canonical `SITE_URL`; no privileged key is needed. Never add service-role, Razorpay or Resend secrets to any `NEXT_PUBLIC_*` variable. Local previews do not need credentials. Confirm the project identity before any remote mutation. Never paste secrets into chat.
 
 ## Browser QA
 
@@ -56,7 +61,7 @@ $env:PLAYWRIGHT_MODULE='C:/Users/kolli/.cache/codex-runtimes/codex-primary-runti
 node scripts/check-layout.mjs
 ```
 
-Reports and full-page screenshots are written under ignored `artifacts/phase-0/`. QA checks 390px and 1280px viewports, page overflow, broken images, control sizes, carousel, mobile menu, search handoff, status routes, 404 and browser exceptions. Manual screenshot inspection is still required.
+Reports and screenshots default to ignored `artifacts/phase-0/`; `QA_OUTPUT` and `QA_BASE_URL` can override the output folder and server. QA checks 390px and 1280px viewports, page overflow, broken images, control sizes, carousel, mobile menu, search handoff, status routes, 404 and browser exceptions. `node scripts/check-phase1.mjs` adds isolated mocked auth/catalogue tests; these are not real Supabase integration tests. Manual screenshot inspection is still required. See the Phase 1 guide for exact commands and limitations.
 
 ## Dependencies
 
