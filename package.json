@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test scripts/phase1.test.mjs scripts/phase3.test.mjs scripts/phase4.test.mjs scripts/phase4-db.test.mjs",
+    "test": "node --experimental-strip-types --test scripts/phase1.test.mjs scripts/phase3.test.mjs scripts/phase4.test.mjs scripts/phase4-db.test.mjs scripts/phase5-commerce-e2e.test.mjs",
     "test:db": "supabase test db --local --workdir tmp/phase3-db",
     "db:lint": "supabase db lint --local --workdir tmp/phase3-db --schema public --fail-on warning"
   },

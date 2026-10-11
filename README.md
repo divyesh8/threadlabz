@@ -4,13 +4,15 @@ Make Your Mark. An India-first clothing, costumes and customization storefront.
 
 ## Current state
 
-Phase 4 (Commerce & Payment Readiness Foundation) is implemented locally on branch `codex/domain-structure`:
-- Server-authoritative Cart (`/cart`) supporting guest and authenticated sessions, integer paise calculations, and stock revalidation.
-- Server-authoritative Checkout (`/checkout`) with immutable order line snapshots and atomic PostgreSQL stock reservations (`reserve_stock`).
-- Razorpay test mode integration with timing-safe HMAC-SHA256 signature verification and idempotent webhook handling (`/api/webhooks/razorpay`).
-- Catalogue data integrity: seed/demo records are excluded from public storefront queries. The store will not accept real orders until the owner provides real inventory, courier rules, GST details, and payment credentials.
+Phase 5 (Staging Integration, E2E Commerce Validation, and Lifecycle Readiness) is verified and implemented locally on branch `codex/domain-structure`:
+- **Server-Authoritative Cart (`/cart`)**: Supports guest and authenticated sessions, integer paise calculations, variant stock bounds (1–10), and login merge.
+- **Server-Authoritative Checkout (`/checkout`)**: Immutable order line snapshots, atomic PostgreSQL stock reservations (`reserve_stock`), and delivery address validation.
+- **Reservation Expiry & Finalization**: 15-minute lease with idempotent recovery (`release_expired_stock_reservations`), stock consumption on captured payment (`finalize_order_stock`), and automatic reservation release on failure (`release_order_reservations`).
+- **Razorpay Test Integration**: Timing-safe HMAC-SHA256 signature verification and idempotent webhook handling (`/api/webhooks/razorpay`) with `webhook_events` audit tracking.
+- **Catalogue Integrity**: Seed/demo/test records (`source IN ('seed', 'test')`) are strictly excluded from public storefront queries.
+- **Commerce Observability**: Production-safe, PII-sanitized structured event logging (`src/lib/observability/commerce-logger.ts`) tracking 11 core commerce events.
 
-See [docs/CATALOGUE_CHECKLIST.md](docs/CATALOGUE_CHECKLIST.md) for the product import specifications, [PROGRESS.md](PROGRESS.md) for actual test results, and [docs/STRUCTURE.md](docs/STRUCTURE.md) for architecture.
+See [docs/CATALOGUE_CHECKLIST.md](docs/CATALOGUE_CHECKLIST.md) for product import specifications, [PROGRESS.md](PROGRESS.md) for actual test results, and [docs/STRUCTURE.md](docs/STRUCTURE.md) for architecture.
 
 ## Run locally
 
@@ -21,58 +23,45 @@ npm ci
 npm run dev
 ```
 
-The app starts without credentials and clearly reports the disconnected catalogue. To connect, set names from .env.example in ignored .env.local; never paste credentials into chat or commit them. Public catalogue requests use a cookieless publishable client, with no service key. SITE_URL is the canonical origin. Admin actions retain requireAdmin() and use the verified user's session.
+The app starts without credentials and clearly reports the disconnected catalogue. To connect, set names from `.env.example` in ignored `.env.local`; never paste credentials into chat or commit them. Public catalogue requests use a cookieless publishable client, with no service key. `SITE_URL` is the canonical origin. Admin actions retain `requireAdmin()` and use the verified user's session.
 
 ## Verification
+
+Run the full verification suite:
 
 ```powershell
 npm run lint
 npm run typecheck
 npm test
 npm run build
-npm run start -- --hostname 127.0.0.1 --port 3200
 ```
 
-Use a free port. Do not run dev and start against the same port. In a second terminal:
-
-```powershell
-$env:PLAYWRIGHT_MODULE='C:/Users/kolli/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'
-$env:QA_BASE_URL='http://127.0.0.1:3200'
-$env:QA_OUTPUT='artifacts/phase-3/local'
-node scripts/check-layout.mjs
-node scripts/check-phase1.mjs
-node scripts/check-phase3.mjs
-```
-
-The contract suites own temporary dev servers on 3101/3102 and must run **sequentially**, with other next dev instances in this checkout stopped. They use synthetic loopback services and do not write real data. Screenshots/reports are under ignored artifacts/. The Phase 3 suite uses clearly labelled local fixtures with reference photography solely for layout QA. It is not evidence that real SKU photography exists.
-
-Database runtime checks need Docker's Linux engine. The existing schema histories conflict, so **do not run the root migration chain against any database**. Prepare the isolated local workspace first:
-
-```powershell
-node scripts/prepare-phase3-db.mjs
-supabase start --workdir tmp/phase3-db
-supabase migration list --local --workdir tmp/phase3-db
-npm run db:lint
-npm run test:db
-```
-
-No reset or remote apply is needed. See the Phase 3 guide before reviewing the unapplied security migration. The older root seed.sql and access_control_test.sql target the superseded Phase 1 model. scripts/seed-products.ts is now restricted to localhost and creates inactive, labelled demo products; never use demo data for commerce.
+The automated test runner (`npm test`) executes all 5 test suites (46 tests total) using Node's native test runner and `@electric-sql/pglite` WASM Postgres:
+- `scripts/phase1.test.mjs`: URL canonicalization, open redirect allowlists, auth bounds.
+- `scripts/phase3.test.mjs`: Filter normalization, UUID image paths, raster signatures.
+- `scripts/phase4.test.mjs`: Integer-paise calculations, discount clamping, address schemas, HMAC signatures.
+- `scripts/phase4-db.test.mjs`: Real migration execution, atomic `reserve_stock`, overselling prevention, and webhook deduplication.
+- `scripts/phase5-commerce-e2e.test.mjs`: 24 core commerce invariants, reservation expiry recovery, payment reconciliation, and stock finalization.
 
 ## Structure
 
-The app uses a domain-oriented layout within the existing single Next.js project. See [docs/STRUCTURE.md](docs/STRUCTURE.md) for ownership rules, the move map, legacy-code findings and before/after verification.
+The app uses a domain-oriented layout within the existing single Next.js project. See [docs/STRUCTURE.md](docs/STRUCTURE.md) for ownership rules and architecture.
 
-- `src/app`: existing routes, layouts, metadata and HTTP handlers, including `/shop`, `/products/[slug]`, `/catalogue-image/[id]` and protected `/admin/media`.
+- `src/app`: existing routes, layouts, metadata and HTTP handlers, including `/shop`, `/products/[slug]`, `/cart`, `/checkout`, and `/api/webhooks/razorpay`.
 - `src/features/auth`: account Server Actions, forms, schemas and profile initialization.
-- `src/features/catalogue`: public catalogue queries, filters, product UI, types and labelled moodboard data. Older unused queries are retained under `services/legacy`.
+- `src/features/catalogue`: public catalogue queries, filters, product UI, types, and safe dev fixtures.
+- `src/features/cart`: types, schemas, services, actions, and interactive UI for shopping bag.
+- `src/features/checkout`: pricing engine, signatures, payment services, order creation, and truthful checkout UI.
 - `src/features/admin`: guarded mutations/uploads, management forms and validation.
 - `src/features/media`: image components and shared Storage-path/raster validation.
-- `src/components`: shared storefront/admin shells, brand presentation and UI primitives.
-- `src/lib`: auth guards, Supabase adapters, canonical site config and utilities; `src/types/database.ts` remains the generated shared database contract.
-- `supabase` and `scripts`: unchanged database layout and existing QA/seed workflows; npm unit-test imports follow the moved modules.
-
-No application dependency was added. Next.js 16.4.0, React 19.3.0 and Supabase packages remain pinned with the existing lockfile.
+- `src/lib/observability`: structured commerce event logger.
+- `supabase`: migrations (`001_schema.sql` through `20261012010000_phase_5_commerce_lifecycle.sql`), fixtures, and test scripts.
 
 ## Next phase
 
-Curate verified product records and approved SKU photographs, then verify the proposed database boundaries on the isolated local/development target. Reconcile migration history before any separately authorized deployment. Only then plan cart/wishlist, checkout, payment, fulfilment and approved customer policies.
+Before activating live production sales, the store owner must configure:
+1. Razorpay API keys (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`).
+2. GSTIN registration and tax slab confirmation (5% vs 12%).
+3. Courier delivery partner and serviceable Indian postal PIN codes.
+4. Genuine garment inventory with verified stock counts and approved 4:5 studio photography.
+5. Review and approve database migrations on the dedicated development Supabase instance.

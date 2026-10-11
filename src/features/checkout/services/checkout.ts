@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCartSummary } from "@/features/cart/services/cart";
 import { calculateOrderPricing } from "./pricing";
 import { getRazorpayGatewayStatus, createRazorpayOrder } from "./payment";
+import { logCommerceEvent } from "@/lib/observability/commerce-logger";
 import type { Json } from "@/types/database";
 import type {
   ShippingAddress,
@@ -29,16 +30,53 @@ async function getClient() {
 
 export async function createCheckoutOrder(
   context: { userId?: string; sessionToken?: string },
-  shippingAddress: ShippingAddress
+  shippingAddress: ShippingAddress,
+  options?: { idempotencyKey?: string }
 ): Promise<CreateOrderResult> {
   const client = await getClient();
   if (!client) {
     return { success: false, error: "Database client unavailable", code: "GATEWAY_UNAVAILABLE" };
   }
 
+  logCommerceEvent("checkout_started", {
+    userId: context.userId,
+    hasSessionToken: Boolean(context.sessionToken),
+  });
+
+  // Check existing idempotency key to prevent duplicate orders
+  if (options?.idempotencyKey) {
+    const { data: existingOrder } = await client
+      .from("orders")
+      .select("id, order_number, status, payment_status, total_paise, currency, created_at, shipping_address")
+      .eq("idempotency_key", options.idempotencyKey)
+      .maybeSingle();
+
+    if (existingOrder) {
+      const checkoutOrder: CheckoutOrder = {
+        id: existingOrder.id,
+        orderNumber: existingOrder.order_number || `TL-${existingOrder.id.slice(0, 8)}`,
+        status: existingOrder.status as CheckoutOrder["status"],
+        paymentStatus: existingOrder.payment_status as CheckoutOrder["paymentStatus"],
+        grandTotalPaise: existingOrder.total_paise,
+        currency: "INR",
+        items: [],
+        shippingAddress: existingOrder.shipping_address as unknown as ShippingAddress,
+        reservationExpiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        createdAt: existingOrder.created_at,
+      };
+
+      return {
+        success: true,
+        order: checkoutOrder,
+        gatewayStatus: getRazorpayGatewayStatus(),
+      };
+    }
+  }
+
   // 1. Re-read cart and validate active purchasable items
   const cart = await getCartSummary(context);
   if (!cart || cart.items.length === 0) {
+    logCommerceEvent("checkout_rejected", { reason: "empty_cart" });
     return { success: false, error: "Your shopping bag is empty.", code: "INVALID_CART" };
   }
 
@@ -61,6 +99,7 @@ export async function createCheckoutOrder(
     .insert({
       order_number: orderNumber,
       user_id: context.userId || null,
+      idempotency_key: options?.idempotencyKey || null,
       status: "pending",
       payment_status: "unpaid",
       subtotal_paise: pricing.subtotalPaise,
@@ -75,6 +114,7 @@ export async function createCheckoutOrder(
     .single();
 
   if (orderError || !orderRow) {
+    logCommerceEvent("checkout_rejected", { reason: "order_insert_failed", errorCode: orderError?.code });
     return {
       success: false,
       error: "Could not create order. Please try again.",
@@ -97,10 +137,21 @@ export async function createCheckoutOrder(
     });
 
     if (rpcError || !reservationId) {
+      logCommerceEvent("checkout_rejected", {
+        orderId: orderRow.id,
+        variantId: item.variantId,
+        reason: "insufficient_stock",
+      });
+
       // Stock reservation failed for this line. Roll back all held reservations for this order.
       for (const resId of reservedReservationIds) {
         await client.rpc("release_stock_reservation", {
           p_reservation_id: resId,
+        });
+        logCommerceEvent("reservation_released", {
+          orderId: orderRow.id,
+          reservationId: resId,
+          reason: "rollback_oversell_prevention",
         });
       }
 
@@ -114,6 +165,12 @@ export async function createCheckoutOrder(
     }
 
     reservedReservationIds.push(reservationId as string);
+    logCommerceEvent("reservation_created", {
+      orderId: orderRow.id,
+      variantId: item.variantId,
+      reservationId: reservationId as string,
+      quantity: item.quantity,
+    });
 
     // Insert order item row
     await client.from("order_items").insert({
@@ -161,18 +218,18 @@ export async function createCheckoutOrder(
         provider_order_id: razorpayOrderId,
         amount_paise: pricing.grandTotalPaise,
         currency: "INR",
-        status: "created",
+        status: "CREATED",
       });
     }
   } else {
-    // Record payment intent with status pending / unconfigured
+    // Record payment intent with status CREATED
     await client.from("payments").insert({
       order_id: orderRow.id,
       provider: "razorpay",
       provider_order_id: `pending_${crypto.randomUUID()}`,
       amount_paise: pricing.grandTotalPaise,
       currency: "INR",
-      status: "pending",
+      status: "CREATED",
     });
   }
 

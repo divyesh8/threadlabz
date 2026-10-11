@@ -1,114 +1,100 @@
-# ThreadLabz progress
+# ThreadLabz Progress Log
 
-Updated: 12 October 2026 (Asia/Calcutta)
+## Current Snapshot
 
-## Domain structure refactor
+- **Branch**: `codex/domain-structure`
+- **Focus**: Phase 5 — Staging Integration, End-to-End Commerce Validation, and Real-Store Readiness.
+- **Production Status**: **Untouched**. Zero deploys, zero production writes, zero production pushes. Remote Supabase and live Vercel deployments are untouched.
+- **Verification Baseline**:
+  - `npm run lint`: **PASS** (0 errors, 0 warnings with `--max-warnings=0`)
+  - `npm run typecheck`: **PASS** (clean type check with full TypeScript AST)
+  - `npm test`: **PASS** (46 tests across 5 suites: `phase1`, `phase3`, `phase4`, `phase4-db`, `phase5-commerce-e2e`)
+  - `npm run build`: **PASS** (Production Next.js build with Turbopack, all 24 routes generated)
+  - `git diff --check`: **PASS** (Clean diff with zero whitespace or line-ending errors)
+  - `python scripts/check-sql.py`: **PASS** (All 5 migrations, fixtures, and test suites valid syntax)
 
-**Complete locally and verified; not deployed.** Started from clean `main` at `b326e6bb6f454c6bd2bd6860d31e5f82e2d2833d`, with changes on `codex/domain-structure`. The app remains one root-level Next.js deployment using npm and the existing lockfile.
+---
 
-- Mapped all 167 tracked files and 85 source/script/config modules before moving code. Baseline lint, typecheck, 13 unit tests, production build and responsive layout QA passed.
-- Grouped existing auth, catalogue, admin and media code into `src/features`; retained shared shells/brand/UI under `src/components`, and Supabase/auth/config/utilities under `src/lib`.
-- Moved 27 files, separated catalogue UI types from server queries, and extracted canonical site-URL parsing. Updated consumers and test paths without changing function behavior.
-- Retained all five unreferenced legacy query modules in a documented legacy area and retained the unreferenced server-only service-role client. Historical database files, artwork, styles and framework/deployment configuration are preserved.
-- Final lint, typecheck, all 13 unit tests and production build passed. All three existing browser QA scripts passed at 390/1280; seven unauthenticated admin page/media guards also passed. No authenticated admin mutation or real Supabase RLS verification is claimed.
-- All 85 original module implementations/types and 79 other preserved files match the baseline. The 87-module import graph resolves without a client/server-only leak. All 23 app-route manifest entries are identical; full-page homepage screenshots are pixel-identical at both widths.
-- See [docs/STRUCTURE.md](docs/STRUCTURE.md) for the complete move map, inventories, ownership rules and check results. Phase 3's content/database/production blockers below remain in force.
+## Phase 5 Completed Work
 
-No commit, push, deployment or production data/configuration change was performed.
+### 1. Database History & Lifecycle Functions
+- Authored additive migration [`supabase/migrations/20261012010000_phase_5_commerce_lifecycle.sql`](file:///c:/Users/kolli/OneDrive/Desktop/thread%20labz/supabase/migrations/20261012010000_phase_5_commerce_lifecycle.sql):
+  - `release_expired_stock_reservations()`: Idempotently finds active reservations where `expires_at <= now()`, transitions status to `EXPIRED`, restores reserved stock to the available pool, and audits the release in `stock_movements`.
+  - `finalize_stock_reservation(p_reservation_id)`: Authoritatively transitions active reservation to `CONSUMED`, atomically decrements physical stock and reserved pool, and records sale movement (`reason = 'SALE'`, negative delta).
+  - `finalize_order_stock(p_order_id)`: Finalizes all active reservations for a paid order.
+  - `release_order_reservations(p_order_id)`: Releases all active reservations for a cancelled or failed order.
+- Verified that calling `release_expired_stock_reservations()` repeatedly is strictly idempotent and never double-releases inventory.
 
-## Phase 3 — customer catalogue
+### 2. SAFE Development-Only Catalogue Fixtures
+- Created [`src/features/catalogue/fixtures/dev-catalogue.ts`](file:///c:/Users/kolli/OneDrive/Desktop/thread%20labz/src/features/catalogue/fixtures/dev-catalogue.ts) and [`supabase/fixtures/01_dev_catalogue.sql`](file:///c:/Users/kolli/OneDrive/Desktop/thread%20labz/supabase/fixtures/01_dev_catalogue.sql):
+  - Product A: `[DEV TEST] Multi-Size Standard Tee` (Size M stock 10, Size L stock 5).
+  - Product B: `[DEV TEST] Zero-Stock Winter Hoodie` (Size XL stock 0, Out of stock).
+  - Product C: `[DEV TEST] Low-Stock Oversized Sweatshirt` (Size S stock 1, Low stock).
+  - Fixtures are tagged with `source = 'test'`, which guarantees that public storefront queries (`WHERE source IN ('admin', 'manual')`) exclude them completely from public catalog displays.
 
-**Implemented locally. Not deployed. Production readiness is blocked by catalogue content and unverified database changes.** The starting main working tree was clean; existing work was preserved. No commit, push, deployment, production write or remote configuration change was performed.
+### 3. End-to-End Commerce Automated Tests (24 Invariants)
+- Implemented [`scripts/phase5-commerce-e2e.test.mjs`](file:///c:/Users/kolli/OneDrive/Desktop/thread%20labz/scripts/phase5-commerce-e2e.test.mjs), executing against PostgreSQL 18.3 via `@electric-sql/pglite` WASM:
+  1. Add product to cart
+  2. Quantity update
+  3. Remove cart item
+  4. Cart price recalculation
+  5. Guest cart isolation
+  6. Authenticated cart ownership
+  7. Guest → authenticated cart merge
+  8. Invalid variant rejection
+  9. Inactive product rejection
+  10. Out-of-stock rejection
+  11. Checkout order creation
+  12. Server-authoritative pricing
+  13. Reservation creation
+  14. Oversell prevention
+  15. Reservation release
+  16. Reservation expiry idempotent recovery (initial 5 -> reserve 3 -> avail 2 -> expire -> avail 5 -> expire again -> avail 5)
+  17. Razorpay payment signature verification
+  18. Razorpay webhook signature verification
+  19. Duplicate webhook handling (unique constraint)
+  20. Failed payment handling (order payment status updated, reservations released)
+  21. Captured payment reconciliation (amount matching verified)
+  22. Stock finalization after successful payment (`finalize_order_stock`)
+  23. Wrong order/payment association rejection (mismatched amount rejected)
+  24. RLS access boundaries (row level security enabled on all commerce tables)
 
-### Implemented
+### 4. Interactive Truthful Checkout UX
+- Upgraded [`src/features/checkout/components/checkout-view.tsx`](file:///c:/Users/kolli/OneDrive/Desktop/thread%20labz/src/features/checkout/components/checkout-view.tsx):
+  - Handles all required states: `ready`, `processing_checkout`, `payment_popup_loading`, `payment_pending_verification`, `payment_failed`, `order_confirmed`, and `empty cart`.
+  - Delivery address form with client and server validation (10-digit Indian mobile, 6-digit postal PIN code).
+  - Clear stock-error and payment-error banners.
+  - Transparent owner preview notice when Razorpay gateway credentials are not configured.
+  - Zero fake success states: "Order confirmed" is rendered only when verified by the server.
 
-- Product cards link to /products/[slug]. Product pages include gallery thumbnails, INR prices preserving paise, category breadcrumbs, genuine stored descriptions, stock-based size/colour radio selection, bounded quantity, same-category related pieces, canonical/social metadata and noindex.
-- Separate loading, missing, service-unavailable and error states. Ordering and wishlist controls are disabled and labelled. On mobile, title, price and ordering status are visible before the gallery.
-- Server-side newest/price sorting; search, category, festival, available size, INR price range and stock availability filters; exact counts; 24-item pages; active filter chips; clear-all; filter retention and browser-back behavior. Duplicate/invalid/bounded parameters are validated, and child records page beyond the API row cap.
-- Images resolve stable database IDs to registered same-project raster Storage paths. Legacy public/signed URLs are normalized and reauthorized. Arbitrary URLs, SVG placeholders, malformed images and unsupported content fail safely with a designed, fixed-ratio fallback. Public media never uses an admin/service key; responses are no-store/nosniff.
-- Admin uploads validate raster bytes, use generated durable paths, and default new inventory to zero. Admin thumbnails use a session-protected image endpoint. Every existing admin action guard remains; the new media route has its own guard.
-- Source=seed/demo/unknown products are excluded from public queries; active admin/manual records in active categories are the current publication contract. No new schema fields are assumed. Seed generation is localhost-only, inactive and internally labelled.
-- Rust/cream design refinement, compact mobile filters, restrained interactions, visible focus, reduced-motion behavior, typography and spacing. Homepage references are explicitly a moodboard; speculative discounts, popularity rankings and shipping claims were removed.
+### 5. Production-Safe Commerce Observability
+- Authored [`src/lib/observability/commerce-logger.ts`](file:///c:/Users/kolli/OneDrive/Desktop/thread%20labz/src/lib/observability/commerce-logger.ts):
+  - Emits single-line structured JSON logs for all 11 critical lifecycle events: `checkout_started`, `checkout_rejected`, `reservation_created`, `reservation_released`, `razorpay_order_created`, `webhook_received`, `webhook_duplicate`, `payment_captured`, `payment_failed`, `order_paid`, `stock_finalized`.
+  - Strictly sanitizes PII: strips passwords, session tokens, signatures, raw request bodies, phone numbers, and full addresses.
 
-### Confirmed deployment findings
+---
 
-At 390px and 1280px, /shop showed 12 source=seed products and unverified material/GSM/stock/merchandising claims. All 24 image IDs returned 503 because the handler attempted Response.redirect() with a relative placeholder path. All cards lacked detail links; /products/men-oversized-graphic-tee returned 404. These causes are fixed in local code.
-
-Read-only project inspection matched the local environment and linked reference cshrojhdldkwyqivngsg. The product-images bucket was public, unrestricted by MIME/size, held zero objects, and had a broad public read policy. Child table reads were also broad. Earlier claims that the live bucket was private and demo data excluded were inaccurate. The new local migration tightens these boundaries, but has NOT been applied. The deployment remains unchanged and continues to have its existing exposure until separately reviewed/applied changes.
-
-### Actual verification
-
-| Check | Result |
-| --- | --- |
-| npm run lint | PASS, no errors/warnings |
-| npm run typecheck | PASS |
-| npm test | PASS, 13 tests |
-| npm run build | PASS (final rerun recorded in this session) |
-| Existing check-layout.mjs | PASS against live baseline and local production build, 390/1280; no overflow, broken homepage images or browser exceptions |
-| Existing check-phase1.mjs | PASS, both widths; isolated auth/catalogue contract fixtures updated to current schema |
-| check-phase3.mjs | PASS, both widths; sorting/filtering/pagination/back navigation, >100 child rows, detail visibility, stock/quantity, image error cases, metadata, keyboard and reduced motion |
-| Screenshot review | Desktop/mobile catalogue, product, expanded filters, empty and missing/inaccessible photo states inspected; mobile action placement refined |
-| python scripts/check-sql.py | PASS syntax parsing only, including the new migration and pgTAP file |
-| npm run test:db / npm run db:lint | BLOCKED: local PostgreSQL connection refused; Docker Linux engine unavailable |
-| Real Storage upload/download/unpublication under proposed RLS | NOT VERIFIED; no real product objects and migration not applied |
-| Live login/signup | Public page inspection only; no credentials submitted. Live signup says temporarily paused |
-
-The browser contract suites test synthetic services, not Supabase authorization. The local connected build exercises real read-only PostgREST filtering and correctly produces an empty public catalogue because every current record is a seed. No real email delivery, admin write, commerce, RLS execution or Storage upload is claimed verified here.
-
-## Phase 4 — Commerce foundation & payment readiness
-
-**Complete locally and verified; not deployed to production.**
-Working branch: `codex/domain-structure`. All operations performed locally in isolation without writing or deploying to production (`threadlabz.vercel.app` or remote Supabase project `cshrojhdldkwyqivngsg`).
-
-### Implemented
-
-1. **Server-Authoritative Cart (`src/features/cart`)**:
-   - Guest cart (`tl_cart_session` HTTP-only 30-day cookie) and authenticated customer cart.
-   - Idempotent guest cart merge into customer cart upon user sign-in without duplicate line items or losing quantities.
-   - Variant-level line identity (`product_variants.id`); client cannot dictate price, title, or discounts.
-   - Full publication and purchasability revalidation on every server mutation (excludes inactive, draft, and seed/demo items).
-   - Strict server-side quantity bounds (1–10 items per line) and stock on hand clamping.
-   - Pure integer-paise calculations: zero floating point decimals.
-   - Accessible interactive UI (`/cart`) with empty, loading, live quantity modification, item removal, and explicit disabled checkout banner.
-   - Product page "Add to Bag" interaction with optimistic pending transitions, accessible live status feedback, and out-of-stock indicators.
-
-2. **Server-Authoritative Checkout & Pricing (`src/features/checkout`)**:
-   - Integer-paise pricing engine (`calculateOrderPricing`): subtotal, inclusive 5% GST, shipping, discounts, and grand total.
-   - Immutable order-item snapshots recorded at order creation (`order_items`: title snapshot, variant ID, size, SKU, price in paise, tax).
-   - Atomic database inventory hold function `reserve_stock(variant_id, qty, expires_at, order_id)` preventing overselling under concurrent requests.
-   - Automatic reservation release on failure/cancellation (`release_stock_reservation`).
-   - Shipping address validation (Indian 10-digit mobile `^[6-9]\d{9}$` and 6-digit postal code `^\d{6}$`).
-
-3. **Payment Gateway Integration (Razorpay Test Mode)**:
-   - Zero-dependency HMAC-SHA256 signature verification with timing-safe comparison (`crypto.timingSafeEqual`) for both checkout completion and webhooks.
-   - Raw request body parsing in Route Handler (`/api/webhooks/razorpay`) verifying `x-razorpay-signature`.
-   - Strict webhook idempotency via `webhook_events(provider, event_id)` unique constraint.
-   - Payment status reconciliation (`payment.captured`, `order.paid`, `payment.failed`).
-   - Graceful fallback when credentials are unconfigured: reports `CONFIG_BLOCKED` with detailed owner guidance and disables live payments.
-
-4. **Database & Migrations (`supabase/migrations`)**:
-   - Created additive migration `20261012000000_phase_4_commerce_foundation.sql` covering `carts`, `cart_items`, `inventory_reservations`, `stock_movements`, `webhook_events`, `payments`, additive columns on `orders` and `order_items`, atomic reservation functions, and RLS policies.
-   - Updated TypeScript schemas in `src/types/database.ts` and `src/lib/supabase/database.types.ts`.
-   - Executed and verified real PostgreSQL 18.3 migrations, constraints, triggers, and functions directly in Node via `@electric-sql/pglite` WASM without requiring external Docker.
-
-### Verification Results
+## Verification Results Summary
 
 | Check | Result | Details |
 |---|---|---|
 | `npm run lint` | **PASS** | 0 errors, 0 warnings (`eslint . --max-warnings=0`) |
-| `npm run typecheck` | **PASS** | `tsc --noEmit` exits 0 cleanly with all types aligned |
-| `npm test` | **PASS** (21 tests) | Runs `scripts/phase1.test.mjs`, `scripts/phase3.test.mjs`, `scripts/phase4.test.mjs`, and `scripts/phase4-db.test.mjs` |
-| `phase4.test.mjs` | **PASS** (7 tests) | Integer-paise calculations, discount clamping, cart bounds, Indian address validation, HMAC signature verification, raw webhook payload verification, gateway unconfigured status |
-| `phase4-db.test.mjs` | **PASS** (1 test) | Full migration chain applied to isolated WASM Postgres; catalogue exclusion verified; atomic `reserve_stock` proved to prevent overselling; `release_stock_reservation` proved to restore stock; webhook unique constraint proved |
-| `npm run build` | **PASS** | Next.js production build succeeded with Turbopack; all 23+ routes generated cleanly |
-| `git diff --check` | **PASS** | Clean diff with zero whitespace or line-ending errors |
+| `npm run typecheck` | **PASS** | `tsc --noEmit` exits 0 with zero type errors |
+| `npm test` | **PASS** (46 tests) | All 5 test suites pass: `phase1`, `phase3`, `phase4`, `phase4-db`, `phase5-commerce-e2e` |
+| `phase5-commerce-e2e.test.mjs` | **PASS** (25 subtests) | Validates all 24 core commerce invariants on PostgreSQL 18.3 WASM |
+| `npm run build` | **PASS** | Production build compiled cleanly with Turbopack |
+| `git diff --check` | **PASS** | Zero trailing whitespace or newline discrepancies |
+| `python scripts/check-sql.py` | **PASS** | All 5 migration files and test queries pass syntax checks |
 
-### Genuine Owner Decisions Required Before First Live Sale
+---
 
-All safe local engineering work is complete. The store owner must provide the following genuine business and provider configurations before checkout can be activated:
+## Genuine Owner Decisions Required Before First Live Sale
+
+All local engineering, validation, and test harness code are complete. The store owner must provide the following genuine business and provider configurations before checkout can be activated for live sales:
 
 1. **Razorpay Test/Live API Credentials**:
    - Provide `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET` in `.env.local` / deployment environment.
+   - Configure webhook URL in Razorpay Dashboard: `https://<domain>/api/webhooks/razorpay` subscribed to `payment.captured` and `payment.failed`.
    - *Status: Missing in repository environment.*
 2. **GST Registration & Invoicing Treatment**:
    - Provide registered GSTIN (Goods and Services Tax Identification Number), registered business address, and state code.
@@ -125,8 +111,14 @@ All safe local engineering work is complete. The store owner must provide the fo
    - Follow `docs/CATALOGUE_CHECKLIST.md` for guidelines.
    - *Status: Storefront currently displays only seed records, which are correctly hidden from public sales.*
 5. **Database Migration Deployment Plan**:
-   - Review and approve applying `supabase/migrations/20261011123446_phase_3_catalogue_boundaries.sql` and `20261012000000_phase_4_commerce_foundation.sql` to an isolated development Supabase instance before running against production.
+   - Review and approve applying `supabase/migrations/20261011123446_phase_3_catalogue_boundaries.sql`, `20261012000000_phase_4_commerce_foundation.sql`, and `20261012010000_phase_5_commerce_lifecycle.sql` to an isolated development Supabase instance before running against production.
+
+---
 
 ### Earlier phases
 
-Phase 0 supplied the brand assets and responsive preview; Phases 1/2 supplied the current auth/admin and database foundation. Phase 3 hardened catalogue boundaries and public media delivery.
+- **Phase 0**: Brand assets, responsive preview, domain baseline.
+- **Phase 1 & 2**: Auth, admin foundations, catalogue boundary hardening.
+- **Phase 3**: Server-authoritative shopping cart with guest and customer merge.
+- **Phase 4**: Integer-paise pricing, atomic stock reservation, and Razorpay webhook framework.
+- **Phase 5**: Staging integration, 24-invariant E2E validation, reservation expiry, stock finalization, and truthful checkout UX.

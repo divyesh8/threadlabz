@@ -1,6 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { logCommerceEvent } from "@/lib/observability/commerce-logger";
 import type { Json } from "@/types/database";
 
 import {
@@ -60,6 +61,12 @@ export async function createRazorpayOrder(params: {
     }
 
     const data = await response.json();
+    logCommerceEvent("razorpay_order_created", {
+      orderId: params.orderId,
+      razorpayOrderId: data.id,
+      amountPaise: params.amountPaise,
+    });
+
     return {
       success: true,
       razorpayOrderId: data.id,
@@ -71,6 +78,30 @@ export async function createRazorpayOrder(params: {
       error: `Network error connecting to payment gateway: ${msg}`,
     };
   }
+}
+
+/**
+ * Server function to release any expired stock reservations.
+ * Idempotent, safe to call via scheduler or background worker.
+ */
+export async function runReservationExpiryCleanup(): Promise<{ releasedCount: number }> {
+  let client: ReturnType<typeof createAdminSupabaseClient>;
+  try {
+    client = createAdminSupabaseClient();
+  } catch {
+    return { releasedCount: 0 };
+  }
+
+  const { data: count, error } = await client.rpc("release_expired_stock_reservations");
+  const released = typeof count === "number" ? count : 0;
+  if (!error && released > 0) {
+    logCommerceEvent("reservation_released", {
+      reason: "expired_cleanup",
+      quantity: released,
+    });
+  }
+
+  return { releasedCount: released };
 }
 
 /**
@@ -143,6 +174,11 @@ export async function handleRazorpayWebhook(options: {
     payload.payload?.payment?.entity?.id ||
     `evt_${crypto.randomUUID()}`;
 
+  logCommerceEvent("webhook_received", {
+    eventId,
+    reason: eventType,
+  });
+
   let client: ReturnType<typeof createAdminSupabaseClient>;
   try {
     client = createAdminSupabaseClient();
@@ -162,6 +198,7 @@ export async function handleRazorpayWebhook(options: {
     .maybeSingle();
 
   if (existingEvent && existingEvent.processed_at) {
+    logCommerceEvent("webhook_duplicate", { eventId });
     return {
       status: "duplicate",
       message: `Event ${eventId} has already been processed.`,
@@ -196,11 +233,11 @@ export async function handleRazorpayWebhook(options: {
         if (paymentRecord) {
           // Reconcile amount: ensure payment matches or exceeds recorded amount
           if (amountPaidPaise >= paymentRecord.amount_paise) {
-            // Update payment record to paid
+            // Update payment record to CAPTURED
             await client
               .from("payments")
               .update({
-                status: "paid",
+                status: "CAPTURED",
                 provider_payment_id: razorpayPaymentId,
                 updated_at: new Date().toISOString(),
               })
@@ -211,10 +248,35 @@ export async function handleRazorpayWebhook(options: {
               .from("orders")
               .update({
                 status: "paid",
-                payment_status: "paid",
+                payment_status: "captured",
                 razorpay_payment_id: razorpayPaymentId,
               })
               .eq("id", paymentRecord.order_id);
+
+            // Finalize stock reservation: consume reserved stock and record sale movement
+            await client.rpc("finalize_order_stock", {
+              p_order_id: paymentRecord.order_id,
+            });
+
+            logCommerceEvent("payment_captured", {
+              orderId: paymentRecord.order_id,
+              razorpayOrderId,
+              razorpayPaymentId,
+              amountPaise: amountPaidPaise,
+            });
+            logCommerceEvent("order_paid", {
+              orderId: paymentRecord.order_id,
+              razorpayOrderId,
+            });
+            logCommerceEvent("stock_finalized", {
+              orderId: paymentRecord.order_id,
+            });
+          } else {
+            logCommerceEvent("checkout_rejected", {
+              orderId: paymentRecord.order_id,
+              reason: "amount_mismatch",
+              amountPaise: amountPaidPaise,
+            });
           }
         }
       }
@@ -232,27 +294,34 @@ export async function handleRazorpayWebhook(options: {
           await client
             .from("payments")
             .update({
-              status: "failed",
+              status: "FAILED",
               provider_payment_id: razorpayPaymentId,
               failure_reason: String(failureReason),
               updated_at: new Date().toISOString(),
             })
             .eq("id", paymentRecord.id);
 
-          // Find active reservations for this order and release them
-          const { data: reservations } = await client
-            .from("inventory_reservations")
-            .select("id")
-            .eq("order_id", paymentRecord.order_id)
-            .eq("status", "active");
+          await client
+            .from("orders")
+            .update({
+              payment_status: "failed",
+            })
+            .eq("id", paymentRecord.order_id);
 
-          if (reservations) {
-            for (const r of reservations) {
-              await client.rpc("release_stock_reservation", {
-                p_reservation_id: r.id,
-              });
-            }
-          }
+          // Release active reservations for this order
+          await client.rpc("release_order_reservations", {
+            p_order_id: paymentRecord.order_id,
+          });
+
+          logCommerceEvent("payment_failed", {
+            orderId: paymentRecord.order_id,
+            razorpayOrderId,
+            reason: String(failureReason),
+          });
+          logCommerceEvent("reservation_released", {
+            orderId: paymentRecord.order_id,
+            reason: "payment_failed",
+          });
         }
       }
     }

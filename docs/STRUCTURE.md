@@ -152,3 +152,14 @@ Under the feature-oriented folder layout, commerce capabilities are placed in de
   - `supabase/migrations/20261012000000_phase_4_commerce_foundation.sql`: Additive migration for commerce tables, RLS, and stock reservation functions.
   - `scripts/phase4.test.mjs`: Node test suite for pricing, cart bounds, and Razorpay signature verification.
   - `scripts/phase4-db.test.mjs`: PGlite WASM Postgres integration suite verifying real migrations, atomic reservations, overselling prevention, and webhook idempotency.
+
+## Phase 5 — Staging integration, E2E commerce validation, and lifecycle additions
+
+- Observability & Fixtures:
+  - `src/lib/observability/commerce-logger.ts`: Structured, PII-sanitized single-line JSON logging for 11 core commerce lifecycle events.
+  - `src/features/catalogue/fixtures/dev-catalogue.ts`: Typed safe dev fixtures (`source = 'test'`) guaranteeing storefront isolation.
+  - `supabase/fixtures/01_dev_catalogue.sql`: Safe SQL fixture data for multi-size, zero-stock, and low-stock test scenarios.
+- Database Lifecycle Functions:
+  - `supabase/migrations/20261012010000_phase_5_commerce_lifecycle.sql`: Additive migration introducing `release_expired_stock_reservations()`, `finalize_stock_reservation()`, `finalize_order_stock()`, and `release_order_reservations()`.
+- End-to-End Test Suite:
+  - `scripts/phase5-commerce-e2e.test.mjs`: 24-invariant automated integration test verifying carts, reservations, expiry recovery, oversell prevention, webhook idempotency, and reconciliation.

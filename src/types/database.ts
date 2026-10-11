@@ -781,6 +781,28 @@ export type Database = {
         }
         Returns: boolean
       }
+      release_expired_stock_reservations: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      finalize_stock_reservation: {
+        Args: {
+          p_reservation_id: string
+        }
+        Returns: boolean
+      }
+      finalize_order_stock: {
+        Args: {
+          p_order_id: string
+        }
+        Returns: number
+      }
+      release_order_reservations: {
+        Args: {
+          p_order_id: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
