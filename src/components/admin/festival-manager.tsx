@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Image from "next/image";
+import { AdminImage as Image } from "./admin-image";
 import {
   saveFestival,
   toggleFestivalActive,

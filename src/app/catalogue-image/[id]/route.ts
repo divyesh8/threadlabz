@@ -1,5 +1,8 @@
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
 import { imageIdSchema } from "@/lib/catalogue/validation";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { PUBLIC_SOURCES } from "@/lib/catalogue/query";
+import { isRaster, productStoragePath } from "@/lib/catalogue/media";
 
 export const dynamic = "force-dynamic";
 
@@ -13,23 +16,24 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const { data: record, error } = await client
       .from("product_images")
-      .select("url")
+      .select("url, products!inner(is_active, source, categories!inner(is_active))")
       .eq("id", id)
+      .eq("products.is_active", true)
+      .in("products.source", PUBLIC_SOURCES)
+      .eq("products.categories.is_active", true)
       .maybeSingle();
 
     if (error || !record) return new Response(null, { status: 404, headers });
 
-    // If url is an external or public static link
-    if (record.url.startsWith("http://") || record.url.startsWith("https://") || record.url.startsWith("/")) {
-      return Response.redirect(record.url, 302);
-    }
+    const path = productStoragePath(record.url, getSupabaseConfig()!.url);
+    if (!path) return new Response(null, { status: 404, headers });
 
     const { data, error: downloadError } = await client.storage
       .from("product-images")
-      .download(record.url);
+      .download(path);
 
     if (downloadError || !data) return new Response(null, { status: 404, headers });
-    if (data.size > 5242880 || !["image/jpeg", "image/png", "image/webp", "image/svg+xml"].includes(data.type)) {
+    if (data.size === 0 || data.size > 5242880 || !isRaster(new Uint8Array(await data.slice(0, 12).arrayBuffer()), data.type)) {
       return new Response(null, { status: 404, headers });
     }
 

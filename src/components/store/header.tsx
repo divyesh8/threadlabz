@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, Menu, Search, ShoppingBag, SlidersHorizontal, X } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "@/components/brand/logo";
 
@@ -30,9 +30,9 @@ export function Header() {
       </nav>}
       <div className="header-discover page-width">
         <form action="/shop" role="search" className="search-form">
-          <Search size={19} aria-hidden="true" /><label className="sr-only" htmlFor="site-search">Search outfits, costumes and accessories</label>
+          <label className="sr-only" htmlFor="site-search">Search outfits, costumes and accessories</label>
           <input id="site-search" name="q" type="search" placeholder="Search outfits, costumes & accessories…" maxLength={100} />
-          <button className="icon-button" aria-label="Search catalogue"><SlidersHorizontal size={18} /></button>
+          <button type="submit" className="icon-button" aria-label="Search catalogue"><Search size={19} /></button>
         </form>
         <nav className="category-chips" aria-label="Shop by department">
           {[['Kids','kids'],['Women','women'],['Men','men'],['Fancy Dress','fancy-dress'],['Accessories','accessories']].map(([name,slug]) => <Link key={slug} href={`/shop?category=${slug}`}>{name}</Link>)}

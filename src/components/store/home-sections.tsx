@@ -4,10 +4,12 @@ import { ArrowRight, ArrowUpRight, Box, ShieldCheck, Truck, WandSparkles } from 
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "./section-heading";
 import { categories, festivals, festivalSlug, previews } from "@/lib/catalog-preview";
+import { getCatalogue } from "@/lib/catalogue/query";
+import { ProductCard } from "./product-card";
 
 export function TrustStrip() {
   return <div className="trust-strip" aria-label="Our approach">
-    {[{ icon: Truck, title: "Across India", text: "Your style, delivered" }, { icon: Box, title: "Made for real life", text: "Comfort comes first" }, { icon: ShieldCheck, title: "Shop with confidence", text: "Secure checkout at launch" }].map(({ icon: Icon, title, text }) => <div key={title}><span className="trust-icon"><Icon strokeWidth={1.5} /></span><p><strong>{title}</strong><span>{text}</span></p></div>)}
+    {[{ icon: Truck, title: "India in mind", text: "Everyday & celebration" }, { icon: Box, title: "Explore the collection", text: "Find your next favourite" }, { icon: ShieldCheck, title: "Browsing for now", text: "Ordering not yet open" }].map(({ icon: Icon, title, text }) => <div key={title}><span className="trust-icon"><Icon strokeWidth={1.5} /></span><p><strong>{title}</strong><span>{text}</span></p></div>)}
   </div>;
 }
 
@@ -17,9 +19,11 @@ export function Categories() {
   </div></section>;
 }
 
-export function NewArrivals() {
-  return <section className="store-section" id="new-arrivals"><SectionHeading outline="New" solid="Arrivals" href="/shop" eyebrow="A fresh take on your wardrobe" /><div className="product-grid">
-    {previews.map((product) => <Link href="/shop" className="product-card" key={product.name}><div className="product-image"><Image src={product.image} alt={`${product.name} — supplied apparel photography`} fill sizes="(max-width: 640px) 45vw, 25vw" /><span className="new-badge">New</span><span className="product-arrow"><ArrowUpRight size={19} /></span></div><p className="product-category">{product.category}</p><h3>{product.name}</h3><p className="product-caption">Collection preview</p></Link>)}
+export async function NewArrivals() {
+  const catalogue = await getCatalogue({});
+  if (catalogue.state === "ready") return <section className="store-section" id="new-arrivals"><SectionHeading outline="The latest" solid="pieces" href="/shop" eyebrow="Explore the collection" /><div className="product-grid">{catalogue.products.slice(0, 4).map(p => <ProductCard key={p.id} product={p} />)}</div></section>;
+  return <section className="store-section" id="new-arrivals"><SectionHeading outline="On our" solid="Moodboard" href="/shop" eyebrow="Reference photography / not products for sale" /><div className="product-grid">
+    {previews.map((product) => <article className="product-card" key={product.name}><div className="product-image"><Image src={product.image} alt={`${product.name} — reference photography, not a verified product`} fill sizes="(max-width: 640px) 45vw, 25vw" /><span className="new-badge">Moodboard</span></div><p className="product-category">{product.category}</p><h3>{product.name}</h3><p className="product-caption">Reference photograph · Not for sale</p></article>)}
   </div></section>;
 }
 
@@ -37,9 +41,9 @@ export function TrendingCostumes() {
     ["Festive favourites", "Celebration, head to toe", "women"],
     ["Everyday main character", "A look that’s all you", "accessories"],
   ];
-  return <section className="store-section"><SectionHeading outline="Trending" solid="Costumes" eyebrow="Big imagination. Bigger possibilities." href="/shop?category=fancy-dress" /><div className="costume-grid">{costumes.map(([name, text, art], i) => <Link className="costume-card" href="/shop?category=fancy-dress" key={name}><div className="costume-image"><Image src={`/images/placeholders/${art}.svg`} alt={`${name} concept illustration; costume photography coming soon`} fill sizes="(max-width: 640px) 65vw, 33vw" /><span className="rank-badge">0{i + 1} <span>On our moodboard</span></span></div><h3>{name}</h3><p>{text}</p></Link>)}</div><p className="section-note">A peek at what’s coming. Costume photos and verified rankings arrive with the catalogue.</p></section>;
+  return <section className="store-section"><SectionHeading outline="Imagine" solid="the occasion" eyebrow="Costume concepts / on our moodboard" href="/shop?category=fancy-dress" /><div className="costume-grid">{costumes.map(([name, text, art]) => <Link className="costume-card" href="/shop?category=fancy-dress" key={name}><div className="costume-image"><Image src={`/images/placeholders/${art}.svg`} alt={`${name} concept illustration; costume photography coming soon`} fill sizes="(max-width: 640px) 65vw, 33vw" /><span className="rank-badge">Concept illustration</span></div><h3>{name}</h3><p>{text}</p></Link>)}</div><p className="section-note">A little inspiration. These illustrations do not represent published products.</p></section>;
 }
 
 export function Newsletter() {
-  return <section className="newsletter" aria-labelledby="newsletter-heading"><div><p className="eyebrow">Your next favourite starts here</p><h2 id="newsletter-heading">Join the <span className="outline-word">Thread.</span></h2><p>Fresh drops, festive edits, and a little inbox joy.</p><div className="newsletter-coming"><WandSparkles size={20} /><span>Our 10% welcome offer is getting ready.<br /><strong>Email sign-ups open at launch.</strong></span></div></div><div className="newsletter-seal" aria-label="10% off welcome offer planned for launch"><span>A little welcome gift</span><strong>10%</strong><span>off your first order</span><span className="seal-star" aria-hidden="true">✳</span></div></section>;
+  return <section className="newsletter" aria-labelledby="newsletter-heading"><div><p className="eyebrow">Your next favourite starts here</p><h2 id="newsletter-heading">Join the <span className="outline-word">Thread.</span></h2><p>Fresh drops, festive edits, and a little inbox joy.</p><div className="newsletter-coming"><WandSparkles size={20} /><span>We’re getting our newsletter ready.<br /><strong>Email sign-ups are not open yet.</strong></span></div></div><div className="newsletter-seal" aria-hidden="true"><span>Make your mark</span><strong>TL</strong><span>Everyday. Your way.</span><span className="seal-star">✳</span></div></section>;
 }

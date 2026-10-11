@@ -34,7 +34,7 @@ test("registration enforces email and password bounds on the server", () => {
   for (const password of ["short", "x".repeat(129)]) assert.equal(signUpSchema.safeParse({ email: "test@example.invalid", password }).success, false);
 });
 test("filters normalize empty selects and preserve literal search text", () => {
-  assert.deepEqual(catalogueFilters.parse({ q: "  t-shirt  ", category: "", festival: "" }), { q: "t-shirt", category: undefined, festival: undefined, page: 1 });
+  assert.deepEqual(catalogueFilters.parse({ q: "  t-shirt  ", category: "", festival: "" }), { q: "t-shirt", category: undefined, festival: undefined, page: 1, sort: "newest" });
   assert.equal(literalSearch("100%_\\"), "100\\%\\_\\\\");
 });
 test("oversized, duplicate, malformed and unbounded filters are rejected", () => {

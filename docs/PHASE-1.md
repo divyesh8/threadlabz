@@ -1,4 +1,6 @@
-# Phase 1: local foundation and verification
+# Phase 1: historical foundation design
+
+> Superseded by [Phase 3](PHASE-3.md). This file describes an older, incompatible schema and its original verification state, not the current deployment. Do not run its migration/seed/test commands against the current baseline. See README.md for the isolated current workflow.
 
 Status: implemented locally, not deployed. Real PostgreSQL/RLS, email delivery and Storage integration remain unverified because no reachable local database or explicitly identified ThreadLabz project is available.
 

@@ -119,11 +119,12 @@ export async function getNewArrivals(limit = 8): Promise<ProductCard[]> {
       .select(`
         id, title, slug, description, category_id, price_paise, compare_at_paise,
         badge, total_sold, is_active, created_at,
-        categories ( id, name, slug ),
+        categories!inner ( id, name, slug ),
         product_images ( id, url, alt, sort_order, is_primary ),
         product_variants ( id, size, color, stock, sku )
       `)
       .eq("is_active", true)
+      .in("source", ["admin", "manual"]).eq("categories.is_active", true)
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -147,11 +148,12 @@ export async function getTrendingProducts(limit = 8): Promise<ProductCard[]> {
       .select(`
         id, title, slug, description, category_id, price_paise, compare_at_paise,
         badge, total_sold, is_active, created_at,
-        categories ( id, name, slug ),
+        categories!inner ( id, name, slug ),
         product_images ( id, url, alt, sort_order, is_primary ),
         product_variants ( id, size, color, stock, sku )
       `)
       .eq("is_active", true)
+      .in("source", ["admin", "manual"]).eq("categories.is_active", true)
       .order("total_sold", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -193,12 +195,13 @@ export async function getProductsByCategorySlug(
       .select(`
         id, title, slug, description, category_id, price_paise, compare_at_paise,
         badge, total_sold, is_active, created_at,
-        categories ( id, name, slug ),
+        categories!inner ( id, name, slug ),
         product_images ( id, url, alt, sort_order, is_primary ),
         product_variants ( id, size, color, stock, sku )
       `, { count: "exact" })
       .eq("category_id", category.id)
       .eq("is_active", true)
+      .in("source", ["admin", "manual"]).eq("categories.is_active", true)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -257,12 +260,13 @@ export async function getProductsByFestivalSlug(
       .select(`
         id, title, slug, description, category_id, price_paise, compare_at_paise,
         badge, total_sold, is_active, created_at,
-        categories ( id, name, slug ),
+        categories!inner ( id, name, slug ),
         product_images ( id, url, alt, sort_order, is_primary ),
         product_variants ( id, size, color, stock, sku )
       `, { count: "exact" })
       .in("id", productIds)
       .eq("is_active", true)
+      .in("source", ["admin", "manual"]).eq("categories.is_active", true)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -292,7 +296,7 @@ export async function getProductBySlug(slug: string): Promise<ProductWithDetails
       .from("products")
       .select(`
         *,
-        categories ( * ),
+        categories!inner ( * ),
         product_images ( * ),
         product_variants ( * ),
         product_festivals (
@@ -301,7 +305,7 @@ export async function getProductBySlug(slug: string): Promise<ProductWithDetails
         )
       `)
       .eq("slug", slug)
-      .eq("is_active", true)
+      .eq("is_active", true).in("source", ["admin", "manual"]).eq("categories.is_active", true)
       .maybeSingle();
 
     if (error || !product) return null;

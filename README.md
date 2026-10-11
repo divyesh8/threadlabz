@@ -1,68 +1,75 @@
 # ThreadLabz
 
-Make Your Mark. An India-first clothing, costumes and customization store.
+Make Your Mark. An India-first clothing, costumes and customization storefront.
+
+## Current state
+
+Phase 3 is implemented locally: responsive catalogue discovery, server-side search/category/festival/size/price/availability filters, sorting, pagination, product detail pages, galleries, inventory-based variant selection, and resilient image handling. The original logo and rust/cream palette are retained.
+
+This is a browsing experience, not a transactional store. Cart, wishlist saving, checkout, payments, orders, customization, newsletter signup, reviews, shipping promises and returns policies are unavailable. Indexing remains disabled. Account pages and protected administration remain present; signup readiness depends on configuration.
+
+The 11 October 2026 read-only audit found **12 active seed products, 24 placeholder image records and no Storage objects** on the deployment. All seed records are now excluded by local storefront queries. Consequently the connected local shop correctly shows an empty collection until the owner creates real, curated products. No reference photograph is passed off as a product image. No production data/configuration was changed, and nothing was pushed or deployed.
+
+See [PROGRESS.md](PROGRESS.md) for actual check results and [docs/PHASE-3.md](docs/PHASE-3.md) for the audit, query/media contracts, database workflow and owner inputs. The older Phase 1 guide is historical and describes an incompatible schema.
 
 ## Run locally
 
-Use Node 24 LTS and npm. From this directory:
+Use Node 24 LTS (minimum 22.18) and npm:
 
 ```powershell
 npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. The preview runs without service credentials. Node 22.18+ is required for the built-in TypeScript tests; Node 24 LTS is recommended.
+The app starts without credentials and clearly reports the disconnected catalogue. To connect, set names from .env.example in ignored .env.local; never paste credentials into chat or commit them. Public catalogue requests use a cookieless publishable client, with no service key. SITE_URL is the canonical origin. Admin actions retain requireAdmin() and use the verified user's session.
+
+## Verification
 
 ```powershell
 npm run lint
 npm run typecheck
 npm test
 npm run build
-npm run start
+npm run start -- --hostname 127.0.0.1 --port 3200
 ```
 
-Do not run `dev` and `start` on the same port simultaneously.
-
-## Current state
-
-This is a store preview with a local Phase 1 foundation, not a transactional store. The design and supplied assets are preserved. Supabase schema/RLS, private product imagery, SSR auth and a real catalogue query path are implemented. Without configuration, accounts remain unavailable and the shop keeps clearly labelled preview photos. When configured, `/shop` reads only published non-demo products, or shows an explicit empty/error state. Wishlist/address UI, payments, orders, newsletter collection and admin mutations remain unavailable. Indexing stays disabled until launch.
-
-Follow `PROGRESS.md` for exact verification and blockers, and [docs/PHASE-1.md](docs/PHASE-1.md) for the schema, access model, configuration and non-destructive local database verification commands. The existing Git remote is `https://github.com/divyesh8/threadlabz`; this run does not push or deploy changes.
-
-## Project structure
-
-```text
-src/app/                    App Router pages and shared theme
-src/components/brand/       Supplied logo and loading monogram
-src/components/store/       Header, footer, mobile nav, homepage sections
-src/components/ui/          shadcn-compatible component primitives
-src/lib/                    Shared utilities and labelled catalogue fixtures
-src/lib/supabase/           Typed browser/server/public clients and session refresh
-src/lib/auth/               Auth validation and verified profile initialization
-src/lib/catalogue/          Validated server-side catalogue queries
-supabase/                  Local config, additive migration, demo seed and pgTAP tests
-public/brand/               Original user-supplied logo files
-public/images/previews/     Photography extracted from user-supplied PDFs
-public/images/placeholders/ Original SVG collection illustrations
-scripts/                   Local verification tools
-docs/                      Brand provenance and implementation decisions
-```
-
-## Secrets
-
-Store credentials in `.env.local` only. `.env*` is ignored except the names-only `.env.example`. The app uses a Supabase URL, publishable key and canonical `SITE_URL`; no privileged key is needed. Never add service-role, Razorpay or Resend secrets to any `NEXT_PUBLIC_*` variable. Local previews do not need credentials. Confirm the project identity before any remote mutation. Never paste secrets into chat.
-
-## Browser QA
-
-`scripts/check-layout.mjs` uses an existing Playwright installation and the installed Edge browser. It is a development verification tool, not an additional application library. Start the production server first, then point `PLAYWRIGHT_MODULE` to the available Playwright package:
+Use a free port. Do not run dev and start against the same port. In a second terminal:
 
 ```powershell
 $env:PLAYWRIGHT_MODULE='C:/Users/kolli/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'
+$env:QA_BASE_URL='http://127.0.0.1:3200'
+$env:QA_OUTPUT='artifacts/phase-3/local'
 node scripts/check-layout.mjs
+node scripts/check-phase1.mjs
+node scripts/check-phase3.mjs
 ```
 
-Reports and screenshots default to ignored `artifacts/phase-0/`; `QA_OUTPUT` and `QA_BASE_URL` can override the output folder and server. QA checks 390px and 1280px viewports, page overflow, broken images, control sizes, carousel, mobile menu, search handoff, status routes, 404 and browser exceptions. `node scripts/check-phase1.mjs` adds isolated mocked auth/catalogue tests; these are not real Supabase integration tests. Manual screenshot inspection is still required. See the Phase 1 guide for exact commands and limitations.
+The contract suites own temporary dev servers on 3101/3102 and must run **sequentially**, with other next dev instances in this checkout stopped. They use synthetic loopback services and do not write real data. Screenshots/reports are under ignored artifacts/. The Phase 3 suite uses clearly labelled local fixtures with reference photography solely for layout QA. It is not evidence that real SKU photography exists.
 
-## Dependencies
+Database runtime checks need Docker's Linux engine. The existing schema histories conflict, so **do not run the root migration chain against any database**. Prepare the isolated local workspace first:
 
-Packages are pinned and `package-lock.json` is tracked. Production dependency audit passed at setup. There is an upstream development-only `braces` advisory via Next's ESLint plugin; no patched braces version was published at verification. Do not use `npm audit fix --force`, which proposes downgrading Next's lint config across major versions. Track the advisory in `PROGRESS.md`.
+```powershell
+node scripts/prepare-phase3-db.mjs
+supabase start --workdir tmp/phase3-db
+supabase migration list --local --workdir tmp/phase3-db
+npm run db:lint
+npm run test:db
+```
+
+No reset or remote apply is needed. See the Phase 3 guide before reviewing the unapplied security migration. The older root seed.sql and access_control_test.sql target the superseded Phase 1 model. scripts/seed-products.ts is now restricted to localhost and creates inactive, labelled demo products; never use demo data for commerce.
+
+## Structure
+
+- src/app/shop and src/app/products/[slug]: server-rendered browsing and product pages.
+- src/lib/catalogue: validation, query boundaries, stable URLs and media validation.
+- src/components/store: catalogue cards, gallery, variant controls and brand UI.
+- src/app/catalogue-image/[id]: public image lookup through visible product records and Storage RLS.
+- src/app/admin/media: verified-admin private previews; no privileged credential.
+- supabase/migrations: current baseline, legacy incompatible design, and unapplied Phase 3 policy proposal.
+- scripts: existing layout/auth QA plus Phase 3 tests and isolated database preparation.
+
+No application dependency was added. Next.js 16.4.0, React 19.3.0 and Supabase packages remain pinned with the existing lockfile.
+
+## Next phase
+
+Curate verified product records and approved SKU photographs, then verify the proposed database boundaries on the isolated local/development target. Reconcile migration history before any separately authorized deployment. Only then plan cart/wishlist, checkout, payment, fulfilment and approved customer policies.

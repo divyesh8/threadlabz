@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isRaster } from "@/lib/catalogue/media";
 import {
   adminProductSchema,
   adminCategorySchema,
@@ -508,26 +509,27 @@ export async function deleteBanner(id: string): Promise<ActionResponse> {
 
 export async function uploadAdminImage(formData: FormData): Promise<ActionResponse> {
   await requireAdmin();
-  const file = formData.get("file") as File | null;
-  if (!file) return { error: "No file provided" };
+  const file = formData.get("file");
+  if (!(file instanceof File)) return { error: "No file provided" };
 
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
   if (!allowedTypes.includes(file.type)) {
-    return { error: "Only JPG, PNG, WebP, and SVG images are allowed." };
+    return { error: "Only JPG, PNG and WebP photographs are allowed." };
   }
 
-  if (file.size > 5 * 1024 * 1024) {
+  if (file.size === 0 || file.size > 5 * 1024 * 1024) {
     return { error: "Maximum file size is 5 MB." };
   }
 
   const client = await createServerSupabaseClient();
   if (!client) return { error: "Database client unavailable" };
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const safeName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
+  const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[file.type];
+  const safeName = `${crypto.randomUUID()}.${ext}`;
   const filePath = `uploads/${safeName}`;
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  if (!isRaster(buffer, file.type)) return { error: "The file does not contain a supported photograph." };
 
   const { error: uploadError } = await client.storage
     .from("product-images")
@@ -540,10 +542,6 @@ export async function uploadAdminImage(formData: FormData): Promise<ActionRespon
     return { error: `Upload failed: ${uploadError.message}` };
   }
 
-  // Get public URL
-  const { data: publicUrlData } = client.storage
-    .from("product-images")
-    .getPublicUrl(filePath);
-
-  return { success: true, url: publicUrlData.publicUrl };
+  // Store a durable path; do not persist public or expiring signed URLs.
+  return { success: true, url: filePath };
 }

@@ -31,6 +31,11 @@ if (!url || !serviceKey) {
   process.exit(1);
 }
 
+// Synthetic merchandising data must never be written to a hosted project.
+if (!["localhost", "127.0.0.1", "[::1]"].includes(new URL(url).hostname)) {
+  throw new Error("Demo seeding is restricted to a local Supabase instance.");
+}
+
 const supabase = createClient<Database>(url, serviceKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
@@ -387,7 +392,7 @@ async function seed() {
       const { data: newProd, error: insertError } = await supabase
         .from("products")
         .insert({
-          title: item.title,
+          title: `[DEMO] ${item.title}`,
           slug: item.slug,
           description: item.description,
           category_id: categoryId,
@@ -395,8 +400,8 @@ async function seed() {
           price_paise: item.price_paise,
           compare_at_paise: item.compare_at_paise,
           badge: item.badge,
-          total_sold: item.total_sold,
-          is_active: true,
+          total_sold: 0,
+          is_active: false,
           source: "seed",
         })
         .select("id")

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { AdminImage as Image } from "./admin-image";
 import Link from "next/link";
 import { saveProduct, uploadAdminImage } from "@/app/admin/actions";
 import type { AdminProductInput } from "@/lib/admin/validation";
@@ -104,10 +104,10 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
           sku: v.sku || "",
         }))
       : [
-          { size: "S", color: "Standard", stock: 10, sku: "" },
-          { size: "M", color: "Standard", stock: 15, sku: "" },
-          { size: "L", color: "Standard", stock: 15, sku: "" },
-          { size: "XL", color: "Standard", stock: 10, sku: "" },
+          { size: "S", color: "Standard", stock: 0, sku: "" },
+          { size: "M", color: "Standard", stock: 0, sku: "" },
+          { size: "L", color: "Standard", stock: 0, sku: "" },
+          { size: "XL", color: "Standard", stock: 0, sku: "" },
         ]
   );
 
@@ -162,7 +162,7 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
 
   // Variant operations
   const addVariantRow = () => {
-    setVariants((prev) => [...prev, { size: "M", color: "Standard", stock: 10, sku: "" }]);
+    setVariants((prev) => [...prev, { size: "M", color: "Standard", stock: 0, sku: "" }]);
   };
 
   const removeVariantRow = (index: number) => {
@@ -188,7 +188,7 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
 
   const addPresetSizes = (size: string) => {
     if (variants.some((v) => v.size.toLowerCase() === size.toLowerCase())) return;
-    setVariants((prev) => [...prev, { size, color: "Standard", stock: 10, sku: "" }]);
+    setVariants((prev) => [...prev, { size, color: "Standard", stock: 0, sku: "" }]);
   };
 
   // Image operations
@@ -717,7 +717,7 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
         <div>
           <h2 className="text-lg font-bold text-[#2B2625]">Product Media & Photos</h2>
           <p className="text-xs text-stone-500 mt-0.5">
-            Upload images to Supabase Storage (product-images bucket) or enter direct image URLs. First image or selected primary image is featured on catalogue cards.
+            Upload images to Supabase Storage (product-images bucket) or enter a path from the project product-images bucket. First image or selected primary image is featured on catalogue cards.
           </p>
         </div>
 
@@ -725,14 +725,14 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-stone-50 border border-stone-200">
           <div>
             <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">
-              Upload Image File (JPG, PNG, WebP, SVG &lt; 5MB)
+              Upload Image File (JPG, PNG, WebP &lt; 5MB)
             </label>
             <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-stone-400 hover:border-[#A74224] bg-white cursor-pointer text-sm font-medium text-stone-700 transition-colors">
               <Upload size={16} className="text-[#A74224]" />
               <span>{isUploading ? "Uploading to bucket..." : "Choose Image to Upload"}</span>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                accept="image/jpeg,image/png,image/webp"
                 disabled={isUploading}
                 onChange={handleFileUpload}
                 className="hidden"
@@ -767,7 +767,7 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
         {/* Images List */}
         {images.length === 0 ? (
           <p className="text-sm text-stone-400 text-center py-6 border border-dashed border-stone-200 rounded-xl">
-            No images uploaded yet. You can upload an image or use standard placeholder images.
+            No images uploaded yet. You can upload an image add approved product photography.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

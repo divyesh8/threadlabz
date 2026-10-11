@@ -37,14 +37,15 @@ const mock = http.createServer(async (req, res) => {
     if (url.pathname.endsWith("/categories")) return send([{ id: categoryId, slug: "men", name: "Men", is_active: true }]);
     if (url.pathname.endsWith("/festivals")) return send([{ id: categoryId, slug: "diwali", name: "Diwali", is_active: true }]);
     if (url.pathname.endsWith("/products")) {
-      assert.equal(url.searchParams.get("is_demo"), "eq.false");
-      assert.equal(url.searchParams.get("status"), "eq.published");
+      assert.equal(url.searchParams.get("source"), "in.(admin,manual)");
+      assert.equal(url.searchParams.get("categories.is_active"), "eq.true");
       assert.equal(url.searchParams.get("is_active"), "eq.true");
-      if (catalogue === "empty" || url.searchParams.get("name")?.includes("nomatch")) return send([]);
-      return send([{ id: productId, category_id: categoryId, name: "HTTP TEST — Fixture Tee", slug: "http-test-fixture", description: "Synthetic UI test record; never seeded or sold.", product_festivals: [] }]);
+      res.setHeader("Content-Range", `0-0/${catalogue === "empty" || url.searchParams.get("title")?.includes("nomatch") ? 0 : 1}`);
+      if (catalogue === "empty" || url.searchParams.get("title")?.includes("nomatch")) return send([]);
+      return send([{ id: productId, category_id: categoryId, title: "HTTP TEST — Fixture Tee", price_paise: 12345, is_active: true, source: "manual", categories: { name: "Men", slug: "men", is_active: true }, slug: "http-test-fixture", description: "Synthetic UI test record; never seeded or sold.", product_festivals: [] }]);
     }
-    if (url.pathname.endsWith("/product_images")) return send(url.searchParams.has("id") ? { storage_path: `${productId}/test.png` } : [{ id: imageId, product_id: productId, alt_text: "Synthetic image fixture", sort_order: 0 }]);
-    if (url.pathname.endsWith("/product_variants")) return send([{ id: imageId, product_id: productId, size: "M", colour: "", price_paise: 12345 }]);
+    if (url.pathname.endsWith("/product_images")) return send(url.searchParams.has("id") ? { url: `${productId}/test.png` } : [{ id: imageId, product_id: productId, url: `${productId}/test.png`, alt: "Synthetic image fixture", sort_order: 0 }]);
+    if (url.pathname.endsWith("/product_variants")) return send([{ id: imageId, product_id: productId, size: "M", color: "Black", stock: 5 }]);
     if (url.pathname.endsWith("/profiles")) return send([], 201);
   }
   if (url.pathname === "/auth/v1/token") {
@@ -131,12 +132,12 @@ try {
     await page.waitForURL("**/account?message=signed-out");
     catalogue = "empty";
     await page.goto(`${base}/shop`);
-    await page.getByRole("status").filter({ hasText: "No published products" }).waitFor();
+    await page.getByRole("status").filter({ hasText: "No pieces to show just yet." }).waitFor();
     assert.equal(await page.locator(".product-card").count(), 0, "No demo photos substituted into empty live catalogue");
     catalogue = "ready";
     await page.goto(`${base}/shop?category=men&festival=diwali`);
     await page.getByRole("heading", { name: "HTTP TEST — Fixture Tee" }).waitFor();
-    await page.getByText("From ₹123.45", { exact: true }).waitFor();
+    await page.getByText("₹123.45", { exact: true }).waitFor();
     assert.ok(requests.some(r => r.path === "/rest/v1/products" && new URLSearchParams(r.query).get("product_festivals") === "not.is.null"));
     await page.evaluate(async () => { await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); });
     await page.screenshot({ path: path.join(output, `catalogue-${width}.png`), fullPage: true });
@@ -145,9 +146,10 @@ try {
     assert.equal(imageResponse.status(), 200);
     assert.match(imageResponse.headers()["cache-control"], /no-store/);
     assert.equal((await page.request.get(`${base}/catalogue-image/not-a-uuid`)).status(), 404);
+    await page.locator(".filter-panel summary").click();
     await page.getByLabel("Search the collection").fill("nomatch");
     await page.getByRole("button", { name: "Apply filters" }).click();
-    await page.getByRole("status").filter({ hasText: "No published products" }).waitFor();
+    await page.getByRole("status").filter({ hasText: "No pieces to show just yet." }).waitFor();
     catalogue = "failure";
     await page.goto(`${base}/shop`);
     await page.getByRole("status").filter({ hasText: "couldn’t load the catalogue" }).waitFor();

@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test scripts/phase1.test.mjs",
-    "test:db": "supabase test db --local",
-    "db:lint": "supabase db lint --local --schema public,private --fail-on warning"
+    "test": "node --experimental-strip-types --test scripts/phase1.test.mjs scripts/phase3.test.mjs",
+    "test:db": "supabase test db --local --workdir tmp/phase3-db",
+    "db:lint": "supabase db lint --local --workdir tmp/phase3-db --schema public --fail-on warning"
   },
   "keywords": [],
   "author": "",
