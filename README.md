@@ -4,13 +4,13 @@ Make Your Mark. An India-first clothing, costumes and customization storefront.
 
 ## Current state
 
-Phase 3 is implemented locally: responsive catalogue discovery, server-side search/category/festival/size/price/availability filters, sorting, pagination, product detail pages, galleries, inventory-based variant selection, and resilient image handling. The original logo and rust/cream palette are retained.
+Phase 4 (Commerce & Payment Readiness Foundation) is implemented locally on branch `codex/domain-structure`:
+- Server-authoritative Cart (`/cart`) supporting guest and authenticated sessions, integer paise calculations, and stock revalidation.
+- Server-authoritative Checkout (`/checkout`) with immutable order line snapshots and atomic PostgreSQL stock reservations (`reserve_stock`).
+- Razorpay test mode integration with timing-safe HMAC-SHA256 signature verification and idempotent webhook handling (`/api/webhooks/razorpay`).
+- Catalogue data integrity: seed/demo records are excluded from public storefront queries. The store will not accept real orders until the owner provides real inventory, courier rules, GST details, and payment credentials.
 
-This is a browsing experience, not a transactional store. Cart, wishlist saving, checkout, payments, orders, customization, newsletter signup, reviews, shipping promises and returns policies are unavailable. Indexing remains disabled. Account pages and protected administration remain present; signup readiness depends on configuration.
-
-The 11 October 2026 read-only audit found **12 active seed products, 24 placeholder image records and no Storage objects** on the deployment. All seed records are now excluded by local storefront queries. Consequently the connected local shop correctly shows an empty collection until the owner creates real, curated products. No reference photograph is passed off as a product image. No production data/configuration was changed, and nothing was pushed or deployed.
-
-See [PROGRESS.md](PROGRESS.md) for actual check results and [docs/PHASE-3.md](docs/PHASE-3.md) for the audit, query/media contracts, database workflow and owner inputs. The older Phase 1 guide is historical and describes an incompatible schema.
+See [docs/CATALOGUE_CHECKLIST.md](docs/CATALOGUE_CHECKLIST.md) for the product import specifications, [PROGRESS.md](PROGRESS.md) for actual test results, and [docs/STRUCTURE.md](docs/STRUCTURE.md) for architecture.
 
 ## Run locally
 

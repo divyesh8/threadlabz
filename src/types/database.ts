@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -95,6 +95,72 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_items: {
+        Row: {
+          cart_id: string
+          created_at: string
+          id: string
+          qty: number
+          updated_at: string
+          variant_id: string
+        }
+        Insert: {
+          cart_id: string
+          created_at?: string
+          id?: string
+          qty: number
+          updated_at?: string
+          variant_id: string
+        }
+        Update: {
+          cart_id?: string
+          created_at?: string
+          id?: string
+          qty?: number
+          updated_at?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carts: {
+        Row: {
+          created_at: string
+          id: string
+          session_token: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_token?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_token?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           id: string
@@ -152,6 +218,44 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_reservations: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          order_id: string | null
+          qty: number
+          status: string
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          order_id?: string | null
+          qty: number
+          status?: string
+          variant_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_id?: string | null
+          qty?: number
+          status?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_reservations_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
@@ -181,6 +285,8 @@ export type Database = {
           product_id: string | null
           qty: number
           size: string | null
+          sku: string | null
+          tax_paise: number
           title_snapshot: string
           variant_id: string | null
         }
@@ -191,6 +297,8 @@ export type Database = {
           product_id?: string | null
           qty: number
           size?: string | null
+          sku?: string | null
+          tax_paise?: number
           title_snapshot: string
           variant_id?: string | null
         }
@@ -201,6 +309,8 @@ export type Database = {
           product_id?: string | null
           qty?: number
           size?: string | null
+          sku?: string | null
+          tax_paise?: number
           title_snapshot?: string
           variant_id?: string | null
         }
@@ -231,38 +341,112 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          currency: string
+          discount_paise: number
+          email: string | null
           id: string
+          idempotency_key: string | null
+          order_number: string | null
           payment_status: string
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
           shipping_address: Json
+          shipping_paise: number
           status: string
+          subtotal_paise: number
+          tax_paise: number
           total_paise: number
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          currency?: string
+          discount_paise?: number
+          email?: string | null
           id?: string
+          idempotency_key?: string | null
+          order_number?: string | null
           payment_status?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           shipping_address: Json
+          shipping_paise?: number
           status?: string
+          subtotal_paise?: number
+          tax_paise?: number
           total_paise: number
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          currency?: string
+          discount_paise?: number
+          email?: string | null
           id?: string
+          idempotency_key?: string | null
+          order_number?: string | null
           payment_status?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           shipping_address?: Json
+          shipping_paise?: number
           status?: string
+          subtotal_paise?: number
+          tax_paise?: number
           total_paise?: number
           user_id?: string | null
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount_paise: number
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          order_id: string
+          provider: string
+          provider_order_id: string
+          provider_payment_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_paise: number
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          order_id: string
+          provider?: string
+          provider_order_id: string
+          provider_payment_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_paise?: number
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          order_id?: string
+          provider?: string
+          provider_order_id?: string
+          provider_payment_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_festivals: {
         Row: {
@@ -337,6 +521,7 @@ export type Database = {
           size: string
           sku: string | null
           stock: number
+          stock_reserved: number
         }
         Insert: {
           color?: string
@@ -345,6 +530,7 @@ export type Database = {
           size: string
           sku?: string | null
           stock?: number
+          stock_reserved?: number
         }
         Update: {
           color?: string
@@ -353,6 +539,7 @@ export type Database = {
           size?: string
           sku?: string | null
           stock?: number
+          stock_reserved?: number
         }
         Relationships: [
           {
@@ -482,6 +669,71 @@ export type Database = {
           },
         ]
       }
+      stock_movements: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          reason: string
+          ref_id: string | null
+          ref_type: string | null
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          reason: string
+          ref_id?: string | null
+          ref_type?: string | null
+          variant_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          reason?: string
+          ref_id?: string | null
+          ref_type?: string | null
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          provider: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          provider?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider?: string
+        }
+        Relationships: []
+      }
       wishlist: {
         Row: {
           created_at: string
@@ -514,6 +766,21 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      reserve_stock: {
+        Args: {
+          p_variant_id: string
+          p_qty: number
+          p_expires_at: string
+          p_order_id?: string | null
+        }
+        Returns: string | null
+      }
+      release_stock_reservation: {
+        Args: {
+          p_reservation_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

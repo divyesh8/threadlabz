@@ -55,12 +55,78 @@ Read-only project inspection matched the local environment and linked reference 
 
 The browser contract suites test synthetic services, not Supabase authorization. The local connected build exercises real read-only PostgREST filtering and correctly produces an empty public catalogue because every current record is a seed. No real email delivery, admin write, commerce, RLS execution or Storage upload is claimed verified here.
 
-### Remaining blockers and next phase
+## Phase 4 — Commerce foundation & payment readiness
 
-1. Owner must supply at least one approved photograph per real SKU plus verified title, price, description, variant size/colour and stock. Material/care/measurements require provenance before publishing; no size guide is fabricated. Create curated real records; do not simply relabel fixtures.
-2. Start Docker's Linux engine and run the isolated Phase 3 workflow in docs/PHASE-3.md. The baseline and old Phase 1 migration both create the same tables using incompatible columns, and the live database has no Supabase migration-history table. Reconcile history on an approved development target before any production migration.
-3. After content/security verification and separate deployment authorization, plan the next commerce phase. Cart, wishlist saving, checkout, payments, orders, reviews, customization, newsletter, shipping promises and approved policies remain unavailable.
+**Complete locally and verified; not deployed to production.**
+Working branch: `codex/domain-structure`. All operations performed locally in isolation without writing or deploying to production (`threadlabz.vercel.app` or remote Supabase project `cshrojhdldkwyqivngsg`).
+
+### Implemented
+
+1. **Server-Authoritative Cart (`src/features/cart`)**:
+   - Guest cart (`tl_cart_session` HTTP-only 30-day cookie) and authenticated customer cart.
+   - Idempotent guest cart merge into customer cart upon user sign-in without duplicate line items or losing quantities.
+   - Variant-level line identity (`product_variants.id`); client cannot dictate price, title, or discounts.
+   - Full publication and purchasability revalidation on every server mutation (excludes inactive, draft, and seed/demo items).
+   - Strict server-side quantity bounds (1–10 items per line) and stock on hand clamping.
+   - Pure integer-paise calculations: zero floating point decimals.
+   - Accessible interactive UI (`/cart`) with empty, loading, live quantity modification, item removal, and explicit disabled checkout banner.
+   - Product page "Add to Bag" interaction with optimistic pending transitions, accessible live status feedback, and out-of-stock indicators.
+
+2. **Server-Authoritative Checkout & Pricing (`src/features/checkout`)**:
+   - Integer-paise pricing engine (`calculateOrderPricing`): subtotal, inclusive 5% GST, shipping, discounts, and grand total.
+   - Immutable order-item snapshots recorded at order creation (`order_items`: title snapshot, variant ID, size, SKU, price in paise, tax).
+   - Atomic database inventory hold function `reserve_stock(variant_id, qty, expires_at, order_id)` preventing overselling under concurrent requests.
+   - Automatic reservation release on failure/cancellation (`release_stock_reservation`).
+   - Shipping address validation (Indian 10-digit mobile `^[6-9]\d{9}$` and 6-digit postal code `^\d{6}$`).
+
+3. **Payment Gateway Integration (Razorpay Test Mode)**:
+   - Zero-dependency HMAC-SHA256 signature verification with timing-safe comparison (`crypto.timingSafeEqual`) for both checkout completion and webhooks.
+   - Raw request body parsing in Route Handler (`/api/webhooks/razorpay`) verifying `x-razorpay-signature`.
+   - Strict webhook idempotency via `webhook_events(provider, event_id)` unique constraint.
+   - Payment status reconciliation (`payment.captured`, `order.paid`, `payment.failed`).
+   - Graceful fallback when credentials are unconfigured: reports `CONFIG_BLOCKED` with detailed owner guidance and disables live payments.
+
+4. **Database & Migrations (`supabase/migrations`)**:
+   - Created additive migration `20261012000000_phase_4_commerce_foundation.sql` covering `carts`, `cart_items`, `inventory_reservations`, `stock_movements`, `webhook_events`, `payments`, additive columns on `orders` and `order_items`, atomic reservation functions, and RLS policies.
+   - Updated TypeScript schemas in `src/types/database.ts` and `src/lib/supabase/database.types.ts`.
+   - Executed and verified real PostgreSQL 18.3 migrations, constraints, triggers, and functions directly in Node via `@electric-sql/pglite` WASM without requiring external Docker.
+
+### Verification Results
+
+| Check | Result | Details |
+|---|---|---|
+| `npm run lint` | **PASS** | 0 errors, 0 warnings (`eslint . --max-warnings=0`) |
+| `npm run typecheck` | **PASS** | `tsc --noEmit` exits 0 cleanly with all types aligned |
+| `npm test` | **PASS** (21 tests) | Runs `scripts/phase1.test.mjs`, `scripts/phase3.test.mjs`, `scripts/phase4.test.mjs`, and `scripts/phase4-db.test.mjs` |
+| `phase4.test.mjs` | **PASS** (7 tests) | Integer-paise calculations, discount clamping, cart bounds, Indian address validation, HMAC signature verification, raw webhook payload verification, gateway unconfigured status |
+| `phase4-db.test.mjs` | **PASS** (1 test) | Full migration chain applied to isolated WASM Postgres; catalogue exclusion verified; atomic `reserve_stock` proved to prevent overselling; `release_stock_reservation` proved to restore stock; webhook unique constraint proved |
+| `npm run build` | **PASS** | Next.js production build succeeded with Turbopack; all 23+ routes generated cleanly |
+| `git diff --check` | **PASS** | Clean diff with zero whitespace or line-ending errors |
+
+### Genuine Owner Decisions Required Before First Live Sale
+
+All safe local engineering work is complete. The store owner must provide the following genuine business and provider configurations before checkout can be activated:
+
+1. **Razorpay Test/Live API Credentials**:
+   - Provide `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET` in `.env.local` / deployment environment.
+   - *Status: Missing in repository environment.*
+2. **GST Registration & Invoicing Treatment**:
+   - Provide registered GSTIN (Goods and Services Tax Identification Number), registered business address, and state code.
+   - Confirm apparel GST slab (5% for items <= ₹1,000, 12% for items > ₹1,000, or uniform inclusive pricing).
+   - *Status: Not configured.*
+3. **Logistics & Delivery Operations**:
+   - Specify courier partner (e.g., Shiprocket, Delhivery, BlueDart) and list of serviceable Indian PIN codes.
+   - Determine shipping fee rules (e.g. flat ₹50 fee or free shipping on orders above ₹999).
+   - Confirm standard delivery estimate and return window (e.g., 7-day return policy).
+   - *Status: Not configured.*
+4. **Real Product Inventory & Studio Photography**:
+   - Replace demo/seed records by uploading verified real garments via `/admin/products/new` or the CSV import template (`docs/product-import-template.csv`).
+   - Each product must have at least one approved 4:5 raster studio photograph (`.webp`, `.jpg`, `.png`), genuine description, verified sizes/colours, and physical stock count.
+   - Follow `docs/CATALOGUE_CHECKLIST.md` for guidelines.
+   - *Status: Storefront currently displays only seed records, which are correctly hidden from public sales.*
+5. **Database Migration Deployment Plan**:
+   - Review and approve applying `supabase/migrations/20261011123446_phase_3_catalogue_boundaries.sql` and `20261012000000_phase_4_commerce_foundation.sql` to an isolated development Supabase instance before running against production.
 
 ### Earlier phases
 
-Phase 0 supplied the brand assets and responsive preview; Phases 1/2 supplied the current auth/admin and database foundation. Earlier entries saying COMPLETE & VERIFIED broadly are superseded by the check matrix above. docs/PHASE-1.md is retained as historical context, not current schema or deployment guidance. Brand provenance remains in docs/BRAND.md.
+Phase 0 supplied the brand assets and responsive preview; Phases 1/2 supplied the current auth/admin and database foundation. Phase 3 hardened catalogue boundaries and public media delivery.

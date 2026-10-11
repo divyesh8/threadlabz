@@ -1,0 +1,11 @@
+category_slug,product_title,product_slug,description,audience,price_paise,compare_at_paise,size,color,stock,sku,image_filename
+men,Everyday Relaxed Tee - Rust,everyday-relaxed-tee-rust,"100% combed cotton, 220 GSM single jersey. Pre-shrunk relaxed fit with ribbed neckband.",men,79900,99900,S,Rust,15,TL-MEN-TEE-RST-S,rust-tee-front.webp
+men,Everyday Relaxed Tee - Rust,everyday-relaxed-tee-rust,"100% combed cotton, 220 GSM single jersey. Pre-shrunk relaxed fit with ribbed neckband.",men,79900,99900,M,Rust,25,TL-MEN-TEE-RST-M,rust-tee-front.webp
+men,Everyday Relaxed Tee - Rust,everyday-relaxed-tee-rust,"100% combed cotton, 220 GSM single jersey. Pre-shrunk relaxed fit with ribbed neckband.",men,79900,99900,L,Rust,20,TL-MEN-TEE-RST-L,rust-tee-front.webp
+men,Everyday Relaxed Tee - Rust,everyday-relaxed-tee-rust,"100% combed cotton, 220 GSM single jersey. Pre-shrunk relaxed fit with ribbed neckband.",men,79900,99900,XL,Rust,10,TL-MEN-TEE-RST-XL,rust-tee-front.webp
+women,Embroidered Festive Kurti - Cream,festive-kurti-cream,"Chanderi silk blend with delicate zari embroidery along the neckline. Dry clean recommended.",women,189900,,S,Cream,8,TL-WMN-KRT-CRM-S,cream-kurti-front.webp
+women,Embroidered Festive Kurti - Cream,festive-kurti-cream,"Chanderi silk blend with delicate zari embroidery along the neckline. Dry clean recommended.",women,189900,,M,Cream,12,TL-WMN-KRT-CRM-M,cream-kurti-front.webp
+women,Embroidered Festive Kurti - Cream,festive-kurti-cream,"Chanderi silk blend with delicate zari embroidery along the neckline. Dry clean recommended.",women,189900,,L,Cream,10,TL-WMN-KRT-CRM-L,cream-kurti-front.webp
+kids,Festive Dhoti Kurta Set - Maroon,kids-dhoti-kurta-maroon,"Pure cotton kurta with pre-stitched elasticated dhoti. Soft lining inside to prevent irritation.",kids,129900,149900,3-4Y,Maroon,10,TL-KID-DHK-MRN-34,maroon-dhoti-front.webp
+kids,Festive Dhoti Kurta Set - Maroon,kids-dhoti-kurta-maroon,"Pure cotton kurta with pre-stitched elasticated dhoti. Soft lining inside to prevent irritation.",kids,129900,149900,5-6Y,Maroon,15,TL-KID-DHK-MRN-56,maroon-dhoti-front.webp
+accessories,ThreadLabz Canvas Tote - Natural,canvas-tote-natural,"Heavyweight 380 GSM unbleached cotton canvas with reinforced shoulder straps and interior pocket.",unisex,49900,,Free Size,Natural,50,TL-ACC-TOT-NAT-OS,natural-tote-front.webp

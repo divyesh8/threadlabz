@@ -124,3 +124,31 @@ The first baseline preview attempt on port 3200 returned `EADDRINUSE: address al
 The additional admin smoke check initially assumed every redirect had HTTP status 307. `/admin` streams a 200 response before navigation, so the check was corrected to verify the browser's login destination for pages and the actual 307 for the media handler. No application behavior was changed to satisfy that check. Database runtime suites were not rerun: database files are unchanged, and the existing Phase 3 database verification limits remain unresolved.
 
 Complete inventories excluding generated/ignored files: [before](refactor/file-tree-before.txt) and [after](refactor/file-tree-after.txt). Historical phase change lists retain their original paths; use the move map above to find those files today.
+
+## Phase 4 — Commerce foundation additions
+
+Under the feature-oriented folder layout, commerce capabilities are placed in dedicated feature domains without modifying existing brand shells or layout patterns:
+
+- `src/features/cart/`:
+  - `types/cart.ts`: Domain types for cart lines, summaries, and paise calculations.
+  - `schemas/cart.ts`: Zod validation for variant ID, bounded quantities (1–10).
+  - `services/cart.ts`: Server-authoritative item validation, active DB revalidation, paise math, guest & authenticated carts, login merge.
+  - `actions/cart.ts`: Server Actions managing `tl_cart_session` HTTP-only cookie.
+  - `components/cart-view.tsx`: Client view with live quantity updates, item removal, and preview checkout banner.
+- `src/features/checkout/`:
+  - `types/checkout.ts`: Order snapshot items, pricing summaries, shipping address, gateway status.
+  - `schemas/checkout.ts`: Zod schema for Indian addresses (PIN code, 10-digit phone).
+  - `services/pricing.ts`: Pure integer-paise calculations, inclusive 5% GST, discounts, and shipping.
+  - `services/signatures.ts`: HMAC-SHA256 signature verification with `crypto.timingSafeEqual` for payments and webhooks.
+  - `services/payment.ts`: Razorpay order creation and idempotent webhook event handling (`webhook_events`).
+  - `services/checkout.ts`: Server-authoritative order creation, atomic `reserve_stock()` execution, and reservation rollback.
+  - `actions/checkout.ts`: Server Actions for checkout initiation.
+  - `components/checkout-view.tsx`: Truthful checkout review page displaying required owner actions and server pricing.
+- Route Handlers & Pages:
+  - `src/app/cart/page.tsx`: Dynamic cart page route.
+  - `src/app/checkout/page.tsx`: Dynamic checkout page route.
+  - `src/app/api/webhooks/razorpay/route.ts`: Raw-body POST webhook receiver.
+- Database & Automated Verification:
+  - `supabase/migrations/20261012000000_phase_4_commerce_foundation.sql`: Additive migration for commerce tables, RLS, and stock reservation functions.
+  - `scripts/phase4.test.mjs`: Node test suite for pricing, cart bounds, and Razorpay signature verification.
+  - `scripts/phase4-db.test.mjs`: PGlite WASM Postgres integration suite verifying real migrations, atomic reservations, overselling prevention, and webhook idempotency.
