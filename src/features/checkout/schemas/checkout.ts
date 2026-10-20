@@ -42,6 +42,7 @@ export type ShippingAddressInput = z.infer<typeof shippingAddressSchema>;
 
 export const initiateCheckoutSchema = z.object({
   shippingAddress: shippingAddressSchema,
+  idempotencyKey: z.string().uuid().optional(),
 });
 
 export type InitiateCheckoutInput = z.infer<typeof initiateCheckoutSchema>;

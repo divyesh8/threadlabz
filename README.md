@@ -4,6 +4,8 @@ Make Your Mark. An India-first clothing, costumes and customization storefront.
 
 ## Current state
 
+**20 October 2026 audit:** local authorization/payment hardening and an unapplied migration are recorded in [docs/ARCHITECTURE-AUDIT.md](docs/ARCHITECTURE-AUDIT.md). Authenticated staging validation, migration-history reconciliation and the actual Razorpay Checkout browser interaction remain blockers. The phase summaries below are historical; they do not establish production readiness.
+
 Phase 5 (Staging Integration, E2E Commerce Validation, and Lifecycle Readiness) is verified and implemented locally on branch `codex/domain-structure`:
 - **Server-Authoritative Cart (`/cart`)**: Supports guest and authenticated sessions, integer paise calculations, variant stock bounds (1–10), and login merge.
 - **Server-Authoritative Checkout (`/checkout`)**: Immutable order line snapshots, atomic PostgreSQL stock reservations (`reserve_stock`), and delivery address validation.
@@ -36,12 +38,13 @@ npm test
 npm run build
 ```
 
-The automated test runner (`npm test`) executes all 5 test suites (46 tests total) using Node's native test runner and `@electric-sql/pglite` WASM Postgres:
+The automated test runner (`npm test`) executes 6 test files (74 tests total) using Node's native test runner and `@electric-sql/pglite` WASM Postgres:
 - `scripts/phase1.test.mjs`: URL canonicalization, open redirect allowlists, auth bounds.
 - `scripts/phase3.test.mjs`: Filter normalization, UUID image paths, raster signatures.
 - `scripts/phase4.test.mjs`: Integer-paise calculations, discount clamping, address schemas, HMAC signatures.
 - `scripts/phase4-db.test.mjs`: Real migration execution, atomic `reserve_stock`, overselling prevention, and webhook deduplication.
 - `scripts/phase5-commerce-e2e.test.mjs`: 24 core commerce invariants, reservation expiry recovery, payment reconciliation, and stock finalization.
+- `scripts/commerce-reliability.test.mjs`: actual application services/actions/webhook handler with transactional SQL and injected failures. External transport/auth are synthetic; this is not authenticated staging verification.
 
 ## Structure
 

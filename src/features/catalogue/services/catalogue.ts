@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
-import type { CatalogueCard, CatalogueResult } from "../types/catalogue";
+import type { CatalogueCard, CatalogueDetail, CatalogueResult } from "../types/catalogue";
+import { readProductDetails } from "../schemas/product-details";
+import { availableStock, compareSizes } from "./product-presentation";
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import type { Category, Product, ProductImage, ProductVariant } from "@/lib/supabase/database.types";
@@ -43,7 +45,8 @@ function toCard(p: ProductRow, images: ProductImage[], variants: ProductVariant[
     images: images.filter(i => i.product_id === p.id && productStoragePath(i.url, origin))
       .sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order || a.id.localeCompare(b.id))
       .map(i => ({ id: i.id, alt: i.alt?.trim() || `${p.title} — product photograph` })),
-    variants: variants.filter(v => v.product_id === p.id).map(v => ({ id: v.id, size: v.size, colour: v.color, stock: v.stock })),
+    variants: variants.filter(v => v.product_id === p.id).map(v => ({ id: v.id, size: v.size, colour: v.color, stock: availableStock(v.stock, v.stock_reserved) }))
+      .sort((a, b) => a.colour.localeCompare(b.colour) || compareSizes(a.size, b.size)),
   };
 }
 
@@ -102,7 +105,7 @@ export async function getCatalogue(input: Record<string, unknown>): Promise<Cata
   } catch { return { ...base, state: "unavailable" }; }
 }
 
-export const getProductDetail = cache(async (slug: string): Promise<{ state: "ready"; product: CatalogueCard; related: CatalogueCard[] } | { state: "missing" | "unavailable" }> => {
+export const getProductDetail = cache(async (slug: string): Promise<{ state: "ready"; product: CatalogueDetail; related: CatalogueCard[] } | { state: "missing" | "unavailable" }> => {
   if (!productSlugSchema.safeParse(slug).success) return { state: "missing" };
   const client = createPublicSupabaseClient();
   if (!client) return { state: "unavailable" };
@@ -111,7 +114,7 @@ export const getProductDetail = cache(async (slug: string): Promise<{ state: "re
     if (error) return { state: "unavailable" };
     if (!data) return { state: "missing" };
     const details = await children(client, [data.id]);
-    const product = toCard(data, details.images, details.variants);
+    const product: CatalogueDetail = { ...toCard(data, details.images, details.variants), details: readProductDetails(data.product_details) };
     const { data: others, error: relatedError } = await visibleProducts(client).eq("category_id", data.category_id!).neq("id", data.id).order("created_at", { ascending: false }).order("id").limit(4);
     let related: CatalogueCard[] = [];
     if (!relatedError && others?.length) {

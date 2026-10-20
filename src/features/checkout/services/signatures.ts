@@ -9,7 +9,7 @@ export function getRazorpayGatewayStatus(): GatewayConfigStatus {
   const keyIdAvailable = Boolean(keyId && keyId.trim().length > 0);
   const keySecretAvailable = Boolean(keySecret && keySecret.trim().length > 0);
   const webhookSecretAvailable = Boolean(webhookSecret && webhookSecret.trim().length > 0);
-  const isConfigured = keyIdAvailable && keySecretAvailable;
+  const isConfigured = keyIdAvailable && keySecretAvailable && webhookSecretAvailable;
 
   let mode: "test" | "live" | "unconfigured" = "unconfigured";
   if (isConfigured) {

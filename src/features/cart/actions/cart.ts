@@ -15,13 +15,13 @@ import type { CartSummary } from "../types/cart";
 
 const CART_SESSION_COOKIE = "tl_cart_session";
 
-async function getCartContext(): Promise<{ userId?: string; sessionToken: string }> {
+async function getCartContext(createSession = true): Promise<{ userId?: string; sessionToken?: string }> {
   const cookieStore = await cookies();
   let sessionToken = cookieStore.get(CART_SESSION_COOKIE)?.value;
 
   if (!sessionToken || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionToken)) {
-    sessionToken = crypto.randomUUID();
-    cookieStore.set(CART_SESSION_COOKIE, sessionToken, {
+    sessionToken = createSession ? crypto.randomUUID() : undefined;
+    if (sessionToken) cookieStore.set(CART_SESSION_COOKIE, sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -33,10 +33,8 @@ async function getCartContext(): Promise<{ userId?: string; sessionToken: string
   const user = await getUser();
   if (user) {
     // If user is logged in and has an active guest cart cookie, merge once
-    try {
+    if (sessionToken) {
       await mergeGuestCartIntoUserCart(sessionToken, user.id);
-    } catch {
-      // Non-fatal if merge fails
     }
     return { userId: user.id, sessionToken };
   }
@@ -45,7 +43,8 @@ async function getCartContext(): Promise<{ userId?: string; sessionToken: string
 }
 
 export async function getCartAction(): Promise<CartSummary> {
-  const context = await getCartContext();
+  // Also called during Server Component rendering, where cookies cannot be set.
+  const context = await getCartContext(false);
   return await getCartSummary(context);
 }
 

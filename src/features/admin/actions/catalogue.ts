@@ -27,6 +27,11 @@ export type ActionResponse = {
 // 1. PRODUCTS
 // -----------------------------------------------------------------------------
 
+async function checkedWrite(operation: PromiseLike<{ error: unknown }>) {
+  const { error } = await operation;
+  if (error) throw new Error("Catalogue update failed. Reload before retrying.");
+}
+
 export async function saveProduct(input: AdminProductInput): Promise<ActionResponse> {
   await requireAdmin();
   const parsed = adminProductSchema.safeParse(input);
@@ -52,6 +57,7 @@ export async function saveProduct(input: AdminProductInput): Promise<ActionRespo
           title: data.title,
           slug: data.slug,
           description: data.description || null,
+          ...(data.product_details !== undefined ? { product_details: data.product_details } : {}),
           category_id: data.category_id || null,
           audience: data.audience,
           price_paise: pricePaise,
@@ -72,6 +78,7 @@ export async function saveProduct(input: AdminProductInput): Promise<ActionRespo
           title: data.title,
           slug: data.slug,
           description: data.description || null,
+          ...(data.product_details !== undefined ? { product_details: data.product_details } : {}),
           category_id: data.category_id || null,
           audience: data.audience,
           price_paise: pricePaise,
@@ -90,25 +97,26 @@ export async function saveProduct(input: AdminProductInput): Promise<ActionRespo
     }
 
     // Synchronize Variants
-    const { data: existingVariants } = await client
+    const { data: existingVariants, error: variantsError } = await client
       .from("product_variants")
       .select("id")
       .eq("product_id", productId);
 
+    if (variantsError) throw new Error("Could not read existing variants.");
     const existingVarIds = new Set(existingVariants?.map((v) => v.id) || []);
     const submittedVarIds = new Set(data.variants.map((v) => v.id).filter(Boolean));
 
     // Delete removed variants
     for (const exId of existingVarIds) {
       if (!submittedVarIds.has(exId)) {
-        await client.from("product_variants").delete().eq("id", exId);
+        await checkedWrite(client.from("product_variants").delete().eq("id", exId));
       }
     }
 
     // Upsert variants
     for (const v of data.variants) {
       if (v.id && existingVarIds.has(v.id)) {
-        await client
+        await checkedWrite(client
           .from("product_variants")
           .update({
             size: v.size,
@@ -116,31 +124,32 @@ export async function saveProduct(input: AdminProductInput): Promise<ActionRespo
             stock: v.stock,
             sku: v.sku || null,
           })
-          .eq("id", v.id);
+          .eq("id", v.id));
       } else {
-        await client.from("product_variants").insert({
+        await checkedWrite(client.from("product_variants").insert({
           product_id: productId,
           size: v.size,
           color: v.color,
           stock: v.stock,
           sku: v.sku || null,
-        });
+        }));
       }
     }
 
     // Synchronize Images
-    const { data: existingImgs } = await client
+    const { data: existingImgs, error: imagesError } = await client
       .from("product_images")
       .select("id")
       .eq("product_id", productId);
 
+    if (imagesError) throw new Error("Could not read existing images.");
     const existingImgIds = new Set(existingImgs?.map((i) => i.id) || []);
     const submittedImgIds = new Set(data.images.map((i) => i.id).filter(Boolean));
 
     // Delete removed images
     for (const imgId of existingImgIds) {
       if (!submittedImgIds.has(imgId)) {
-        await client.from("product_images").delete().eq("id", imgId);
+        await checkedWrite(client.from("product_images").delete().eq("id", imgId));
       }
     }
 
@@ -149,7 +158,7 @@ export async function saveProduct(input: AdminProductInput): Promise<ActionRespo
       const img = data.images[idx];
       const isPrimary = idx === 0 || img.is_primary;
       if (img.id && existingImgIds.has(img.id)) {
-        await client
+        await checkedWrite(client
           .from("product_images")
           .update({
             url: img.url,
@@ -157,31 +166,32 @@ export async function saveProduct(input: AdminProductInput): Promise<ActionRespo
             sort_order: idx,
             is_primary: isPrimary,
           })
-          .eq("id", img.id);
+          .eq("id", img.id));
       } else {
-        await client.from("product_images").insert({
+        await checkedWrite(client.from("product_images").insert({
           product_id: productId,
           url: img.url,
           alt: img.alt || null,
           sort_order: idx,
           is_primary: isPrimary,
-        });
+        }));
       }
     }
 
     // Synchronize Festivals
-    await client.from("product_festivals").delete().eq("product_id", productId);
+    await checkedWrite(client.from("product_festivals").delete().eq("product_id", productId));
     if (data.festival_ids.length > 0) {
       const pfRows = data.festival_ids.map((festId) => ({
         product_id: productId,
         festival_id: festId,
       }));
-      await client.from("product_festivals").insert(pfRows);
+      await checkedWrite(client.from("product_festivals").insert(pfRows));
     }
 
     revalidatePath("/admin");
     revalidatePath("/admin/products");
     revalidatePath("/shop");
+    revalidatePath("/products/[slug]", "page");
     revalidatePath("/");
 
     return {
@@ -218,15 +228,16 @@ export async function deleteOrDeactivateProduct(id: string): Promise<ActionRespo
   if (!client) return { error: "Database client unavailable" };
 
   // Check if product is referenced in order items
-  const { data: orderItemRefs } = await client
+  const { data: orderItemRefs, error: referencesError } = await client
     .from("order_items")
     .select("id")
     .eq("product_id", id)
     .limit(1);
 
+  if (referencesError) return { error: "Could not verify order history." };
   if (orderItemRefs && orderItemRefs.length > 0) {
     // Deactivate instead to preserve historical order details
-    await client.from("products").update({ is_active: false }).eq("id", id);
+    await checkedWrite(client.from("products").update({ is_active: false }).eq("id", id));
     revalidatePath("/admin/products");
     revalidatePath("/shop");
     return {
@@ -315,15 +326,16 @@ export async function deleteCategory(id: string): Promise<ActionResponse> {
   if (!client) return { error: "Database client unavailable" };
 
   // Check if products reference this category
-  const { data: prods } = await client
+  const { data: prods, error: referencesError } = await client
     .from("products")
     .select("id")
     .eq("category_id", id)
     .limit(1);
 
+  if (referencesError) return { error: "Could not verify category products." };
   if (prods && prods.length > 0) {
     // Safe deactivation
-    await client.from("categories").update({ is_active: false }).eq("id", id);
+    await checkedWrite(client.from("categories").update({ is_active: false }).eq("id", id));
     revalidatePath("/admin/categories");
     return {
       success: true,

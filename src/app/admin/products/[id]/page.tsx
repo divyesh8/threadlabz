@@ -41,6 +41,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     title: product.title,
     slug: product.slug,
     description: product.description,
+    product_details: product.product_details,
     category_id: product.category_id,
     audience: product.audience as "men" | "women" | "kids" | "unisex",
     price_paise: product.price_paise,

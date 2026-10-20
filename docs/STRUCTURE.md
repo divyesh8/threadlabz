@@ -1,5 +1,7 @@
 # Repository structure
 
+The current commerce safety changes and deployment prerequisites are documented in [ARCHITECTURE-AUDIT.md](ARCHITECTURE-AUDIT.md). Privileged access is confined to the cart service and checkout repository; stock/cart/order transitions use service-only database RPCs. `npm run lint` now also executes `scripts/check-boundaries.mjs` to enforce layer direction, privileged import restrictions, client/server boundaries and runtime cycle detection. Historical verification records below describe their original phases.
+
 ThreadLabz remains one Next.js App Router application, installed and built with npm from the repository root. The 12 October 2026 refactor groups the existing code by domain; it does not introduce another app, a workspace, an ORM, a backend service or a commerce feature.
 
 The supplied `ThreadLabz-Architecture-Blueprint.md` is a proposed long-term design. Its domain ownership informed this layout. Its pnpm/Turborepo packages, Prisma migration, provider interfaces and future commerce modules were not adopted. The explicit structural-refactor objective takes precedence over the blueprint.

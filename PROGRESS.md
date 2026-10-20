@@ -1,5 +1,9 @@
 # ThreadLabz Progress Log
 
+## 20 October 2026 — Architecture audit and local remediation
+
+Branch: `codex/commerce-reliability-audit`; changes remain local/uncommitted. See [ARCHITECTURE-AUDIT.md](docs/ARCHITECTURE-AUDIT.md) for verified authorization, atomic checkout, payment recovery, regression results and unapplied migration details. Current suite: 74 passing tests. Earlier statements that staging validation was complete are not supported by the historical SQL/mock suites. Migration-history reconciliation, authenticated staging/provider tests and checkout payment UI remain prerequisites to the next commerce feature phase.
+
 ## Current Snapshot
 
 - **Branch**: `codex/domain-structure`

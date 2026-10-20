@@ -18,9 +18,10 @@ export async function POST(request: Request) {
   const result = await handleRazorpayWebhook({
     rawBody,
     signature,
+    eventId: request.headers.get("x-razorpay-event-id"),
   });
 
-  if (result.status === "invalid_signature") {
+  if (result.status === "invalid_signature" || result.status === "invalid_payload") {
     return NextResponse.json(
       { error: result.message },
       { status: 400 }

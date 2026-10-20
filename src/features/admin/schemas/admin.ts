@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productDetailsSchema } from "@/features/catalogue/schemas/product-details";
 
 const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -12,6 +13,7 @@ export const adminProductSchema = z.object({
     .max(120, "Slug is too long")
     .regex(slugRegex, "Slug must be lowercase alphanumeric with hyphens (e.g. festive-kurta)"),
   description: z.string().trim().max(4000).optional().default(""),
+  product_details: productDetailsSchema.nullable().optional(),
   category_id: z.string().uuid().nullable().optional(),
   audience: z.enum(["men", "women", "kids", "unisex"]).default("unisex"),
   price_rupees: z.number().min(0, "Price cannot be negative"),
@@ -41,6 +43,15 @@ export const adminProductSchema = z.object({
     )
     .default([]),
   festival_ids: z.array(z.string().uuid()).default([]),
+}).superRefine((product, ctx) => {
+  const sizes = new Set(product.variants.map(v => v.size.toLowerCase()));
+  const details = product.product_details;
+  if (details?.model && !sizes.has(details.model.wears_size.toLowerCase())) {
+    ctx.addIssue({ code: "custom", path: ["product_details", "model"], message: "The model's worn size must match a product variant" });
+  }
+  if (details?.size_guide?.rows.some(row => !sizes.has(row.size.toLowerCase()))) {
+    ctx.addIssue({ code: "custom", path: ["product_details", "size_guide"], message: "Size-guide rows must match this product's sizes" });
+  }
 });
 
 export const adminCategorySchema = z.object({

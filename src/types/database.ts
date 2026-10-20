@@ -340,6 +340,13 @@ export type Database = {
       }
       orders: {
         Row: {
+          payment_verified_at: string | null
+          reconciliation_reason: string | null
+          gateway_attempted_at: string | null
+          reservation_expires_at: string | null
+          checkout_fingerprint: string | null
+          checkout_cart_id: string | null
+          guest_token_hash: string | null
           created_at: string
           currency: string
           discount_paise: number
@@ -359,6 +366,13 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          payment_verified_at?: string | null
+          reconciliation_reason?: string | null
+          gateway_attempted_at?: string | null
+          reservation_expires_at?: string | null
+          checkout_fingerprint?: string | null
+          checkout_cart_id?: string | null
+          guest_token_hash?: string | null
           created_at?: string
           currency?: string
           discount_paise?: number
@@ -378,6 +392,13 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          payment_verified_at?: string | null
+          reconciliation_reason?: string | null
+          gateway_attempted_at?: string | null
+          reservation_expires_at?: string | null
+          checkout_fingerprint?: string | null
+          checkout_cart_id?: string | null
+          guest_token_hash?: string | null
           created_at?: string
           currency?: string
           discount_paise?: number
@@ -562,6 +583,7 @@ export type Database = {
           id: string
           is_active: boolean
           price_paise: number
+          product_details: Json | null
           slug: string
           source: string
           title: string
@@ -578,6 +600,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           price_paise: number
+          product_details?: Json | null
           slug: string
           source?: string
           title: string
@@ -594,6 +617,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           price_paise?: number
+          product_details?: Json | null
           slug?: string
           source?: string
           title?: string
@@ -709,6 +733,8 @@ export type Database = {
       }
       webhook_events: {
         Row: {
+          last_error: string | null
+          payload_hash: string | null
           created_at: string
           event_id: string
           id: string
@@ -717,6 +743,8 @@ export type Database = {
           provider: string
         }
         Insert: {
+          last_error?: string | null
+          payload_hash?: string | null
           created_at?: string
           event_id: string
           id?: string
@@ -725,6 +753,8 @@ export type Database = {
           provider?: string
         }
         Update: {
+          last_error?: string | null
+          payload_hash?: string | null
           created_at?: string
           event_id?: string
           id?: string
@@ -765,6 +795,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      // Local proposed commerce migration contract; regenerate after staging approval.
+      commerce_cart: { Args: { p_user_id: string | null; p_session_token: string | null }; Returns: string }
+      commerce_mutate_cart: { Args: { p_user_id: string | null; p_session_token: string | null; p_operation: string; p_variant_id?: string | null; p_item_id?: string | null; p_qty?: number }; Returns: undefined }
+      commerce_merge_cart: { Args: { p_user_id: string; p_session_token: string }; Returns: undefined }
+      commerce_prepare_checkout: { Args: { p_user_id: string | null; p_session_token: string | null; p_guest_hash: string | null; p_key: string; p_address: Json }; Returns: Json }
+      commerce_claim_gateway: { Args: { p_order_id: string }; Returns: Json }
+      commerce_attach_gateway: { Args: { p_order_id: string; p_provider_id: string; p_amount: number; p_currency: string }; Returns: undefined }
+      commerce_record_event: { Args: { p_event_id: string; p_hash: string; p_payload: Json }; Returns: string }
+      commerce_process_event: { Args: { p_event_id: string }; Returns: string }
+
       is_admin: { Args: never; Returns: boolean }
       reserve_stock: {
         Args: {

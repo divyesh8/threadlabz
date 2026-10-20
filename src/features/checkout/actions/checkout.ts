@@ -5,8 +5,7 @@ import { getUser } from "@/lib/auth/guards";
 import { initiateCheckoutSchema, type InitiateCheckoutInput } from "../schemas/checkout";
 import { createCheckoutOrder } from "../services/checkout";
 import { getRazorpayGatewayStatus } from "../services/payment";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getOwnedOrderStatus } from "../services/repository";
 import type { CreateOrderResult, GatewayConfigStatus } from "../types/checkout";
 
 const CART_SESSION_COOKIE = "tl_cart_session";
@@ -39,43 +38,10 @@ export async function createCheckoutOrderAction(
   }
 
   const context = await getCheckoutContext();
-  return await createCheckoutOrder(context, parsed.data.shippingAddress);
+  return await createCheckoutOrder(context, parsed.data.shippingAddress, { idempotencyKey: parsed.data.idempotencyKey });
 }
 
-export async function checkOrderStatusAction(orderId: string): Promise<{
-  found: boolean;
-  status?: string;
-  paymentStatus?: string;
-  orderNumber?: string;
-  isPaid: boolean;
-}> {
-  let client;
-  try {
-    client = createAdminSupabaseClient();
-  } catch {
-    client = await createServerSupabaseClient();
-  }
-
-  if (!client) {
-    return { found: false, isPaid: false };
-  }
-
-  const { data: order } = await client
-    .from("orders")
-    .select("status, payment_status, order_number")
-    .eq("id", orderId)
-    .maybeSingle();
-
-  if (!order) {
-    return { found: false, isPaid: false };
-  }
-
-  const isPaid = order.status === "paid" || order.payment_status === "captured" || order.payment_status === "paid";
-  return {
-    found: true,
-    status: order.status,
-    paymentStatus: order.payment_status,
-    orderNumber: order.order_number || undefined,
-    isPaid,
-  };
+export async function checkOrderStatusAction(orderId: string) {
+  if (typeof orderId !== "string") return { found: false, isPaid: false };
+  return getOwnedOrderStatus(await getCheckoutContext(), orderId);
 }

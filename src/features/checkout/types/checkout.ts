@@ -35,7 +35,7 @@ export type CheckoutOrder = {
   id: string;
   orderNumber: string;
   status: "pending" | "paid" | "packed" | "shipped" | "delivered" | "cancelled" | "refunded";
-  paymentStatus: "unpaid" | "processing" | "paid" | "failed";
+  paymentStatus: "unpaid" | "processing" | "paid" | "captured" | "captured_review" | "failed";
   grandTotalPaise: number;
   currency: "INR";
   items: OrderSnapshotItem[];

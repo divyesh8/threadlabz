@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -41,6 +41,7 @@ export function CheckoutView({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [stockError, setStockError] = useState<string | null>(null);
   const [confirmedOrder, setConfirmedOrder] = useState<CheckoutOrder | null>(null);
+  const attemptKey = useRef<string | null>(null);
 
   // Delivery Address Form State
   const [address, setAddress] = useState<ShippingAddress>({
@@ -104,6 +105,7 @@ export function CheckoutView({
       try {
         const res = await createCheckoutOrderAction({
           shippingAddress: address,
+          idempotencyKey: (attemptKey.current ??= crypto.randomUUID()),
         });
 
         if (!res.success) {
@@ -132,7 +134,7 @@ export function CheckoutView({
           return;
         }
 
-        // If Razorpay order created, simulate verification flow or open gateway
+        // A provider order alone is not payment confirmation.
         setCheckoutState("payment_pending_verification");
 
         // Authoritative verification poll (checks server database status)

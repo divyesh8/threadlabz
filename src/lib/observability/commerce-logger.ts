@@ -39,25 +39,20 @@ export function logCommerceEvent(
   event: CommerceEventType,
   payload: CommerceLogPayload = {}
 ): void {
-  // Sanitize payload: strip any accidental credentials or PII fields
+  // Only known scalar identifiers/codes are accepted. A denylist cannot protect
+  // nested payloads, differently-cased secret names, or arbitrary provider text.
   const safePayload: Record<string, unknown> = {};
-  const forbiddenKeys = new Set([
-    "password",
-    "secret",
-    "token",
-    "sessionToken",
-    "signature",
-    "rawBody",
-    "apiKey",
-    "authHeader",
-    "address",
-    "line1",
-    "phone",
-    "email",
+  const allowedKeys = new Set([
+    "orderId", "orderNumber", "variantId", "productId", "reservationId",
+    "razorpayOrderId", "razorpayPaymentId", "amountPaise", "itemCount",
+    "quantity", "reason", "errorCode", "eventId", "status",
   ]);
 
   for (const [key, value] of Object.entries(payload)) {
-    if (!forbiddenKeys.has(key.toLowerCase()) && value !== undefined) {
+    if (allowedKeys.has(key) && (
+      (typeof value === "number" && Number.isFinite(value)) ||
+      (typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,100}$/.test(value))
+    )) {
       safePayload[key] = value;
     }
   }

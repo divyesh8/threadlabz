@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getShoppingPolicies } from "@/features/catalogue/services/delivery";
 
 const sections: Record<string, { title: string; text: string }> = {
   customize: { title: "Your ideas. Your ThreadLabz.", text: "Our T-shirt and hoodie design studio is being stitched together. Text, artwork and your own little signature — all in one place." },
@@ -22,5 +23,15 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
   const { section } = await params;
   const content = sections[section];
   if (!content) notFound();
+  if (section === "shipping") {
+    const policies = getShoppingPolicies();
+    return <div className="status-page page-width"><p className="eyebrow">ThreadLabz</p><h1>Delivery & returns</h1>
+      <h2>Delivery</h2><p>{policies.delivery?.summary || "Delivery charges and serviceable locations have not been confirmed."}</p>
+      {policies.delivery?.url && <a className="text-link" href={policies.delivery.url}>Read delivery policy</a>}
+      <h2>Returns</h2><p>{policies.returns?.summary || "Return and exchange terms have not been published."}</p>
+      {policies.returns?.url && <a className="text-link" href={policies.returns.url}>Read returns policy</a>}
+      <Button asChild><Link href="/shop"><ArrowLeft /> Back to the collection</Link></Button>
+    </div>;
+  }
   return <div className="status-page page-width"><span className="status-icon"><Sparkles size={32} /></span><p className="eyebrow">ThreadLabz / Store preview</p><h1>{content.title}</h1><p>{content.text}</p><Button asChild><Link href="/shop"><ArrowLeft /> Back to the collection</Link></Button></div>;
 }

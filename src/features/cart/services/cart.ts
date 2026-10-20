@@ -1,5 +1,4 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { PUBLIC_SOURCES } from "@/features/catalogue/services/catalogue";
 import type { CartItem, CartSummary } from "../types/cart";
@@ -49,83 +48,25 @@ type CartItemJoinRow = {
   };
 };
 
-type VariantLookupRow = {
-  id: string;
-  size: string;
-  color: string;
-  stock: number;
-  stock_reserved: number;
-  products: {
-    id: string;
-    title: string;
-    price_paise: number;
-    is_active: boolean;
-    source: string;
-    categories: {
-      id: string;
-      is_active: boolean;
-    };
-  };
-};
-
-type UpdateCartItemRow = {
-  id: string;
-  variant_id: string;
-  product_variants: {
-    stock: number;
-    stock_reserved: number;
-  };
-};
-
 const CHECKOUT_DISABLED_REASON =
   "Checkout is temporarily disabled until real inventory, business tax registration, and payment configuration are confirmed by the store owner.";
 
-function getAuthoritativeClient() {
-  try {
-    return createAdminSupabaseClient();
-  } catch {
-    return null;
-  }
+type CartContext = { userId?: string; sessionToken?: string };
+
+function getClient() {
+  try { return createAdminSupabaseClient(); } catch { return null; }
 }
 
-async function getClient() {
-  const adminClient = getAuthoritativeClient();
-  if (adminClient) return adminClient;
-  return await createServerSupabaseClient();
-}
-
-export async function getOrCreateCart(context: { userId?: string; sessionToken?: string }) {
-  const client = await getClient();
+export async function getOrCreateCart(context: CartContext) {
+  if (!context.userId && !context.sessionToken) return null;
+  const client = getClient();
   if (!client) return null;
-
-  const { userId, sessionToken } = context;
-  if (!userId && !sessionToken) return null;
-
-  // Try finding existing cart
-  let query = client.from("carts").select("id, user_id, session_token");
-  if (userId) {
-    query = query.eq("user_id", userId);
-  } else if (sessionToken) {
-    query = query.eq("session_token", sessionToken);
-  }
-
-  const { data: existing, error } = await query.maybeSingle();
-  if (existing && !error) return existing;
-
-  // Insert new cart
-  const insertPayload = {
-    user_id: userId || null,
-    session_token: sessionToken || null,
-  };
-
-  const { data: created, error: insertError } = await client
-    .from("carts")
-    .insert(insertPayload)
-    .select("id, user_id, session_token")
-    .single();
-
-  if (insertError || !created) return null;
-  return created;
+  const { data, error } = await client.rpc("commerce_cart", {
+    p_user_id: context.userId ?? null,
+    p_session_token: context.userId ? null : context.sessionToken ?? null,
+  });
+  if (error || !data) throw new Error("Shopping bag is temporarily unavailable.");
+  return { id: data, user_id: context.userId ?? null };
 }
 
 export async function getCartSummary(context: { userId?: string; sessionToken?: string }): Promise<CartSummary> {
@@ -188,7 +129,7 @@ export async function getCartSummary(context: { userId?: string; sessionToken?: 
     .eq("cart_id", cart.id)
     .order("updated_at", { ascending: false });
 
-  if (error || !rawItems) return { ...empty, id: cart.id };
+  if (error || !rawItems) throw new Error("Shopping bag is temporarily unavailable.");
 
   const validItems: CartItem[] = [];
   let subtotal = 0;
@@ -257,228 +198,49 @@ export async function getCartSummary(context: { userId?: string; sessionToken?: 
   };
 }
 
-export async function addToCart(
-  context: { userId?: string; sessionToken?: string },
-  rawInput: unknown
-): Promise<{ success: boolean; cart?: CartSummary; error?: string }> {
-  const parsed = addToCartSchema.safeParse(rawInput);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0]?.message || "Invalid cart item input" };
-  }
-
-  const { variantId, quantity } = parsed.data;
-  const client = await getClient();
-  if (!client) return { success: false, error: "Database client unavailable" };
-
-  // Re-read variant and product directly from database to enforce server authority
-  const { data: variant, error: variantError } = await client
-    .from("product_variants")
-    .select(`
-      id,
-      size,
-      color,
-      stock,
-      stock_reserved,
-      products!inner (
-        id,
-        title,
-        price_paise,
-        is_active,
-        source,
-        categories!inner (
-          id,
-          is_active
-        )
-      )
-    `)
-    .eq("id", variantId)
-    .single();
-
-  if (variantError || !variant) {
-    return { success: false, error: "Selected product variant is not found." };
-  }
-
-  const row = variant as unknown as VariantLookupRow;
-  const p = row.products;
-  const cat = p?.categories;
-
-  if (!p || !p.is_active || !PUBLIC_SOURCES.includes(p.source) || !cat?.is_active) {
-    return { success: false, error: "This product is not currently available for purchase." };
-  }
-
-  const stockOnHand = variant.stock ?? 0;
-  const stockReserved = variant.stock_reserved ?? 0;
-  const availableStock = Math.max(0, stockOnHand - stockReserved);
-
-  if (availableStock <= 0) {
-    return { success: false, error: "Selected option is currently out of stock." };
-  }
-
-  const cart = await getOrCreateCart(context);
-  if (!cart) return { success: false, error: "Could not create or locate your shopping bag." };
-
-  // Check if item already exists in this cart
-  const { data: existingItem } = await client
-    .from("cart_items")
-    .select("id, qty")
-    .eq("cart_id", cart.id)
-    .eq("variant_id", variantId)
-    .maybeSingle();
-
-  const currentQty = existingItem?.qty ?? 0;
-  const desiredQty = currentQty + quantity;
-  const safeQty = Math.min(desiredQty, availableStock, 10);
-
-  if (safeQty <= currentQty && currentQty >= availableStock) {
-    return {
-      success: false,
-      error: `Only ${availableStock} piece(s) available in stock.`,
-    };
-  }
-
-  if (existingItem) {
-    const { error: updateError } = await client
-      .from("cart_items")
-      .update({ qty: safeQty, updated_at: new Date().toISOString() })
-      .eq("id", existingItem.id);
-
-    if (updateError) return { success: false, error: "Could not update bag quantity." };
-  } else {
-    const { error: insertError } = await client.from("cart_items").insert({
-      cart_id: cart.id,
-      variant_id: variantId,
-      qty: safeQty,
+async function mutateCart(context: CartContext, operation: "add" | "set" | "remove", input: {
+  variantId?: string; itemId?: string; quantity?: number;
+}): Promise<{ success: boolean; cart?: CartSummary; error?: string }> {
+  if (!context.userId && !context.sessionToken) return { success: false, error: "Shopping bag session missing." };
+  try {
+    const client = getClient();
+    if (!client) throw new Error("Unavailable");
+    const { error } = await client.rpc("commerce_mutate_cart", {
+      p_user_id: context.userId ?? null,
+      p_session_token: context.userId ? null : context.sessionToken ?? null,
+      p_operation: operation, p_variant_id: input.variantId ?? null,
+      p_item_id: input.itemId ?? null, p_qty: input.quantity ?? 0,
     });
-
-    if (insertError) return { success: false, error: "Could not add item to shopping bag." };
+    if (error) throw new Error("Mutation failed");
+    return { success: true, cart: await getCartSummary(context) };
+  } catch {
+    return { success: false, error: "Could not update your bag. Check availability and retry." };
   }
-
-  const updatedSummary = await getCartSummary(context);
-  return { success: true, cart: updatedSummary };
 }
 
-export async function updateCartItemQuantity(
-  context: { userId?: string; sessionToken?: string },
-  rawInput: unknown
-): Promise<{ success: boolean; cart?: CartSummary; error?: string }> {
+export async function addToCart(context: CartContext, rawInput: unknown) {
+  const parsed = addToCartSchema.safeParse(rawInput);
+  if (!parsed.success) return { success: false, error: "Invalid cart item input" };
+  return mutateCart(context, "add", parsed.data);
+}
+
+export async function updateCartItemQuantity(context: CartContext, rawInput: unknown) {
   const parsed = updateQuantitySchema.safeParse(rawInput);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0]?.message || "Invalid quantity" };
-  }
-
-  const { itemId, quantity } = parsed.data;
-  const client = await getClient();
-  if (!client) return { success: false, error: "Database client unavailable" };
-
-  const cart = await getOrCreateCart(context);
-  if (!cart) return { success: false, error: "Cart not found" };
-
-  // If quantity requested is 0, remove the item
-  if (quantity === 0) {
-    await client.from("cart_items").delete().eq("id", itemId).eq("cart_id", cart.id);
-    const updated = await getCartSummary(context);
-    return { success: true, cart: updated };
-  }
-
-  // Verify item belongs to this cart and check variant stock
-  const { data: item, error: itemError } = await client
-    .from("cart_items")
-    .select("id, variant_id, product_variants!inner(stock, stock_reserved)")
-    .eq("id", itemId)
-    .eq("cart_id", cart.id)
-    .single();
-
-  if (itemError || !item) {
-    return { success: false, error: "Cart item not found" };
-  }
-
-  const row = item as unknown as UpdateCartItemRow;
-  const v = row.product_variants;
-  const available = Math.max(0, (v?.stock ?? 0) - (v?.stock_reserved ?? 0));
-  const safeQty = Math.max(1, Math.min(quantity, available, 10));
-
-  await client
-    .from("cart_items")
-    .update({ qty: safeQty, updated_at: new Date().toISOString() })
-    .eq("id", itemId);
-
-  const updated = await getCartSummary(context);
-  return { success: true, cart: updated };
+  if (!parsed.success) return { success: false, error: "Invalid quantity" };
+  return mutateCart(context, "set", parsed.data);
 }
 
-export async function removeCartItem(
-  context: { userId?: string; sessionToken?: string },
-  rawInput: unknown
-): Promise<{ success: boolean; cart?: CartSummary; error?: string }> {
+export async function removeCartItem(context: CartContext, rawInput: unknown) {
   const parsed = removeItemSchema.safeParse(rawInput);
-  if (!parsed.success) {
-    return { success: false, error: "Invalid item reference" };
-  }
-
-  const client = await getClient();
-  if (!client) return { success: false, error: "Database client unavailable" };
-
-  const cart = await getOrCreateCart(context);
-  if (!cart) return { success: false, error: "Cart not found" };
-
-  await client.from("cart_items").delete().eq("id", parsed.data.itemId).eq("cart_id", cart.id);
-  const updated = await getCartSummary(context);
-  return { success: true, cart: updated };
+  if (!parsed.success) return { success: false, error: "Invalid item reference" };
+  return mutateCart(context, "remove", parsed.data);
 }
 
 export async function mergeGuestCartIntoUserCart(guestSessionToken: string, userId: string) {
-  if (!guestSessionToken || !userId) return;
-
-  const client = await getClient();
-  if (!client) return;
-
-  // Find guest cart
-  const { data: guestCart } = await client
-    .from("carts")
-    .select("id")
-    .eq("session_token", guestSessionToken)
-    .maybeSingle();
-
-  if (!guestCart) return;
-
-  // Find or create customer cart
-  const userCart = await getOrCreateCart({ userId });
-  if (!userCart || userCart.id === guestCart.id) return;
-
-  // Get guest items
-  const { data: guestItems } = await client
-    .from("cart_items")
-    .select("id, variant_id, qty")
-    .eq("cart_id", guestCart.id);
-
-  if (guestItems && guestItems.length > 0) {
-    // Get user's existing items
-    const { data: userItems } = await client
-      .from("cart_items")
-      .select("id, variant_id, qty")
-      .eq("cart_id", userCart.id);
-
-    const userItemMap = new Map((userItems || []).map(i => [i.variant_id, i]));
-
-    for (const gi of guestItems) {
-      const existing = userItemMap.get(gi.variant_id);
-      if (existing) {
-        // Merge without losing valid quantity, max 10
-        const mergedQty = Math.min(existing.qty + gi.qty, 10);
-        await client
-          .from("cart_items")
-          .update({ qty: mergedQty, updated_at: new Date().toISOString() })
-          .eq("id", existing.id);
-      } else {
-        await client.from("cart_items").insert({
-          cart_id: userCart.id,
-          variant_id: gi.variant_id,
-          qty: Math.min(gi.qty, 10),
-        });
-      }
-    }
-  }
-
-  // Delete guest cart
-  await client.from("carts").delete().eq("id", guestCart.id);
+  const client = getClient();
+  if (!client) throw new Error("Shopping bag is temporarily unavailable.");
+  const { error } = await client.rpc("commerce_merge_cart", {
+    p_user_id: userId, p_session_token: guestSessionToken,
+  });
+  if (error) throw new Error("Could not merge your shopping bag. Please retry.");
 }

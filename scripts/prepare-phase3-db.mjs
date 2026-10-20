@@ -8,8 +8,16 @@ const config=fs.readFileSync('supabase/config.toml','utf8')
   .replace('project_id = "threadlabz_local"','project_id = "threadlabz_phase3_qa"')
   .replace(/\[db.seed\]\s*enabled = true/,'[db.seed]\nenabled = false');
 fs.writeFileSync(path.join(root,'config.toml'),config);
-for(const file of ['001_schema.sql','20261011123446_phase_3_catalogue_boundaries.sql']) fs.copyFileSync(`supabase/migrations/${file}`,path.join(root,'migrations',file));
+// Explicit reviewed baseline: the historical phase_1 alternative is incompatible.
+for(const file of [
+  '001_schema.sql',
+  '20261011123446_phase_3_catalogue_boundaries.sql',
+  '20261012000000_phase_4_commerce_foundation.sql',
+  '20261012010000_phase_5_commerce_lifecycle.sql',
+  '20261020180305_commerce_reliability.sql',
+  '20261020182652_phase_7_product_details.sql',
+]) fs.copyFileSync(`supabase/migrations/${file}`,path.join(root,'migrations',file));
 fs.copyFileSync('supabase/tests/phase3_catalogue_test.sql',path.join(root,'tests','phase3_catalogue_test.sql'));
 fs.mkdirSync(path.join(root,'templates'),{recursive:true});
 fs.copyFileSync('supabase/templates/confirmation.html',path.join(root,'templates','confirmation.html'));
-console.log('Prepared tmp/phase3-db. No database started or changed. Use the local-only commands in docs/PHASE-3.md.');
+console.log('Prepared tmp/phase3-db with the explicit catalogue + commerce baseline. No database started or changed. See docs/ARCHITECTURE-AUDIT.md before use.');

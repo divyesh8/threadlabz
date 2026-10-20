@@ -78,7 +78,7 @@ const mock=http.createServer((req,res)=>{
 try {
  await new Promise(resolve=>mock.listen(0,'127.0.0.1',resolve));
  origin=`http://127.0.0.1:${mock.address().port}`;
- app=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port','3102'],{windowsHide:true,env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:origin,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:key,SITE_URL:base},stdio:['ignore','pipe','pipe']});
+ app=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port','3102'],{windowsHide:true,env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:origin,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:key,SUPABASE_SERVICE_ROLE_KEY:'',SITE_URL:base,SHOPPING_POLICIES_JSON:''},stdio:['ignore','pipe','pipe']});
  app.stdout.on('data',d=>{appOutput+=d});app.stderr.on('data',d=>{appOutput+=d});
  let ready=false;
  for(let i=0;i<100;i++){if(app.exitCode!==null)throw Error('Fixture app stopped');try{if((await fetch(`${base}/shop`)).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,500));}
@@ -113,17 +113,20 @@ try {
   await page.getByRole('searchbox',{name:'Search outfits, costumes and accessories'}).fill('nomatch');await page.getByRole('button',{name:'Search catalogue',exact:true}).click();await page.waitForLoadState('networkidle');await page.getByText('No pieces to show just yet.').waitFor();
   await page.getByRole('searchbox',{name:'Search outfits, costumes and accessories'}).fill('reference');await page.getByRole('searchbox',{name:'Search outfits, costumes and accessories'}).press('Enter');await page.waitForLoadState('networkidle');await page.locator('.catalogue-card a').click();await page.waitForURL('**/products/qa-reference-shirt');await page.waitForLoadState('networkidle');
   await page.getByRole('heading',{name:'QA fixture — reference shirt',exact:true}).waitFor();
-  const actionBounds=await page.getByRole('button',{name:'Ordering unavailable',exact:true}).boundingBox();assert.ok(actionBounds.y+actionBounds.height<900,'Primary status is visible in first viewport');
+  const titleBounds=await page.getByRole('heading',{name:'QA fixture — reference shirt',exact:true}).boundingBox();assert.ok(titleBounds.y+titleBounds.height<900,'Product identity is visible in first viewport');
   assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),`${base}/products/qa-reference-shirt`);
   assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
   assert.ok(await page.locator('meta[property="og:image"]').count());
   await page.getByRole('button',{name:'View photograph 2'}).click();assert.equal(await page.getByRole('button',{name:'View photograph 2'}).getAttribute('aria-pressed'),'true');
-  const small=page.getByRole('radio',{name:/^S Reference colour Low stock/});await small.check();
+  const small=page.getByRole('radio',{name:'S',exact:true});await small.check();
   await page.getByRole('button',{name:'Increase quantity'}).click();assert.equal(await page.getByRole('button',{name:'Increase quantity'}).isDisabled(),true);
   assert.equal(await page.getByRole('radio',{name:/^XS /}).isDisabled(),true);
   await page.getByRole('button',{name:'Decrease quantity'}).click();assert.equal(await page.getByRole('button',{name:'Decrease quantity'}).isDisabled(),true);
-  assert.equal(await page.getByRole('button',{name:'Ordering unavailable',exact:true}).isDisabled(),true);
-  await small.focus();await page.keyboard.press('ArrowRight');assert.equal(await page.getByRole('radio',{name:/^M Reference colour/}).isChecked(),true);
+  assert.equal(await page.getByRole('button',{name:'Add to bag',exact:true}).isDisabled(),false);
+  // No service-role database is configured in this isolated browser fixture.
+  await page.getByRole('button',{name:'Add to bag',exact:true}).click();
+  await page.getByText('Could not update your bag. Check availability and retry.',{exact:true}).waitFor();
+  await small.focus();await page.keyboard.press('ArrowRight');assert.equal(await page.getByRole('radio',{name:'M',exact:true}).isChecked(),true);
   assert.equal(await page.locator('.variant-option:has(:focus-visible)').count(),1);
   assert.ok(await page.locator('.related-products .catalogue-card').count());
   assert.equal(await page.evaluate(()=>getComputedStyle(document.querySelector('.gallery-main img')).transitionDuration),'0s');

@@ -6,6 +6,9 @@ import { AdminImage as Image } from "@/features/media/components/admin-image";
 import Link from "next/link";
 import { saveProduct, uploadAdminImage } from "@/features/admin/actions/catalogue";
 import type { AdminProductInput } from "@/features/admin/schemas/admin";
+import { productDetailsSchema, readProductDetails } from "@/features/catalogue/schemas/product-details";
+import { ProductDetailsFields } from "./product-details-fields";
+import type { Json } from "@/types/database";
 import {
   ArrowLeft,
   Plus,
@@ -35,6 +38,7 @@ interface ProductFormProps {
     title: string;
     slug: string;
     description: string | null;
+    product_details?: Json | null;
     category_id: string | null;
     audience: "men" | "women" | "kids" | "unisex";
     price_paise: number;
@@ -72,6 +76,8 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [autoSlug, setAutoSlug] = useState(!initialData);
   const [description, setDescription] = useState(initialData?.description || "");
+  const [productDetails, setProductDetails] = useState(() => readProductDetails(initialData?.product_details));
+  const [detailsChanged, setDetailsChanged] = useState(false);
   const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
   const [audience, setAudience] = useState<"men" | "women" | "kids" | "unisex">(
     initialData?.audience || "unisex"
@@ -301,11 +307,20 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
       return;
     }
 
+    if (detailsChanged) {
+      const parsed = productDetailsSchema.safeParse(productDetails);
+      if (!parsed.success) {
+        setErrorMessage(parsed.error.issues[0]?.message || "Check the verified product information.");
+        return;
+      }
+    }
+
     const payload: AdminProductInput = {
       id: initialData?.id,
       title: title.trim(),
       slug: slug.trim(),
       description: description.trim(),
+      ...(detailsChanged ? { product_details: productDetails } : {}),
       category_id: categoryId || null,
       audience,
       price_rupees: parsedPrice,
@@ -391,7 +406,7 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
 
       {/* Alerts */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3">
+        <div role="alert" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3">
           <AlertCircle size={18} className="shrink-0 mt-0.5 text-red-600" />
           <div>
             <p className="font-semibold">Unable to save product</p>
@@ -711,6 +726,8 @@ export function ProductForm({ initialData, categories, festivals }: ProductFormP
           </table>
         </div>
       </div>
+
+      <ProductDetailsFields value={productDetails} onChange={value => { setProductDetails(value); setDetailsChanged(true); }} sizes={variants.map(variant => variant.size)} disabled={isPending} />
 
       {/* Section 4: Product Images */}
       <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-6">
