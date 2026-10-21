@@ -6,6 +6,7 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
+import { isolatedEnvironment } from "./fixtures/isolated-env.mjs";
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
 const output = path.resolve("artifacts/phase-1/contracts");
@@ -70,7 +71,7 @@ try {
   const address = mock.address();
   app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "--hostname", "127.0.0.1", "--port", "3101"], {
     cwd: process.cwd(), windowsHide: true,
-    env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${address.port}`, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicKey, SITE_URL: base },
+    env: isolatedEnvironment({ NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${address.port}`, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicKey, SITE_URL: base }),
     stdio: ["ignore", "pipe", "pipe"],
   });
   app.stdout.on("data", chunk => { appOutput += chunk.toString(); });

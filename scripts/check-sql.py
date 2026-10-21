@@ -21,7 +21,7 @@ assert config["api"]["schemas"] == ["public"]
 assert config["api"]["auto_expose_new_tables"] is False
 assert config["auth"]["email"]["enable_confirmations"] is True
 print("Local TOML parses; public-only API and confirmed email settings checked.")
-paths = [*sorted((root / "supabase/migrations").glob("*.sql")), root / "supabase/seed.sql", *sorted((root / "supabase/tests").glob("*.sql"))]
+paths = [*sorted((root / "supabase/migrations").glob("*.sql")), root / "supabase/seed.sql", *sorted((root / "supabase/tests").glob("*.sql")), *sorted((root / "supabase/ops").glob("*.sql"))]
 for file in paths:
     sql = file.read_text(encoding="utf-8-sig")
     statements = parse_sql(sql)

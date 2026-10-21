@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 
 // Disposable in-memory PostgreSQL, using the same explicitly reviewed baseline
 // as commerce-reliability.test.mjs. No hosted database or app fixture fallback.
-export async function createPhase7Database() {
+export async function createPhase7Database({ through } = {}) {
   const db = new PGlite();
   await db.exec(`
     create role anon; create role authenticated; create role service_role bypassrls;
@@ -17,12 +17,17 @@ export async function createPhase7Database() {
     create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,owner uuid);
     alter table storage.objects enable row level security;
     create function storage.allow_any_operation(text[]) returns boolean language sql as $$ select true $$;
+    create schema supabase_migrations;
+    create table supabase_migrations.schema_migrations(version text primary key, name text not null);
   `);
-  for (const name of [
-    "001_schema.sql", "20261011123446_phase_3_catalogue_boundaries.sql",
-    "20261012000000_phase_4_commerce_foundation.sql", "20261012010000_phase_5_commerce_lifecycle.sql",
-    "20261020180305_commerce_reliability.sql", "20261020182652_phase_7_product_details.sql",
-  ]) await db.exec(fs.readFileSync(`supabase/migrations/${name}`, "utf8").replace(/create extension if not exists "uuid-ossp";/i, ""));
+  const migrations = fs.readdirSync("supabase/migrations").filter(name => name.endsWith(".sql")).sort();
+  if (through && !migrations.includes(through)) throw Error("Unknown migration checkpoint");
+  for (const name of migrations) {
+    await db.exec(fs.readFileSync(`supabase/migrations/${name}`, "utf8").replace(/create extension if not exists "uuid-ossp";/i, ""));
+    // Test-only ledger records only migrations actually executed successfully.
+    await db.query("insert into supabase_migrations.schema_migrations(version,name) values($1,$2)", [name.split("_")[0], name.slice(name.indexOf("_") + 1, -4)]);
+    if (name === through) break;
+  }
   return db;
 }
 

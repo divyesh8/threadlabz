@@ -8,7 +8,7 @@ export const privateKey = "phase7_local_service_fixture";
 export const fixtureUser = { id: id(999), aud: "authenticated", role: "authenticated", email: "qa@example.invalid", app_metadata: {}, user_metadata: {}, identities: [], created_at: new Date().toISOString() };
 export const fixtureToken = [Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url"), Buffer.from(JSON.stringify({ sub: fixtureUser.id, aud: "authenticated", role: "authenticated", exp: Math.floor(Date.now() / 1000) + 3600 })).toString("base64url"), "local-fixture-only"].join(".");
 
-export async function createFixtureServer(db) {
+export async function createFixtureServer(db, { checkout = false, onRequest } = {}) {
   await db.query("insert into auth.users(id,email) values($1,$2)", [fixtureUser.id, fixtureUser.email]);
   await db.query("update profiles set role='admin' where id=$1", [fixtureUser.id]);
   const state = { mode: "ready", asset: "valid", imageDelay: 0, productDelay: 0, cartDelay: 0, failCart: false, requests: [], failures: [] };
@@ -27,6 +27,7 @@ export async function createFixtureServer(db) {
     const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     try {
       state.requests.push({ path: url.pathname, method: req.method, query: url.search });
+      if (onRequest && await onRequest({ req, res, url, send, body })) return;
       if (url.pathname === "/auth/v1/user") {
         return req.headers.authorization === `Bearer ${fixtureToken}` ? send(fixtureUser) : send({ message: "No fixture session" }, 401);
       }
@@ -42,7 +43,7 @@ export async function createFixtureServer(db) {
       const table = url.pathname.split("/").at(-1);
       if (url.pathname.includes("/rpc/")) {
         assert.ok(req.headers.apikey === privateKey, "RPC must use the server-side fixture key");
-        assert.ok(["commerce_cart", "commerce_mutate_cart", "commerce_merge_cart"].includes(table));
+        assert.ok(["commerce_cart", "commerce_mutate_cart", "commerce_merge_cart", ...(checkout ? ["commerce_prepare_checkout", "commerce_claim_gateway", "commerce_attach_gateway", "commerce_order_view", "commerce_record_event", "commerce_process_event"] : [])].includes(table));
         await delay(state.cartDelay);
         if (state.failCart) return send({ message: "Fixture cart outage" }, 503);
         const args = await body(), values = Object.values(args);
@@ -64,6 +65,19 @@ export async function createFixtureServer(db) {
         `, [q.get("cart_id").slice(3)]);
         return rows(result.rows);
       }
+      if (checkout && table === "orders") {
+        assert.ok(req.headers.apikey === privateKey);
+        if (state.failOrders) return send({ message: "Fixture order lookup outage" }, 503);
+        const columns = q.get("select"); assert.match(columns, /^[a-z_, ]+$/);
+        const args = [], clauses = [];
+        for (const [key, value] of q) {
+          if (key === "select") continue;
+          assert.ok(["id", "user_id", "guest_token_hash", "idempotency_key"].includes(key));
+          if (value === "is.null") clauses.push(`${key} is null`);
+          else { assert.ok(value.startsWith("eq.")); args.push(value.slice(3)); clauses.push(`${key}=$${args.length}`); }
+        }
+        return rows((await db.query(`select ${columns} from orders where ${clauses.join(" and ")}`, args)).rows);
+      }
       const isAdmin = req.headers.authorization === `Bearer ${fixtureToken}`;
       if (req.method !== "GET" && req.method !== "HEAD") {
         assert.ok(isAdmin, "Fixture mutations require a signed-in admin");
@@ -84,7 +98,7 @@ export async function createFixtureServer(db) {
       if (table === "profiles") return rows((await db.query("select * from profiles where id=$1", [fixtureUser.id])).rows);
       if (state.mode === "failure") return send({ message: "Fixture catalogue outage" }, 503);
       if (table === "categories") return rows((await db.query(`select * from categories ${isAdmin ? "" : "where is_active"}`)).rows);
-      if (table === "festivals" || table === "product_festivals") return rows([]);
+      if (["festivals", "product_festivals", "banners"].includes(table)) return rows([]);
       if (table === "products") {
         await delay(state.productDelay);
         // A parallel admin-page render may still read as its layout redirects

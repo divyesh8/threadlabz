@@ -52,6 +52,40 @@ export async function getOwnedOrderStatus(context: CheckoutContext, orderId: str
   }
 }
 
+// Shared ownership check for resume and callback verification. A browser order
+// ID never grants access; guest capability remains in the HTTP-only cookie.
+export async function getOwnedCheckout(context: CheckoutContext, orderId: string) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId)
+    || (!context.userId && !context.sessionToken)) return null;
+  try {
+    let query = createAdminSupabaseClient().from("orders")
+      .select("id, razorpay_order_id, status, payment_status, payment_verified_at, reservation_expires_at, total_paise, currency").eq("id", orderId);
+    query = context.userId ? query.eq("user_id", context.userId)
+      : query.is("user_id", null).eq("guest_token_hash", guestTokenHash(context.sessionToken!));
+    const { data, error } = await query.maybeSingle();
+    return error ? null : data;
+  } catch { return null; }
+}
+
+export async function getOwnedCheckoutSnapshot(context: CheckoutContext, orderId: string) {
+  const record = await getOwnedCheckout(context, orderId);
+  if (!record) return null;
+  const order = await commerceRpc("commerce_order_view", { p_order_id: record.id }) as unknown as CheckoutOrder;
+  return { order, razorpayOrderId: record.razorpay_order_id,
+    isPaid: ["paid", "packed", "shipped", "delivered"].includes(record.status) && record.payment_status === "captured" && Boolean(record.payment_verified_at),
+    canPay: record.status === "pending" && ["created", "unpaid", "processing"].includes(record.payment_status)
+      && Boolean(record.reservation_expires_at && new Date(record.reservation_expires_at).getTime() > Date.now()) && Boolean(record.razorpay_order_id),
+  };
+}
+
+export async function getCheckoutIdForAttempt(context: CheckoutContext, key: string) {
+  if (!/^[0-9a-f-]{36}$/i.test(key) || (!context.userId && !context.sessionToken)) return null;
+  const owner = context.userId ? `user:${context.userId}` : `guest:${guestTokenHash(context.sessionToken!)}`;
+  const { data, error } = await createAdminSupabaseClient().from("orders").select("id")
+    .eq("idempotency_key", guestTokenHash(`${owner}:${key}`)).maybeSingle();
+  return error ? null : data?.id ?? null;
+}
+
 export async function pendingPaymentEventIds(limit: number) {
   const { data, error } = await createAdminSupabaseClient().from("webhook_events")
     .select("id").eq("provider", "razorpay").is("processed_at", null)

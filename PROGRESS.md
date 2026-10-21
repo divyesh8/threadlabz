@@ -1,10 +1,24 @@
 # ThreadLabz Progress Log
 
+## 21 October 2026 — Phase 8 staging and release readiness (current)
+
+Branch: `codex/phase-8-staging-release`, based on `4e7adec`. Work remains local and uncommitted. No push, deployment, cloud provisioning, hosted configuration or remote database mutation occurred. This entry supersedes the historical snapshots below.
+
+Implemented explicit local/staging/production configuration validation; isolated test/build environments; canonical seven-file migration path with unchanged conflicting history archived; data-preserving upgrade preflight and drift contract; minimal GitHub Actions quality workflow; manual Vercel deployment configuration; test-only Razorpay browser popup, server capture verification, owner-scoped reload recovery and regression coverage. Existing feature boundaries, catalogue visibility, admin guards, private images and service-only commerce RPCs are retained.
+
+`npm test`: **94 passed**. Canonical migration replay/hash/drift and SQL syntax checks pass. The local optimized checkout browser suite passes at 390/768/1280/1440 with mocked gateway/Auth/Storage transport and actual SQL; it also exercises shared layout and records five-route performance. Final commands, browser evidence and any remaining limitations are recorded in [PHASE-8-STAGING-RELEASE.md](docs/PHASE-8-STAGING-RELEASE.md).
+
+**Blocked/unperformed:** full local Supabase pgTAP/lint (Docker engine unavailable), read-only inspection of the configured hosted project (access denied; connected project differs), actual hosted staging Auth/Storage/RLS and multi-connection checks, real Razorpay sandbox, Vercel deployment and remote GitHub Actions run. Five high-severity dependency audit findings remain in the existing ESLint toolchain. No production-readiness claim is made.
+
+Owner procedure: [DEPLOYMENT-RUNBOOK.md](docs/DEPLOYMENT-RUNBOOK.md). Evidence classification and acceptance criteria: [STAGING-TEST-MATRIX.md](docs/STAGING-TEST-MATRIX.md). The proposed next phase is approved staging validation; it has not been started.
+
+---
+
 ## 20 October 2026 — Architecture audit and local remediation
 
 Branch: `codex/commerce-reliability-audit`; changes remain local/uncommitted. See [ARCHITECTURE-AUDIT.md](docs/ARCHITECTURE-AUDIT.md) for verified authorization, atomic checkout, payment recovery, regression results and unapplied migration details. Current suite: 74 passing tests. Earlier statements that staging validation was complete are not supported by the historical SQL/mock suites. Migration-history reconciliation, authenticated staging/provider tests and checkout payment UI remain prerequisites to the next commerce feature phase.
 
-## Current Snapshot
+## Historical Phase 5 Snapshot (superseded)
 
 - **Branch**: `codex/domain-structure`
 - **Focus**: Phase 5 — Staging Integration, End-to-End Commerce Validation, and Real-Store Readiness.

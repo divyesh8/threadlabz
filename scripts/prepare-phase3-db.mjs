@@ -8,16 +8,15 @@ const config=fs.readFileSync('supabase/config.toml','utf8')
   .replace('project_id = "threadlabz_local"','project_id = "threadlabz_phase3_qa"')
   .replace(/\[db.seed\]\s*enabled = true/,'[db.seed]\nenabled = false');
 fs.writeFileSync(path.join(root,'config.toml'),config);
-// Explicit reviewed baseline: the historical phase_1 alternative is incompatible.
-for(const file of [
-  '001_schema.sql',
-  '20261011123446_phase_3_catalogue_boundaries.sql',
-  '20261012000000_phase_4_commerce_foundation.sql',
-  '20261012010000_phase_5_commerce_lifecycle.sql',
-  '20261020180305_commerce_reliability.sql',
-  '20261020182652_phase_7_product_details.sql',
-]) fs.copyFileSync(`supabase/migrations/${file}`,path.join(root,'migrations',file));
-fs.copyFileSync('supabase/tests/phase3_catalogue_test.sql',path.join(root,'tests','phase3_catalogue_test.sql'));
+// Entire canonical sequence. Refuse stale files rather than silently masking them.
+const migrations = fs.readdirSync('supabase/migrations').filter(file=>file.endsWith('.sql')).sort();
+for(const file of fs.readdirSync(path.join(root,'migrations'))) {
+  if(!migrations.includes(file)) throw Error(`Unexpected local migration ${file}; review the isolated workspace before continuing.`);
+}
+for(const file of migrations) fs.copyFileSync(`supabase/migrations/${file}`,path.join(root,'migrations',file));
+for(const file of fs.readdirSync('supabase/tests').filter(file=>file.endsWith('.sql'))) {
+  fs.copyFileSync(`supabase/tests/${file}`,path.join(root,'tests',file));
+}
 fs.mkdirSync(path.join(root,'templates'),{recursive:true});
 fs.copyFileSync('supabase/templates/confirmation.html',path.join(root,'templates','confirmation.html'));
-console.log('Prepared tmp/phase3-db with the explicit catalogue + commerce baseline. No database started or changed. See docs/ARCHITECTURE-AUDIT.md before use.');
+console.log('Prepared tmp/phase3-db with the complete canonical migration sequence. No database started or changed. See docs/DEPLOYMENT-RUNBOOK.md before use.');

@@ -8,8 +8,12 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0 && node scripts/check-boundaries.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test scripts/phase1.test.mjs scripts/phase3.test.mjs scripts/phase4.test.mjs scripts/phase4-db.test.mjs scripts/phase5-commerce-e2e.test.mjs scripts/commerce-reliability.test.mjs scripts/phase7.test.mjs",
+    "test": "node scripts/run-isolated.mjs test",
+    "check:env": "node --experimental-strip-types scripts/check-env.mjs",
+    "check:migrations": "node scripts/check-migrations.mjs",
+    "build:local": "node scripts/run-isolated.mjs build",
     "test:product": "node scripts/check-phase7.mjs",
+    "test:release": "node scripts/check-phase8.mjs",
     "test:db": "supabase test db --local --workdir tmp/phase3-db",
     "db:lint": "supabase db lint --local --workdir tmp/phase3-db --schema public --fail-on warning"
   },

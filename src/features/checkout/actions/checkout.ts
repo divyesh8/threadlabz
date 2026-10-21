@@ -2,10 +2,10 @@
 
 import { cookies } from "next/headers";
 import { getUser } from "@/lib/auth/guards";
-import { initiateCheckoutSchema, type InitiateCheckoutInput } from "../schemas/checkout";
+import { initiateCheckoutSchema, type InitiateCheckoutInput, type PaymentCallbackInput } from "../schemas/checkout";
 import { createCheckoutOrder } from "../services/checkout";
-import { getRazorpayGatewayStatus } from "../services/payment";
-import { getOwnedOrderStatus } from "../services/repository";
+import { getRazorpayGatewayStatus, verifyCheckoutPayment } from "../services/payment";
+import { getOwnedOrderStatus, getOwnedCheckoutSnapshot, getCheckoutIdForAttempt } from "../services/repository";
 import type { CreateOrderResult, GatewayConfigStatus } from "../types/checkout";
 
 const CART_SESSION_COOKIE = "tl_cart_session";
@@ -44,4 +44,27 @@ export async function createCheckoutOrderAction(
 export async function checkOrderStatusAction(orderId: string) {
   if (typeof orderId !== "string") return { found: false, isPaid: false };
   return getOwnedOrderStatus(await getCheckoutContext(), orderId);
+}
+
+export async function verifyCheckoutPaymentAction(input: PaymentCallbackInput) {
+  return verifyCheckoutPayment(await getCheckoutContext(), input);
+}
+
+export async function resumeCheckoutAction(orderId: string) {
+  if (typeof orderId !== "string") return null;
+  try {
+    const saved = await getOwnedCheckoutSnapshot(await getCheckoutContext(), orderId);
+    if (!saved) return null;
+    const gatewayStatus = getRazorpayGatewayStatus();
+    return { ...saved, canPay: saved.canPay && gatewayStatus.checkoutEnabled,
+      keyId: gatewayStatus.checkoutEnabled ? process.env.RAZORPAY_KEY_ID! : null };
+  } catch { return null; }
+}
+
+export async function resumeCheckoutAttemptAction(attempt: string) {
+  if (typeof attempt !== "string") return null;
+  try {
+    const id = await getCheckoutIdForAttempt(await getCheckoutContext(), attempt);
+    return id ? resumeCheckoutAction(id) : null;
+  } catch { return null; }
 }

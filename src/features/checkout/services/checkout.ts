@@ -11,8 +11,8 @@ export async function createCheckoutOrder(
   options?: { idempotencyKey?: string }
 ): Promise<CreateOrderResult> {
   const gatewayStatus = getRazorpayGatewayStatus();
-  if (!gatewayStatus.isConfigured) {
-    return { success: false, error: gatewayStatus.blockerMessage, code: "GATEWAY_UNAVAILABLE" };
+  if (!gatewayStatus.checkoutEnabled) {
+    return { success: false, error: "Checkout is not available in this environment.", code: "GATEWAY_UNAVAILABLE" };
   }
   const address = shippingAddressSchema.safeParse(shippingAddress);
   if (!address.success) return { success: false, error: "Invalid delivery address.", code: "VALIDATION_FAILED" };
@@ -36,7 +36,7 @@ export async function createCheckoutOrder(
     if (!razorpayOrderId) {
       return { success: false, error: "Payment setup is pending verification. Please retry shortly or contact support.", code: "GATEWAY_UNAVAILABLE" };
     }
-    return { success: true, order, gatewayStatus, razorpayOrderId };
+    return { success: true, order, gatewayStatus, razorpayOrderId, keyId: process.env.RAZORPAY_KEY_ID! };
   } catch {
     return {
       success: false,

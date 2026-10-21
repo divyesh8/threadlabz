@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { PUBLIC_SOURCES } from "@/features/catalogue/services/catalogue";
+import { getRuntimeConfiguration } from "@/lib/config/runtime";
 import type { CartItem, CartSummary } from "../types/cart";
 import {
   addToCartSchema,
@@ -77,7 +78,7 @@ export async function getCartSummary(context: { userId?: string; sessionToken?: 
     totalItemCount: 0,
     subtotalPaise: 0,
     currency: "INR",
-    checkoutDisabledReason: CHECKOUT_DISABLED_REASON,
+    checkoutDisabledReason: getRuntimeConfiguration().checkoutEnabled ? "" : CHECKOUT_DISABLED_REASON,
   };
 
   const client = await getClient();
@@ -194,7 +195,7 @@ export async function getCartSummary(context: { userId?: string; sessionToken?: 
     totalItemCount: totalCount,
     subtotalPaise: subtotal,
     currency: "INR",
-    checkoutDisabledReason: CHECKOUT_DISABLED_REASON,
+    checkoutDisabledReason: getRuntimeConfiguration().checkoutEnabled ? "" : CHECKOUT_DISABLED_REASON,
   };
 }
 

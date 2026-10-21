@@ -46,3 +46,11 @@ export const initiateCheckoutSchema = z.object({
 });
 
 export type InitiateCheckoutInput = z.infer<typeof initiateCheckoutSchema>;
+
+export const paymentCallbackSchema = z.object({
+  orderId: z.string().uuid(),
+  razorpay_order_id: z.string().regex(/^order_[A-Za-z0-9]+$/),
+  razorpay_payment_id: z.string().regex(/^pay_[A-Za-z0-9]+$/),
+  razorpay_signature: z.string().regex(/^[a-f0-9]{64}$/i),
+}).strict();
+export type PaymentCallbackInput = z.infer<typeof paymentCallbackSchema>;

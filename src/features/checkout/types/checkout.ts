@@ -46,11 +46,20 @@ export type CheckoutOrder = {
 
 export type GatewayConfigStatus = {
   isConfigured: boolean;
+  checkoutEnabled: boolean;
   mode: "test" | "live" | "unconfigured";
   keyIdAvailable: boolean;
   keySecretAvailable: boolean;
   webhookSecretAvailable: boolean;
   blockerMessage: string;
+};
+
+export type CheckoutSession = {
+  order: CheckoutOrder;
+  razorpayOrderId: string | null;
+  keyId: string | null;
+  isPaid: boolean;
+  canPay: boolean;
 };
 
 export type CreateOrderResult =
@@ -59,6 +68,7 @@ export type CreateOrderResult =
       order: CheckoutOrder;
       gatewayStatus: GatewayConfigStatus;
       razorpayOrderId?: string;
+      keyId: string;
     }
   | {
       success: false;

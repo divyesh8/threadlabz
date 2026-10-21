@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "canonical": [
+    {
+      "file": "001_schema.sql",
+      "sha256": "c0f4566f1414c27a3b79bcc0f9e38c007fe3519a72f7585e09868a89cc61f84d"
+    },
+    {
+      "file": "20261011123446_phase_3_catalogue_boundaries.sql",
+      "sha256": "63b3e94406a66e4b129b348987b4f4700951927a0808bad6cf83549cd296b0c7"
+    },
+    {
+      "file": "20261012000000_phase_4_commerce_foundation.sql",
+      "sha256": "8a60e2903e52ce1178cd5add3151bf87a4cdd43e1ab4f6c13565e37eedc1e9f0"
+    },
+    {
+      "file": "20261012010000_phase_5_commerce_lifecycle.sql",
+      "sha256": "6a670212e8fc905ed7a128644a832928dda5051c9b2554b05add03fca1b47b06"
+    },
+    {
+      "file": "20261020180305_commerce_reliability.sql",
+      "sha256": "45a9e5fa922eb3532c0c600d9018dacc03762a21b7e8be25a1c5d3787ac21f00"
+    },
+    {
+      "file": "20261020182652_phase_7_product_details.sql",
+      "sha256": "5ff10413e15e6218151d8fbb0560880734ac77d0809343e1fa14cb0de2aad157"
+    },
+    {
+      "file": "20261021082348_phase_8_release_permissions.sql",
+      "sha256": "a77934abb56b70b5f777872c636ee32c67a8c60f81821ab8485a1bcb51253194"
+    }
+  ],
+  "archived": [
+    {
+      "path": "supabase/history/phase-1-alternative/20261011061713_phase_1_catalogue_auth.sql",
+      "sha256": "494be9448ef78f53be14b84d2f85a818b74ae14588776ff8a7f3a8709e63cca3"
+    },
+    {
+      "path": "supabase/history/phase-1-alternative/access_control_test.sql",
+      "sha256": "4808f778738fb986356d643ac234779ae9a541b343c2bb352bf6d08c21ace9e2"
+    },
+    {
+      "path": "supabase/history/phase-1-alternative/seed.sql",
+      "sha256": "bf0bfb3565a3ff700439d27ebdbdf194cd8cf1a5c0ece7dff8562cc75aa9e7e2"
+    }
+  ]
+}

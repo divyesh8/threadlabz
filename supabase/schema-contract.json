@@ -1,0 +1,4723 @@
+{
+  "tables": [
+    {
+      "rls": true,
+      "name": "addresses",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "banners",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "cart_items",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "carts",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "categories",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "festivals",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "inventory_reservations",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "newsletter_subscribers",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "order_items",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "orders",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "payments",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "product_festivals",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "product_images",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "product_variants",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "products",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "profiles",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "reviews",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "stock_movements",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "webhook_events",
+      "forceRls": false
+    },
+    {
+      "rls": true,
+      "name": "wishlist",
+      "forceRls": false
+    }
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "addresses",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "table": "addresses",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "full_name",
+      "type": "text",
+      "table": "addresses",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "table": "addresses",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "line1",
+      "type": "text",
+      "table": "addresses",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "line2",
+      "type": "text",
+      "table": "addresses",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "city",
+      "type": "text",
+      "table": "addresses",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "state",
+      "type": "text",
+      "table": "addresses",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "pincode",
+      "type": "text",
+      "table": "addresses",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "is_default",
+      "type": "boolean",
+      "table": "addresses",
+      "default": "false",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "banners",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "placement",
+      "type": "text",
+      "table": "banners",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "table": "banners",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "table": "banners",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "image_url",
+      "type": "text",
+      "table": "banners",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "cta_label",
+      "type": "text",
+      "table": "banners",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "cta_href",
+      "type": "text",
+      "table": "banners",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "sort_order",
+      "type": "integer",
+      "table": "banners",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "table": "banners",
+      "default": "true",
+      "nullable": false
+    },
+    {
+      "name": "starts_at",
+      "type": "timestamp with time zone",
+      "table": "banners",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "ends_at",
+      "type": "timestamp with time zone",
+      "table": "banners",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "cart_items",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "cart_id",
+      "type": "uuid",
+      "table": "cart_items",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "variant_id",
+      "type": "uuid",
+      "table": "cart_items",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "qty",
+      "type": "integer",
+      "table": "cart_items",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "cart_items",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "table": "cart_items",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "carts",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "table": "carts",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "session_token",
+      "type": "text",
+      "table": "carts",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "carts",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "table": "carts",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "categories",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "table": "categories",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "slug",
+      "type": "text",
+      "table": "categories",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "image_url",
+      "type": "text",
+      "table": "categories",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "sort_order",
+      "type": "integer",
+      "table": "categories",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "table": "categories",
+      "default": "true",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "festivals",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "table": "festivals",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "slug",
+      "type": "text",
+      "table": "festivals",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "icon_url",
+      "type": "text",
+      "table": "festivals",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "event_date",
+      "type": "date",
+      "table": "festivals",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "sort_order",
+      "type": "integer",
+      "table": "festivals",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "table": "festivals",
+      "default": "true",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "inventory_reservations",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "variant_id",
+      "type": "uuid",
+      "table": "inventory_reservations",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "order_id",
+      "type": "uuid",
+      "table": "inventory_reservations",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "qty",
+      "type": "integer",
+      "table": "inventory_reservations",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "table": "inventory_reservations",
+      "default": "'ACTIVE'::text",
+      "nullable": false
+    },
+    {
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "table": "inventory_reservations",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "inventory_reservations",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "newsletter_subscribers",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "table": "newsletter_subscribers",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "discount_code",
+      "type": "text",
+      "table": "newsletter_subscribers",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "newsletter_subscribers",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "order_items",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "order_id",
+      "type": "uuid",
+      "table": "order_items",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "product_id",
+      "type": "uuid",
+      "table": "order_items",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "variant_id",
+      "type": "uuid",
+      "table": "order_items",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "title_snapshot",
+      "type": "text",
+      "table": "order_items",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "size",
+      "type": "text",
+      "table": "order_items",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "qty",
+      "type": "integer",
+      "table": "order_items",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "price_paise",
+      "type": "integer",
+      "table": "order_items",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "sku",
+      "type": "text",
+      "table": "order_items",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "tax_paise",
+      "type": "integer",
+      "table": "order_items",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "orders",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "table": "orders",
+      "default": "'pending'::text",
+      "nullable": false
+    },
+    {
+      "name": "total_paise",
+      "type": "integer",
+      "table": "orders",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "shipping_address",
+      "type": "jsonb",
+      "table": "orders",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "razorpay_order_id",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "razorpay_payment_id",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "payment_status",
+      "type": "text",
+      "table": "orders",
+      "default": "'created'::text",
+      "nullable": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "orders",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "order_number",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "subtotal_paise",
+      "type": "integer",
+      "table": "orders",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "shipping_paise",
+      "type": "integer",
+      "table": "orders",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "tax_paise",
+      "type": "integer",
+      "table": "orders",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "discount_paise",
+      "type": "integer",
+      "table": "orders",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "currency",
+      "type": "text",
+      "table": "orders",
+      "default": "'INR'::text",
+      "nullable": false
+    },
+    {
+      "name": "idempotency_key",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "guest_token_hash",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "checkout_cart_id",
+      "type": "uuid",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "checkout_fingerprint",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "reservation_expires_at",
+      "type": "timestamp with time zone",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "gateway_attempted_at",
+      "type": "timestamp with time zone",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "payment_verified_at",
+      "type": "timestamp with time zone",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "reconciliation_reason",
+      "type": "text",
+      "table": "orders",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "payments",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "order_id",
+      "type": "uuid",
+      "table": "payments",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "provider",
+      "type": "text",
+      "table": "payments",
+      "default": "'razorpay'::text",
+      "nullable": false
+    },
+    {
+      "name": "provider_order_id",
+      "type": "text",
+      "table": "payments",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "provider_payment_id",
+      "type": "text",
+      "table": "payments",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "table": "payments",
+      "default": "'CREATED'::text",
+      "nullable": false
+    },
+    {
+      "name": "amount_paise",
+      "type": "integer",
+      "table": "payments",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "currency",
+      "type": "text",
+      "table": "payments",
+      "default": "'INR'::text",
+      "nullable": false
+    },
+    {
+      "name": "failure_reason",
+      "type": "text",
+      "table": "payments",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "payments",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "table": "payments",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "product_id",
+      "type": "uuid",
+      "table": "product_festivals",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "festival_id",
+      "type": "uuid",
+      "table": "product_festivals",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "product_images",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "product_id",
+      "type": "uuid",
+      "table": "product_images",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "url",
+      "type": "text",
+      "table": "product_images",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "alt",
+      "type": "text",
+      "table": "product_images",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "sort_order",
+      "type": "integer",
+      "table": "product_images",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "is_primary",
+      "type": "boolean",
+      "table": "product_images",
+      "default": "false",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "product_variants",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "product_id",
+      "type": "uuid",
+      "table": "product_variants",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "size",
+      "type": "text",
+      "table": "product_variants",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "color",
+      "type": "text",
+      "table": "product_variants",
+      "default": "'default'::text",
+      "nullable": false
+    },
+    {
+      "name": "stock",
+      "type": "integer",
+      "table": "product_variants",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "sku",
+      "type": "text",
+      "table": "product_variants",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "stock_reserved",
+      "type": "integer",
+      "table": "product_variants",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "products",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "table": "products",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "slug",
+      "type": "text",
+      "table": "products",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "table": "products",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "category_id",
+      "type": "uuid",
+      "table": "products",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "audience",
+      "type": "text",
+      "table": "products",
+      "default": "'unisex'::text",
+      "nullable": false
+    },
+    {
+      "name": "price_paise",
+      "type": "integer",
+      "table": "products",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "compare_at_paise",
+      "type": "integer",
+      "table": "products",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "badge",
+      "type": "text",
+      "table": "products",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "total_sold",
+      "type": "integer",
+      "table": "products",
+      "default": "0",
+      "nullable": false
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "table": "products",
+      "default": "true",
+      "nullable": false
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "table": "products",
+      "default": "'manual'::text",
+      "nullable": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "products",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "table": "products",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "product_details",
+      "type": "jsonb",
+      "table": "products",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "profiles",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "full_name",
+      "type": "text",
+      "table": "profiles",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "table": "profiles",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "table": "profiles",
+      "default": "'customer'::text",
+      "nullable": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "profiles",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "reviews",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "product_id",
+      "type": "uuid",
+      "table": "reviews",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "table": "reviews",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "rating",
+      "type": "integer",
+      "table": "reviews",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "comment",
+      "type": "text",
+      "table": "reviews",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "reviews",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "stock_movements",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "variant_id",
+      "type": "uuid",
+      "table": "stock_movements",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "delta",
+      "type": "integer",
+      "table": "stock_movements",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "reason",
+      "type": "text",
+      "table": "stock_movements",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "ref_type",
+      "type": "text",
+      "table": "stock_movements",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "ref_id",
+      "type": "text",
+      "table": "stock_movements",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "stock_movements",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "webhook_events",
+      "default": "gen_random_uuid()",
+      "nullable": false
+    },
+    {
+      "name": "provider",
+      "type": "text",
+      "table": "webhook_events",
+      "default": "'razorpay'::text",
+      "nullable": false
+    },
+    {
+      "name": "event_id",
+      "type": "text",
+      "table": "webhook_events",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "payload",
+      "type": "jsonb",
+      "table": "webhook_events",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "processed_at",
+      "type": "timestamp with time zone",
+      "table": "webhook_events",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "webhook_events",
+      "default": "now()",
+      "nullable": false
+    },
+    {
+      "name": "payload_hash",
+      "type": "text",
+      "table": "webhook_events",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "last_error",
+      "type": "text",
+      "table": "webhook_events",
+      "default": null,
+      "nullable": true
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "table": "wishlist",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "product_id",
+      "type": "uuid",
+      "table": "wishlist",
+      "default": null,
+      "nullable": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "table": "wishlist",
+      "default": "now()",
+      "nullable": false
+    }
+  ],
+  "indexes": [
+    {
+      "name": "addresses_pkey",
+      "table": "addresses",
+      "definition": "CREATE UNIQUE INDEX addresses_pkey ON public.addresses USING btree (id)"
+    },
+    {
+      "name": "banners_pkey",
+      "table": "banners",
+      "definition": "CREATE UNIQUE INDEX banners_pkey ON public.banners USING btree (id)"
+    },
+    {
+      "name": "cart_items_cart_id_variant_id_key",
+      "table": "cart_items",
+      "definition": "CREATE UNIQUE INDEX cart_items_cart_id_variant_id_key ON public.cart_items USING btree (cart_id, variant_id)"
+    },
+    {
+      "name": "cart_items_cart_idx",
+      "table": "cart_items",
+      "definition": "CREATE INDEX cart_items_cart_idx ON public.cart_items USING btree (cart_id)"
+    },
+    {
+      "name": "cart_items_pkey",
+      "table": "cart_items",
+      "definition": "CREATE UNIQUE INDEX cart_items_pkey ON public.cart_items USING btree (id)"
+    },
+    {
+      "name": "cart_items_variant_idx",
+      "table": "cart_items",
+      "definition": "CREATE INDEX cart_items_variant_idx ON public.cart_items USING btree (variant_id)"
+    },
+    {
+      "name": "carts_one_customer",
+      "table": "carts",
+      "definition": "CREATE UNIQUE INDEX carts_one_customer ON public.carts USING btree (user_id) WHERE (user_id IS NOT NULL)"
+    },
+    {
+      "name": "carts_pkey",
+      "table": "carts",
+      "definition": "CREATE UNIQUE INDEX carts_pkey ON public.carts USING btree (id)"
+    },
+    {
+      "name": "carts_session_idx",
+      "table": "carts",
+      "definition": "CREATE INDEX carts_session_idx ON public.carts USING btree (session_token)"
+    },
+    {
+      "name": "carts_session_token_key",
+      "table": "carts",
+      "definition": "CREATE UNIQUE INDEX carts_session_token_key ON public.carts USING btree (session_token)"
+    },
+    {
+      "name": "carts_user_idx",
+      "table": "carts",
+      "definition": "CREATE INDEX carts_user_idx ON public.carts USING btree (user_id)"
+    },
+    {
+      "name": "categories_pkey",
+      "table": "categories",
+      "definition": "CREATE UNIQUE INDEX categories_pkey ON public.categories USING btree (id)"
+    },
+    {
+      "name": "categories_slug_key",
+      "table": "categories",
+      "definition": "CREATE UNIQUE INDEX categories_slug_key ON public.categories USING btree (slug)"
+    },
+    {
+      "name": "festivals_pkey",
+      "table": "festivals",
+      "definition": "CREATE UNIQUE INDEX festivals_pkey ON public.festivals USING btree (id)"
+    },
+    {
+      "name": "festivals_slug_key",
+      "table": "festivals",
+      "definition": "CREATE UNIQUE INDEX festivals_slug_key ON public.festivals USING btree (slug)"
+    },
+    {
+      "name": "inventory_reservations_order_idx",
+      "table": "inventory_reservations",
+      "definition": "CREATE INDEX inventory_reservations_order_idx ON public.inventory_reservations USING btree (order_id)"
+    },
+    {
+      "name": "inventory_reservations_pkey",
+      "table": "inventory_reservations",
+      "definition": "CREATE UNIQUE INDEX inventory_reservations_pkey ON public.inventory_reservations USING btree (id)"
+    },
+    {
+      "name": "inventory_reservations_status_expiry_idx",
+      "table": "inventory_reservations",
+      "definition": "CREATE INDEX inventory_reservations_status_expiry_idx ON public.inventory_reservations USING btree (status, expires_at)"
+    },
+    {
+      "name": "inventory_reservations_variant_idx",
+      "table": "inventory_reservations",
+      "definition": "CREATE INDEX inventory_reservations_variant_idx ON public.inventory_reservations USING btree (variant_id)"
+    },
+    {
+      "name": "newsletter_subscribers_email_key",
+      "table": "newsletter_subscribers",
+      "definition": "CREATE UNIQUE INDEX newsletter_subscribers_email_key ON public.newsletter_subscribers USING btree (email)"
+    },
+    {
+      "name": "newsletter_subscribers_pkey",
+      "table": "newsletter_subscribers",
+      "definition": "CREATE UNIQUE INDEX newsletter_subscribers_pkey ON public.newsletter_subscribers USING btree (id)"
+    },
+    {
+      "name": "order_items_pkey",
+      "table": "order_items",
+      "definition": "CREATE UNIQUE INDEX order_items_pkey ON public.order_items USING btree (id)"
+    },
+    {
+      "name": "orders_checkout_cart",
+      "table": "orders",
+      "definition": "CREATE INDEX orders_checkout_cart ON public.orders USING btree (checkout_cart_id, created_at DESC)"
+    },
+    {
+      "name": "orders_idempotency_idx",
+      "table": "orders",
+      "definition": "CREATE INDEX orders_idempotency_idx ON public.orders USING btree (idempotency_key)"
+    },
+    {
+      "name": "orders_idempotency_key_key",
+      "table": "orders",
+      "definition": "CREATE UNIQUE INDEX orders_idempotency_key_key ON public.orders USING btree (idempotency_key)"
+    },
+    {
+      "name": "orders_number_idx",
+      "table": "orders",
+      "definition": "CREATE INDEX orders_number_idx ON public.orders USING btree (order_number)"
+    },
+    {
+      "name": "orders_order_number_key",
+      "table": "orders",
+      "definition": "CREATE UNIQUE INDEX orders_order_number_key ON public.orders USING btree (order_number)"
+    },
+    {
+      "name": "orders_pkey",
+      "table": "orders",
+      "definition": "CREATE UNIQUE INDEX orders_pkey ON public.orders USING btree (id)"
+    },
+    {
+      "name": "payments_order_idx",
+      "table": "payments",
+      "definition": "CREATE INDEX payments_order_idx ON public.payments USING btree (order_id)"
+    },
+    {
+      "name": "payments_pkey",
+      "table": "payments",
+      "definition": "CREATE UNIQUE INDEX payments_pkey ON public.payments USING btree (id)"
+    },
+    {
+      "name": "payments_provider_order_id_key",
+      "table": "payments",
+      "definition": "CREATE UNIQUE INDEX payments_provider_order_id_key ON public.payments USING btree (provider_order_id)"
+    },
+    {
+      "name": "payments_provider_payment_id_key",
+      "table": "payments",
+      "definition": "CREATE UNIQUE INDEX payments_provider_payment_id_key ON public.payments USING btree (provider_payment_id)"
+    },
+    {
+      "name": "product_festivals_festival_idx",
+      "table": "product_festivals",
+      "definition": "CREATE INDEX product_festivals_festival_idx ON public.product_festivals USING btree (festival_id, product_id)"
+    },
+    {
+      "name": "product_festivals_pkey",
+      "table": "product_festivals",
+      "definition": "CREATE UNIQUE INDEX product_festivals_pkey ON public.product_festivals USING btree (product_id, festival_id)"
+    },
+    {
+      "name": "product_images_pkey",
+      "table": "product_images",
+      "definition": "CREATE UNIQUE INDEX product_images_pkey ON public.product_images USING btree (id)"
+    },
+    {
+      "name": "product_images_product_idx",
+      "table": "product_images",
+      "definition": "CREATE INDEX product_images_product_idx ON public.product_images USING btree (product_id, sort_order, id)"
+    },
+    {
+      "name": "product_variants_pkey",
+      "table": "product_variants",
+      "definition": "CREATE UNIQUE INDEX product_variants_pkey ON public.product_variants USING btree (id)"
+    },
+    {
+      "name": "product_variants_product_id_size_color_key",
+      "table": "product_variants",
+      "definition": "CREATE UNIQUE INDEX product_variants_product_id_size_color_key ON public.product_variants USING btree (product_id, size, color)"
+    },
+    {
+      "name": "products_catalogue_newest_idx",
+      "table": "products",
+      "definition": "CREATE INDEX products_catalogue_newest_idx ON public.products USING btree (created_at DESC, id) WHERE (is_active AND (source = ANY (ARRAY['admin'::text, 'manual'::text])))"
+    },
+    {
+      "name": "products_catalogue_price_idx",
+      "table": "products",
+      "definition": "CREATE INDEX products_catalogue_price_idx ON public.products USING btree (price_paise, id) WHERE (is_active AND (source = ANY (ARRAY['admin'::text, 'manual'::text])))"
+    },
+    {
+      "name": "products_category_idx",
+      "table": "products",
+      "definition": "CREATE INDEX products_category_idx ON public.products USING btree (category_id)"
+    },
+    {
+      "name": "products_pkey",
+      "table": "products",
+      "definition": "CREATE UNIQUE INDEX products_pkey ON public.products USING btree (id)"
+    },
+    {
+      "name": "products_slug_key",
+      "table": "products",
+      "definition": "CREATE UNIQUE INDEX products_slug_key ON public.products USING btree (slug)"
+    },
+    {
+      "name": "profiles_pkey",
+      "table": "profiles",
+      "definition": "CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)"
+    },
+    {
+      "name": "reviews_pkey",
+      "table": "reviews",
+      "definition": "CREATE UNIQUE INDEX reviews_pkey ON public.reviews USING btree (id)"
+    },
+    {
+      "name": "reviews_product_id_user_id_key",
+      "table": "reviews",
+      "definition": "CREATE UNIQUE INDEX reviews_product_id_user_id_key ON public.reviews USING btree (product_id, user_id)"
+    },
+    {
+      "name": "stock_movements_pkey",
+      "table": "stock_movements",
+      "definition": "CREATE UNIQUE INDEX stock_movements_pkey ON public.stock_movements USING btree (id)"
+    },
+    {
+      "name": "webhook_events_pkey",
+      "table": "webhook_events",
+      "definition": "CREATE UNIQUE INDEX webhook_events_pkey ON public.webhook_events USING btree (id)"
+    },
+    {
+      "name": "webhook_events_provider_event_id_key",
+      "table": "webhook_events",
+      "definition": "CREATE UNIQUE INDEX webhook_events_provider_event_id_key ON public.webhook_events USING btree (provider, event_id)"
+    },
+    {
+      "name": "wishlist_pkey",
+      "table": "wishlist",
+      "definition": "CREATE UNIQUE INDEX wishlist_pkey ON public.wishlist USING btree (user_id, product_id)"
+    }
+  ],
+  "policies": [
+    {
+      "name": "own addresses",
+      "check": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "table": "addresses",
+      "using": "(auth.uid() = user_id)",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write banners",
+      "check": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "table": "banners",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read banners",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "banners",
+      "using": "(is_admin() OR (is_active AND ((starts_at IS NULL) OR (starts_at <= now())) AND ((ends_at IS NULL) OR (ends_at > now()))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "user manage own cart items",
+      "check": "(EXISTS ( SELECT 1\n   FROM carts c\n  WHERE ((c.id = cart_items.cart_id) AND ((c.user_id = auth.uid()) OR is_admin()))))",
+      "roles": [
+        "public"
+      ],
+      "table": "cart_items",
+      "using": "(EXISTS ( SELECT 1\n   FROM carts c\n  WHERE ((c.id = cart_items.cart_id) AND ((c.user_id = auth.uid()) OR is_admin()))))",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "user read own cart items",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "cart_items",
+      "using": "(EXISTS ( SELECT 1\n   FROM carts c\n  WHERE ((c.id = cart_items.cart_id) AND ((c.user_id = auth.uid()) OR is_admin()))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "user manage own cart",
+      "check": "(((auth.uid() IS NOT NULL) AND (user_id = auth.uid())) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "table": "carts",
+      "using": "(((auth.uid() IS NOT NULL) AND (user_id = auth.uid())) OR is_admin())",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "user read own cart",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "carts",
+      "using": "(((auth.uid() IS NOT NULL) AND (user_id = auth.uid())) OR is_admin())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write categories",
+      "check": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "table": "categories",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read categories",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "categories",
+      "using": "(is_active OR is_admin())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write festivals",
+      "check": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "table": "festivals",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read festivals",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "festivals",
+      "using": "(is_active OR is_admin())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin read reservations",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "inventory_reservations",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin read subscribers",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "newsletter_subscribers",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "anyone can subscribe",
+      "check": "true",
+      "roles": [
+        "public"
+      ],
+      "table": "newsletter_subscribers",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "read own order items",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "order_items",
+      "using": "(EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.id = order_items.order_id) AND ((o.user_id = auth.uid()) OR is_admin()))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin update orders",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "orders",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "read own orders",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "orders",
+      "using": "((auth.uid() = user_id) OR is_admin())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "user read own payments",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "payments",
+      "using": "(EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.id = payments.order_id) AND ((o.user_id = auth.uid()) OR is_admin()))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write product_festivals",
+      "check": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "table": "product_festivals",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read product_festivals",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "product_festivals",
+      "using": "(EXISTS ( SELECT 1\n   FROM products p\n  WHERE (p.id = product_festivals.product_id)))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write product_images",
+      "check": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "table": "product_images",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read product_images",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "product_images",
+      "using": "(EXISTS ( SELECT 1\n   FROM products p\n  WHERE (p.id = product_images.product_id)))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write product_variants",
+      "check": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "table": "product_variants",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read product_variants",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "product_variants",
+      "using": "(EXISTS ( SELECT 1\n   FROM products p\n  WHERE (p.id = product_variants.product_id)))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write products",
+      "check": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "table": "products",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read active products",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "products",
+      "using": "(is_admin() OR (is_active AND (source = ANY (ARRAY['admin'::text, 'manual'::text])) AND (EXISTS ( SELECT 1\n   FROM categories c\n  WHERE ((c.id = products.category_id) AND c.is_active)))))",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "insert own customer profile",
+      "check": "((id = ( SELECT auth.uid() AS uid)) AND (role = 'customer'::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "profiles",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "read own profile",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "profiles",
+      "using": "((auth.uid() = id) OR is_admin())",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "update own profile",
+      "check": "((auth.uid() = id) AND (role = ( SELECT p.role\n   FROM profiles p\n  WHERE (p.id = auth.uid()))))",
+      "roles": [
+        "public"
+      ],
+      "table": "profiles",
+      "using": "(auth.uid() = id)",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin manage reviews",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "reviews",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "insert own review",
+      "check": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "table": "reviews",
+      "using": null,
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read reviews",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "reviews",
+      "using": "true",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin read stock movements",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "stock_movements",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin read webhook events",
+      "check": null,
+      "roles": [
+        "public"
+      ],
+      "table": "webhook_events",
+      "using": "is_admin()",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "own wishlist",
+      "check": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "table": "wishlist",
+      "using": "(auth.uid() = user_id)",
+      "schema": "public",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "admin write product images",
+      "check": "((bucket_id = 'product-images'::text) AND is_admin())",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "((bucket_id = 'product-images'::text) AND is_admin())",
+      "schema": "storage",
+      "command": "ALL",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "public read product images",
+      "check": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "objects",
+      "using": "((bucket_id = 'product-images'::text) AND storage.allow_any_operation(ARRAY['object.get_authenticated'::text, 'object.get_authenticated_info'::text]) AND (EXISTS ( SELECT 1\n   FROM product_images i\n  WHERE ((i.url = objects.name) OR (regexp_replace(split_part(i.url, '?'::text, 1), '^https://[^/]+/storage/v1/object/(public|sign|authenticated)/product-images/'::text, ''::text) = objects.name)))))",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    }
+  ],
+  "triggers": [
+    "CREATE TRIGGER commerce_preserve_variant BEFORE DELETE ON public.product_variants FOR EACH ROW EXECUTE FUNCTION commerce_preserve_variant()",
+    "CREATE TRIGGER products_touch BEFORE UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION touch_updated_at()",
+    "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user()"
+  ],
+  "functions": [
+    {
+      "name": "commerce_attach_gateway",
+      "arguments": "p_order_id uuid, p_provider_id text, p_amount integer, p_currency text",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_attach_gateway(p_order_id uuid, p_provider_id text, p_amount integer, p_currency text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare o public.orders%rowtype; n integer;\nbegin\n  select * into strict o from public.orders where id = p_order_id for update;\n  if o.total_paise <> p_amount or o.currency <> p_currency or p_provider_id !~ '^order_[A-Za-z0-9]+$'\n    or (o.razorpay_order_id is not null and o.razorpay_order_id <> p_provider_id) then\n    raise exception 'Gateway association mismatch';\n  end if;\n  update public.payments set provider_order_id = p_provider_id, updated_at = now()\n    where order_id = o.id and provider = 'razorpay'\n      and provider_order_id in ('pending_' || o.id::text, p_provider_id)\n      and amount_paise = p_amount and currency = p_currency;\n  get diagnostics n = row_count;\n  if n <> 1 then raise exception 'Payment intent missing or ambiguous'; end if;\n  update public.orders set razorpay_order_id = p_provider_id,\n    reconciliation_reason = case when reconciliation_reason = 'gateway_creation_pending' then null else reconciliation_reason end\n    where id = o.id;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_cart",
+      "arguments": "p_user_id uuid, p_session_token text",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_cart(p_user_id uuid, p_session_token text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_id uuid;\nbegin\n  if p_user_id is null and (p_session_token is null or\n      p_session_token !~* '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$') then\n    raise exception 'Missing cart authorization';\n  end if;\n  -- Serializes first creation, including when no cart row exists yet.\n  perform pg_advisory_xact_lock(hashtextextended(\n    coalesce('user:' || p_user_id::text, 'guest:' || p_session_token), 0));\n  select id into v_id from public.carts\n  where (p_user_id is not null and user_id = p_user_id)\n     or (p_user_id is null and user_id is null and session_token = p_session_token)\n  for update;\n  if v_id is null then\n    insert into public.carts(user_id, session_token)\n    values (p_user_id, case when p_user_id is null then p_session_token end)\n    returning id into v_id;\n  end if;\n  return v_id;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_claim_gateway",
+      "arguments": "p_order_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_claim_gateway(p_order_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare o public.orders%rowtype;\nbegin\n  select * into strict o from public.orders where id = p_order_id for update;\n  if o.status = 'pending' and o.reservation_expires_at <= now() then raise exception 'Checkout expired'; end if;\n  if o.razorpay_order_id is not null then\n    return jsonb_build_object('providerOrderId', o.razorpay_order_id, 'claimed', false);\n  end if;\n  if o.status <> 'pending' or o.reservation_expires_at <= now() then raise exception 'Checkout expired'; end if;\n  if o.gateway_attempted_at is not null then return jsonb_build_object('claimed', false); end if;\n  update public.orders set gateway_attempted_at = now(), reconciliation_reason = 'gateway_creation_pending'\n    where id = p_order_id;\n  return jsonb_build_object('claimed', true);\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_merge_cart",
+      "arguments": "p_user_id uuid, p_session_token text",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_merge_cart(p_user_id uuid, p_session_token text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_user uuid; v_guest uuid;\nbegin\n  if p_user_id is null or p_session_token is null then raise exception 'Missing cart authorization'; end if;\n  -- User lock first; all merges into this customer serialize.\n  v_user := public.commerce_cart(p_user_id, null);\n  perform pg_advisory_xact_lock(hashtextextended('guest:' || p_session_token, 0));\n  select id into v_guest from public.carts\n    where session_token = p_session_token and user_id is null for update;\n  if v_guest is null then return; end if;\n  insert into public.cart_items(cart_id, variant_id, qty)\n    select v_user, variant_id, least(qty, 10) from public.cart_items where cart_id = v_guest\n    on conflict (cart_id, variant_id) do update\n      set qty = least(10, public.cart_items.qty + excluded.qty), updated_at = now();\n  delete from public.carts where id = v_guest and user_id is null;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_mutate_cart",
+      "arguments": "p_user_id uuid, p_session_token text, p_operation text, p_variant_id uuid, p_item_id uuid, p_qty integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_mutate_cart(p_user_id uuid, p_session_token text, p_operation text, p_variant_id uuid DEFAULT NULL::uuid, p_item_id uuid DEFAULT NULL::uuid, p_qty integer DEFAULT 0)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_cart uuid; v_variant uuid; v_available integer; v_existing integer;\nbegin\n  v_cart := public.commerce_cart(p_user_id, p_session_token);\n  if p_operation = 'remove' or (p_operation = 'set' and p_qty = 0) then\n    delete from public.cart_items where cart_id = v_cart and id = p_item_id;\n    return;\n  end if;\n  if p_operation not in ('add', 'set') or p_qty not between 1 and 10 then\n    raise exception 'Invalid cart change';\n  end if;\n  v_variant := p_variant_id;\n  if p_operation = 'set' then\n    select variant_id into v_variant from public.cart_items where cart_id = v_cart and id = p_item_id;\n  end if;\n  select v.stock - v.stock_reserved into v_available\n    from public.product_variants v join public.products p on p.id = v.product_id\n    join public.categories c on c.id = p.category_id\n    where v.id = v_variant and p.is_active and c.is_active\n      and p.source in ('admin', 'manual') and p.price_paise > 0;\n  if v_available is null or v_available < 1 then raise exception 'Unavailable variant'; end if;\n  select qty into v_existing from public.cart_items where cart_id = v_cart and variant_id = v_variant;\n  insert into public.cart_items(cart_id, variant_id, qty)\n    values (v_cart, v_variant, least(10, v_available,\n      p_qty + case when p_operation = 'add' then coalesce(v_existing, 0) else 0 end))\n    on conflict (cart_id, variant_id) do update set qty = excluded.qty, updated_at = now();\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_order_view",
+      "arguments": "p_order_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_order_view(p_order_id uuid)\n RETURNS jsonb\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select jsonb_build_object(\n    'id', o.id, 'orderNumber', o.order_number, 'status', o.status,\n    'paymentStatus', o.payment_status, 'grandTotalPaise', o.total_paise,\n    'currency', o.currency, 'shippingAddress', o.shipping_address,\n    'reservationExpiresAt', o.reservation_expires_at, 'createdAt', o.created_at,\n    'items', (select coalesce(jsonb_agg(jsonb_build_object(\n      'variantId', i.variant_id, 'productId', i.product_id, 'title', i.title_snapshot,\n      'sku', i.sku, 'size', i.size, 'colour', '', 'unitPricePaise', i.price_paise,\n      'quantity', i.qty, 'lineTotalPaise', i.price_paise * i.qty, 'taxPaise', i.tax_paise\n    ) order by i.id), '[]'::jsonb) from public.order_items i where i.order_id = o.id)\n  ) from public.orders o where o.id = p_order_id;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_prepare_checkout",
+      "arguments": "p_user_id uuid, p_session_token text, p_guest_hash text, p_key text, p_address jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_prepare_checkout(p_user_id uuid, p_session_token text, p_guest_hash text, p_key text, p_address jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  v_cart uuid; v_order public.orders%rowtype; v_fingerprint text;\n  v_total bigint; v_id uuid; v_expiry timestamptz := now() + interval '15 minutes'; r record;\nbegin\n  v_cart := public.commerce_cart(p_user_id, p_session_token);\n  if p_key is null or length(p_key) <> 64 or\n     (p_user_id is null and (p_guest_hash is null or length(p_guest_hash) <> 64)) then\n    raise exception 'Invalid checkout authorization';\n  end if;\n  -- Lock cart lines before computing the exact submitted cart fingerprint.\n  perform 1 from public.cart_items where cart_id = v_cart order by variant_id for update;\n  select md5(string_agg(variant_id::text || ':' || qty::text, ',' order by variant_id))\n    into v_fingerprint from public.cart_items where cart_id = v_cart;\n  select * into v_order from public.orders where idempotency_key = p_key for update;\n  if found then\n    if ((p_user_id is not null and v_order.user_id = p_user_id) or\n      (p_user_id is null and v_order.user_id is null and v_order.guest_token_hash = p_guest_hash)) is distinct from true\n      or v_order.checkout_cart_id is distinct from v_cart\n      or v_order.shipping_address is distinct from p_address\n      or (v_fingerprint is not null and v_order.checkout_fingerprint is distinct from v_fingerprint) then\n      raise exception 'Checkout request changed';\n    end if;\n    return public.commerce_order_view(v_order.id);\n  end if;\n  if v_fingerprint is null then\n    -- Concurrent submission with a different key cannot produce another order.\n    select * into v_order from public.orders where checkout_cart_id = v_cart\n      and shipping_address = p_address and status = 'pending'\n      and ((p_user_id is not null and user_id = p_user_id) or\n        (p_user_id is null and user_id is null and guest_token_hash = p_guest_hash))\n      order by created_at desc limit 1;\n    if found then return public.commerce_order_view(v_order.id); end if;\n    raise exception 'Empty cart';\n  end if;\n  -- Stable variant order across checkouts; publication and prices are locked too.\n  perform 1 from public.product_variants v join public.cart_items i on i.variant_id = v.id\n    where i.cart_id = v_cart order by v.id for update of v;\n  perform 1 from public.products p where p.id in (\n    select v.product_id from public.product_variants v join public.cart_items i on i.variant_id = v.id\n    where i.cart_id = v_cart) order by p.id for share;\n  perform 1 from public.categories c where c.id in (\n    select p.category_id from public.products p join public.product_variants v on v.product_id = p.id\n    join public.cart_items i on i.variant_id = v.id where i.cart_id = v_cart) order by c.id for share;\n  if exists (select 1 from public.cart_items i\n    join public.product_variants v on v.id = i.variant_id\n    join public.products p on p.id = v.product_id left join public.categories c on c.id = p.category_id\n    where i.cart_id = v_cart and (not p.is_active or c.is_active is distinct from true\n      or p.source not in ('admin', 'manual') or p.price_paise <= 0\n      or i.qty not between 1 and 10 or v.stock - v.stock_reserved < i.qty)) then\n    raise exception 'Unavailable cart stock';\n  end if;\n  select sum(p.price_paise::bigint * i.qty) into v_total\n    from public.cart_items i join public.product_variants v on v.id = i.variant_id\n    join public.products p on p.id = v.product_id where i.cart_id = v_cart;\n  if v_total is null or v_total <= 0 or v_total > 2147483647 then raise exception 'Invalid total'; end if;\n  insert into public.orders(user_id, guest_token_hash, idempotency_key, checkout_cart_id,\n    checkout_fingerprint, order_number, status, payment_status, subtotal_paise, tax_paise,\n    total_paise, currency, shipping_address, reservation_expires_at)\n    values(p_user_id, case when p_user_id is null then p_guest_hash end, p_key, v_cart,\n      v_fingerprint, 'TL-' || gen_random_uuid()::text, 'pending', 'unpaid', v_total,\n      round(v_total * 500::numeric / 10500), v_total, 'INR', p_address, v_expiry)\n    returning id into v_id;\n  for r in select i.*, p.id as product_id, p.title, p.price_paise, v.size, v.sku\n    from public.cart_items i join public.product_variants v on v.id = i.variant_id\n    join public.products p on p.id = v.product_id where i.cart_id = v_cart order by v.id\n  loop\n    perform public.reserve_stock(r.variant_id, r.qty, v_expiry, v_id);\n    insert into public.order_items(order_id, product_id, variant_id, title_snapshot, size, sku, price_paise, qty, tax_paise)\n      values(v_id, r.product_id, r.variant_id, r.title, r.size, r.sku, r.price_paise, r.qty,\n        round(r.price_paise::numeric * r.qty * 500 / 10500));\n  end loop;\n  insert into public.payments(order_id, provider_order_id, amount_paise, currency)\n    values(v_id, 'pending_' || v_id::text, v_total, 'INR');\n  delete from public.cart_items where cart_id = v_cart;\n  return public.commerce_order_view(v_id);\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_preserve_variant",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_preserve_variant()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n  if exists(select 1 from public.order_items where variant_id = old.id)\n    or exists(select 1 from public.inventory_reservations where variant_id = old.id) then\n    raise exception 'Ordered or reserved variants must be retained';\n  end if;\n  return old;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_process_event",
+      "arguments": "p_event_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_process_event(p_event_id uuid)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare e public.webhook_events%rowtype; p public.payments%rowtype; o public.orders%rowtype;\n  v_reason text; v_bad boolean; r record; v_payment text; v_capture boolean;\nbegin\n  select * into strict e from public.webhook_events where id = p_event_id for update;\n  if e.processed_at is not null then return 'duplicate'; end if;\n  v_payment := e.payload->>'paymentId';\n  v_capture := e.payload->>'event' in ('payment.captured', 'order.paid');\n  -- Order before payment before reservations; consistent with gateway attachment.\n  select o1.* into o from public.orders o1 join public.payments p1 on p1.order_id = o1.id\n    where p1.provider = 'razorpay' and p1.provider_order_id = e.payload->>'providerOrderId' for update of o1;\n  if not found then\n    update public.webhook_events set last_error = 'association_missing' where id = e.id;\n    return 'retry';\n  end if;\n  select * into strict p from public.payments where provider = 'razorpay'\n    and provider_order_id = e.payload->>'providerOrderId' for update;\n  if o.razorpay_order_id is distinct from p.provider_order_id or\n    p.amount_paise <> (e.payload->>'amount')::bigint or p.amount_paise <> o.total_paise or\n    p.currency is distinct from e.payload->>'currency' or p.currency <> o.currency then\n    v_reason := 'payment_mismatch';\n  elsif p.status in ('CAPTURED', 'REFUNDED') and v_capture and p.provider_payment_id is distinct from v_payment then\n    v_reason := 'conflicting_capture';\n  elsif exists(select 1 from public.payments where provider_payment_id = v_payment and id <> p.id) then\n    v_reason := 'payment_already_associated';\n  end if;\n  if v_reason is not null then\n    update public.webhook_events set last_error = v_reason where id = e.id;\n    return 'retry';\n  end if;\n  if p.status not in ('CAPTURED', 'REFUNDED') then\n    perform 1 from public.inventory_reservations where order_id = o.id order by variant_id, id for update;\n    if v_capture then\n      -- One exact active, unexpired reservation per snapshot, with no extra holds.\n      select not exists(select 1 from public.order_items where order_id = o.id)\n        or exists (\n          select 1 from (select variant_id, sum(qty) qty from public.order_items where order_id = o.id group by variant_id) i\n          full join (select variant_id, sum(qty) qty, bool_and(status = 'ACTIVE' and expires_at > now()) valid\n            from public.inventory_reservations where order_id = o.id group by variant_id) held using(variant_id)\n          where i.qty is distinct from held.qty or held.valid is distinct from true\n        ) into v_bad;\n      if o.status <> 'pending' or v_bad then\n        -- Money arrived, but fulfilment is unsafe. Never show this as a paid order.\n        update public.payments set status = 'CAPTURED', provider_payment_id = v_payment, updated_at = now() where id = p.id;\n        update public.orders set payment_status = 'captured_review', razorpay_payment_id = v_payment,\n          reconciliation_reason = 'capture_without_valid_reservation' where id = o.id;\n        perform public.release_order_reservations(o.id);\n      else\n        -- All effects, including event completion, roll back on any failed write.\n        for r in select * from public.inventory_reservations where order_id = o.id order by variant_id, id loop\n          if not public.finalize_stock_reservation(r.id) then raise exception 'Stock finalization failed'; end if;\n        end loop;\n        update public.payments set status = 'CAPTURED', provider_payment_id = v_payment, updated_at = now() where id = p.id;\n        update public.orders set status = 'paid', payment_status = 'captured',\n          razorpay_payment_id = v_payment, payment_verified_at = now(), reconciliation_reason = null where id = o.id;\n      end if;\n    else\n      update public.payments set status = 'FAILED', updated_at = now() where id = p.id;\n      update public.orders set payment_status = 'failed' where id = o.id;\n      perform public.release_order_reservations(o.id);\n    end if;\n  elsif p.status = 'CAPTURED' and o.payment_verified_at is null and o.payment_status <> 'captured_review' then\n    -- Historical handler could commit CAPTURED without committing stock/order\n    -- writes. Do not silently bless that partial state as a duplicate success.\n    update public.orders set payment_status = 'captured_review',\n      reconciliation_reason = 'legacy_capture_requires_review' where id = o.id;\n  end if;\n  update public.webhook_events set processed_at = now(), last_error = null where id = e.id;\n  return 'success';\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "commerce_record_event",
+      "arguments": "p_event_id text, p_hash text, p_payload jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.commerce_record_event(p_event_id text, p_hash text, p_payload jsonb)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare e public.webhook_events%rowtype;\nbegin\n  insert into public.webhook_events(provider, event_id, payload_hash, payload)\n    values('razorpay', p_event_id, p_hash, p_payload) on conflict(provider, event_id) do nothing;\n  select * into strict e from public.webhook_events where provider = 'razorpay' and event_id = p_event_id for update;\n  if e.payload_hash is distinct from p_hash then raise exception 'Event identity conflict'; end if;\n  return e.id;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "finalize_order_stock",
+      "arguments": "p_order_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.finalize_order_stock(p_order_id uuid)\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  r record;\n  v_count integer := 0;\nbegin\n  for r in\n    select id\n    from public.inventory_reservations\n    where order_id = p_order_id and status = 'ACTIVE'\n    for update\n  loop\n    if public.finalize_stock_reservation(r.id) then\n      v_count := v_count + 1;\n    end if;\n  end loop;\n\n  return v_count;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "finalize_stock_reservation",
+      "arguments": "p_reservation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.finalize_stock_reservation(p_reservation_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare r public.inventory_reservations%rowtype;\nbegin\n  select * into r from public.inventory_reservations where id = p_reservation_id for update;\n  if not found or r.status <> 'ACTIVE' then return false; end if;\n  if r.expires_at <= now() then raise exception 'Reservation expired'; end if;\n  update public.product_variants set stock = stock - r.qty, stock_reserved = stock_reserved - r.qty\n    where id = r.variant_id and stock >= r.qty and stock_reserved >= r.qty;\n  if not found then raise exception 'Inventory ledger mismatch'; end if;\n  update public.inventory_reservations set status = 'CONSUMED' where id = r.id;\n  insert into public.stock_movements(variant_id, delta, reason, ref_type, ref_id)\n    values(r.variant_id, -r.qty, 'SALE', 'order', r.order_id::text);\n  return true;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "handle_new_user",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nbegin\n  insert into public.profiles (id, full_name)\n  values (new.id, new.raw_user_meta_data->>'full_name');\n  return new;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "is_admin",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select exists (select 1 from public.profiles where id = auth.uid() and role = 'admin');\n$function$\n",
+      "anonExecute": true,
+      "serviceExecute": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "release_expired_stock_reservations",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.release_expired_stock_reservations()\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare o record; r record; n integer := 0;\nbegin\n  for o in select id from public.orders where exists(\n    select 1 from public.inventory_reservations where order_id = orders.id\n      and status = 'ACTIVE' and expires_at <= now()) order by id for update skip locked\n  loop\n    for r in select * from public.inventory_reservations\n      where order_id = o.id and status = 'ACTIVE' and expires_at <= now()\n      order by variant_id, id for update\n    loop\n      perform public.release_stock_reservation(r.id);\n      update public.inventory_reservations set status = 'EXPIRED' where id = r.id;\n      n := n + 1;\n    end loop;\n  end loop;\n  -- Retain cleanup support for legacy, unassociated reservations.\n  for r in select * from public.inventory_reservations where order_id is null\n    and status = 'ACTIVE' and expires_at <= now() order by variant_id, id for update skip locked\n  loop\n    perform public.release_stock_reservation(r.id);\n    update public.inventory_reservations set status = 'EXPIRED' where id = r.id;\n    n := n + 1;\n  end loop;\n  return n;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "release_order_reservations",
+      "arguments": "p_order_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.release_order_reservations(p_order_id uuid)\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  r record;\n  v_count integer := 0;\nbegin\n  for r in\n    select id\n    from public.inventory_reservations\n    where order_id = p_order_id and status = 'ACTIVE'\n    for update\n  loop\n    if public.release_stock_reservation(r.id) then\n      v_count := v_count + 1;\n    end if;\n  end loop;\n\n  return v_count;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "release_stock_reservation",
+      "arguments": "p_reservation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.release_stock_reservation(p_reservation_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_variant_id uuid;\n  v_qty integer;\n  v_status text;\nbegin\n  select variant_id, qty, status into v_variant_id, v_qty, v_status\n  from public.inventory_reservations\n  where id = p_reservation_id\n  for update;\n\n  if not found or v_status <> 'ACTIVE' then\n    return false;\n  end if;\n\n  update public.product_variants\n  set stock_reserved = greatest(0, stock_reserved - v_qty)\n  where id = v_variant_id;\n\n  update public.inventory_reservations\n  set status = 'RELEASED'\n  where id = p_reservation_id;\n\n  insert into public.stock_movements (variant_id, delta, reason, ref_type, ref_id)\n  values (v_variant_id, 0, 'RESERVATION_RELEASED', 'reservation', p_reservation_id::text);\n\n  return true;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "reserve_stock",
+      "arguments": "p_variant_id uuid, p_qty integer, p_expires_at timestamp with time zone, p_order_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.reserve_stock(p_variant_id uuid, p_qty integer, p_expires_at timestamp with time zone, p_order_id uuid DEFAULT NULL::uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_res_id uuid;\n  v_updated integer;\nbegin\n  if p_qty <= 0 then\n    raise exception 'Quantity must be positive';\n  end if;\n\n  -- Atomic conditional update: prevents overselling under concurrent requests\n  update public.product_variants\n  set stock_reserved = stock_reserved + p_qty\n  where id = p_variant_id\n    and (stock - stock_reserved) >= p_qty;\n\n  get diagnostics v_updated = row_count;\n  if v_updated = 0 then\n    raise exception 'Insufficient stock available for variant %', p_variant_id;\n  end if;\n\n  insert into public.inventory_reservations (variant_id, order_id, qty, status, expires_at)\n  values (p_variant_id, p_order_id, p_qty, 'ACTIVE', p_expires_at)\n  returning id into v_res_id;\n\n  return v_res_id;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "touch_updated_at",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.touch_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "constraints": [
+    {
+      "name": "addresses_pkey",
+      "table": "addresses",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "addresses_user_id_fkey",
+      "table": "addresses",
+      "validated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "banners_pkey",
+      "table": "banners",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "banners_placement_check",
+      "table": "banners",
+      "validated": true,
+      "definition": "CHECK ((placement = ANY (ARRAY['hero'::text, 'festive'::text])))"
+    },
+    {
+      "name": "cart_items_cart_id_fkey",
+      "table": "cart_items",
+      "validated": true,
+      "definition": "FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "cart_items_cart_id_variant_id_key",
+      "table": "cart_items",
+      "validated": true,
+      "definition": "UNIQUE (cart_id, variant_id)"
+    },
+    {
+      "name": "cart_items_pkey",
+      "table": "cart_items",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "cart_items_qty_check",
+      "table": "cart_items",
+      "validated": true,
+      "definition": "CHECK (((qty > 0) AND (qty <= 50)))"
+    },
+    {
+      "name": "cart_items_variant_id_fkey",
+      "table": "cart_items",
+      "validated": true,
+      "definition": "FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "carts_check",
+      "table": "carts",
+      "validated": true,
+      "definition": "CHECK (((user_id IS NOT NULL) OR (session_token IS NOT NULL)))"
+    },
+    {
+      "name": "carts_pkey",
+      "table": "carts",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "carts_session_token_key",
+      "table": "carts",
+      "validated": true,
+      "definition": "UNIQUE (session_token)"
+    },
+    {
+      "name": "carts_user_id_fkey",
+      "table": "carts",
+      "validated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "categories_pkey",
+      "table": "categories",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "categories_slug_key",
+      "table": "categories",
+      "validated": true,
+      "definition": "UNIQUE (slug)"
+    },
+    {
+      "name": "festivals_pkey",
+      "table": "festivals",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "festivals_slug_key",
+      "table": "festivals",
+      "validated": true,
+      "definition": "UNIQUE (slug)"
+    },
+    {
+      "name": "inventory_reservations_order_id_fkey",
+      "table": "inventory_reservations",
+      "validated": true,
+      "definition": "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "inventory_reservations_pkey",
+      "table": "inventory_reservations",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "inventory_reservations_qty_check",
+      "table": "inventory_reservations",
+      "validated": true,
+      "definition": "CHECK ((qty > 0))"
+    },
+    {
+      "name": "inventory_reservations_status_check",
+      "table": "inventory_reservations",
+      "validated": true,
+      "definition": "CHECK ((status = ANY (ARRAY['ACTIVE'::text, 'CONSUMED'::text, 'RELEASED'::text, 'EXPIRED'::text])))"
+    },
+    {
+      "name": "inventory_reservations_variant_id_fkey",
+      "table": "inventory_reservations",
+      "validated": true,
+      "definition": "FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "newsletter_subscribers_email_key",
+      "table": "newsletter_subscribers",
+      "validated": true,
+      "definition": "UNIQUE (email)"
+    },
+    {
+      "name": "newsletter_subscribers_pkey",
+      "table": "newsletter_subscribers",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "order_items_order_id_fkey",
+      "table": "order_items",
+      "validated": true,
+      "definition": "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "order_items_pkey",
+      "table": "order_items",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "order_items_price_paise_check",
+      "table": "order_items",
+      "validated": true,
+      "definition": "CHECK ((price_paise >= 0))"
+    },
+    {
+      "name": "order_items_product_id_fkey",
+      "table": "order_items",
+      "validated": true,
+      "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "order_items_qty_check",
+      "table": "order_items",
+      "validated": true,
+      "definition": "CHECK ((qty > 0))"
+    },
+    {
+      "name": "order_items_tax_paise_check",
+      "table": "order_items",
+      "validated": true,
+      "definition": "CHECK ((tax_paise >= 0))"
+    },
+    {
+      "name": "order_items_variant_id_fkey",
+      "table": "order_items",
+      "validated": true,
+      "definition": "FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "orders_discount_paise_check",
+      "table": "orders",
+      "validated": true,
+      "definition": "CHECK ((discount_paise >= 0))"
+    },
+    {
+      "name": "orders_idempotency_key_key",
+      "table": "orders",
+      "validated": true,
+      "definition": "UNIQUE (idempotency_key)"
+    },
+    {
+      "name": "orders_order_number_key",
+      "table": "orders",
+      "validated": true,
+      "definition": "UNIQUE (order_number)"
+    },
+    {
+      "name": "orders_pkey",
+      "table": "orders",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "orders_shipping_paise_check",
+      "table": "orders",
+      "validated": true,
+      "definition": "CHECK ((shipping_paise >= 0))"
+    },
+    {
+      "name": "orders_status_check",
+      "table": "orders",
+      "validated": true,
+      "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'paid'::text, 'packed'::text, 'shipped'::text, 'delivered'::text, 'cancelled'::text, 'refunded'::text])))"
+    },
+    {
+      "name": "orders_subtotal_paise_check",
+      "table": "orders",
+      "validated": true,
+      "definition": "CHECK ((subtotal_paise >= 0))"
+    },
+    {
+      "name": "orders_tax_paise_check",
+      "table": "orders",
+      "validated": true,
+      "definition": "CHECK ((tax_paise >= 0))"
+    },
+    {
+      "name": "orders_total_paise_check",
+      "table": "orders",
+      "validated": true,
+      "definition": "CHECK ((total_paise >= 0))"
+    },
+    {
+      "name": "orders_user_id_fkey",
+      "table": "orders",
+      "validated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "payments_amount_paise_check",
+      "table": "payments",
+      "validated": true,
+      "definition": "CHECK ((amount_paise >= 0))"
+    },
+    {
+      "name": "payments_order_id_fkey",
+      "table": "payments",
+      "validated": true,
+      "definition": "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "payments_pkey",
+      "table": "payments",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "payments_provider_order_id_key",
+      "table": "payments",
+      "validated": true,
+      "definition": "UNIQUE (provider_order_id)"
+    },
+    {
+      "name": "payments_provider_payment_id_key",
+      "table": "payments",
+      "validated": true,
+      "definition": "UNIQUE (provider_payment_id)"
+    },
+    {
+      "name": "payments_status_check",
+      "table": "payments",
+      "validated": true,
+      "definition": "CHECK ((status = ANY (ARRAY['CREATED'::text, 'AUTHORIZED'::text, 'CAPTURED'::text, 'FAILED'::text, 'REFUNDED'::text])))"
+    },
+    {
+      "name": "product_festivals_festival_id_fkey",
+      "table": "product_festivals",
+      "validated": true,
+      "definition": "FOREIGN KEY (festival_id) REFERENCES festivals(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "product_festivals_pkey",
+      "table": "product_festivals",
+      "validated": true,
+      "definition": "PRIMARY KEY (product_id, festival_id)"
+    },
+    {
+      "name": "product_festivals_product_id_fkey",
+      "table": "product_festivals",
+      "validated": true,
+      "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "product_images_pkey",
+      "table": "product_images",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "product_images_product_id_fkey",
+      "table": "product_images",
+      "validated": true,
+      "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "product_variants_pkey",
+      "table": "product_variants",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "product_variants_product_id_fkey",
+      "table": "product_variants",
+      "validated": true,
+      "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "product_variants_product_id_size_color_key",
+      "table": "product_variants",
+      "validated": true,
+      "definition": "UNIQUE (product_id, size, color)"
+    },
+    {
+      "name": "product_variants_stock_check",
+      "table": "product_variants",
+      "validated": true,
+      "definition": "CHECK ((stock >= 0))"
+    },
+    {
+      "name": "product_variants_stock_reserved_check",
+      "table": "product_variants",
+      "validated": true,
+      "definition": "CHECK ((stock_reserved >= 0))"
+    },
+    {
+      "name": "stock_covers_reservations",
+      "table": "product_variants",
+      "validated": false,
+      "definition": "CHECK ((stock >= stock_reserved)) NOT VALID"
+    },
+    {
+      "name": "products_audience_check",
+      "table": "products",
+      "validated": true,
+      "definition": "CHECK ((audience = ANY (ARRAY['men'::text, 'women'::text, 'kids'::text, 'unisex'::text])))"
+    },
+    {
+      "name": "products_category_id_fkey",
+      "table": "products",
+      "validated": true,
+      "definition": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "products_compare_at_paise_check",
+      "table": "products",
+      "validated": true,
+      "definition": "CHECK ((compare_at_paise >= 0))"
+    },
+    {
+      "name": "products_details_shape",
+      "table": "products",
+      "validated": true,
+      "definition": "CHECK (((product_details IS NULL) OR ((jsonb_typeof(product_details) = 'object'::text) AND (product_details ? 'version'::text) AND ((product_details -> 'version'::text) = '1'::jsonb) AND (octet_length((product_details)::text) <= 32768))))"
+    },
+    {
+      "name": "products_pkey",
+      "table": "products",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "products_price_paise_check",
+      "table": "products",
+      "validated": true,
+      "definition": "CHECK ((price_paise >= 0))"
+    },
+    {
+      "name": "products_slug_key",
+      "table": "products",
+      "validated": true,
+      "definition": "UNIQUE (slug)"
+    },
+    {
+      "name": "profiles_id_fkey",
+      "table": "profiles",
+      "validated": true,
+      "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "profiles_pkey",
+      "table": "profiles",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "profiles_role_check",
+      "table": "profiles",
+      "validated": true,
+      "definition": "CHECK ((role = ANY (ARRAY['customer'::text, 'admin'::text])))"
+    },
+    {
+      "name": "reviews_pkey",
+      "table": "reviews",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "reviews_product_id_fkey",
+      "table": "reviews",
+      "validated": true,
+      "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "reviews_product_id_user_id_key",
+      "table": "reviews",
+      "validated": true,
+      "definition": "UNIQUE (product_id, user_id)"
+    },
+    {
+      "name": "reviews_rating_check",
+      "table": "reviews",
+      "validated": true,
+      "definition": "CHECK (((rating >= 1) AND (rating <= 5)))"
+    },
+    {
+      "name": "reviews_user_id_fkey",
+      "table": "reviews",
+      "validated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "stock_movements_pkey",
+      "table": "stock_movements",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "stock_movements_reason_check",
+      "table": "stock_movements",
+      "validated": true,
+      "definition": "CHECK ((reason = ANY (ARRAY['PURCHASE_RECEIVED'::text, 'SALE'::text, 'RESERVATION_RELEASED'::text, 'RETURN'::text, 'ADJUSTMENT'::text, 'DAMAGE'::text])))"
+    },
+    {
+      "name": "stock_movements_variant_id_fkey",
+      "table": "stock_movements",
+      "validated": true,
+      "definition": "FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "webhook_events_pkey",
+      "table": "webhook_events",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "webhook_events_provider_event_id_key",
+      "table": "webhook_events",
+      "validated": true,
+      "definition": "UNIQUE (provider, event_id)"
+    },
+    {
+      "name": "wishlist_pkey",
+      "table": "wishlist",
+      "validated": true,
+      "definition": "PRIMARY KEY (user_id, product_id)"
+    },
+    {
+      "name": "wishlist_product_id_fkey",
+      "table": "wishlist",
+      "validated": true,
+      "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "wishlist_user_id_fkey",
+      "table": "wishlist",
+      "validated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    }
+  ],
+  "tableGrants": [
+    {
+      "role": "anon",
+      "table": "banners",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "cart_items",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "cart_items",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "carts",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "categories",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "categories",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_festivals",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "product_images",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_images",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "privilege": "SELECT"
+    }
+  ],
+  "columnGrants": [
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "cta_href",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "cta_href",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "cta_href",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "cta_href",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "cta_label",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "cta_label",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "cta_label",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "cta_label",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "ends_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "ends_at",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "ends_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "ends_at",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "image_url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "image_url",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "image_url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "image_url",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "is_active",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "is_active",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "placement",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "placement",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "placement",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "placement",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "sort_order",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "sort_order",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "starts_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "starts_at",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "starts_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "starts_at",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "subtitle",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "subtitle",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "subtitle",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "subtitle",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "banners",
+      "column": "title",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "title",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "title",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "banners",
+      "column": "title",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "cart_items",
+      "column": "cart_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "cart_items",
+      "column": "cart_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "cart_items",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "cart_items",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "cart_items",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "cart_items",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "cart_items",
+      "column": "qty",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "cart_items",
+      "column": "qty",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "cart_items",
+      "column": "updated_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "cart_items",
+      "column": "updated_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "cart_items",
+      "column": "variant_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "cart_items",
+      "column": "variant_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "carts",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "carts",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "carts",
+      "column": "session_token",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "carts",
+      "column": "updated_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "carts",
+      "column": "user_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "categories",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "categories",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "categories",
+      "column": "image_url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "image_url",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "image_url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "image_url",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "categories",
+      "column": "image_url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "categories",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "is_active",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "is_active",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "categories",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "categories",
+      "column": "name",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "name",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "name",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "name",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "categories",
+      "column": "name",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "categories",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "slug",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "slug",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "categories",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "categories",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "sort_order",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "categories",
+      "column": "sort_order",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "categories",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "column": "event_date",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "event_date",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "event_date",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "event_date",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "column": "icon_url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "icon_url",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "icon_url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "icon_url",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "is_active",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "is_active",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "column": "name",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "name",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "name",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "name",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "slug",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "slug",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "festivals",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "sort_order",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "festivals",
+      "column": "sort_order",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "checkout_cart_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "checkout_fingerprint",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "currency",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "discount_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "email",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "gateway_attempted_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "guest_token_hash",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "idempotency_key",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "order_number",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "payment_status",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "payment_verified_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "razorpay_order_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "razorpay_payment_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "reconciliation_reason",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "reservation_expires_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "shipping_address",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "shipping_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "status",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "subtotal_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "tax_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "total_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "orders",
+      "column": "user_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "amount_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "currency",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "failure_reason",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "order_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "provider",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "provider_order_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "provider_payment_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "status",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "payments",
+      "column": "updated_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_festivals",
+      "column": "festival_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "column": "festival_id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "column": "festival_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "column": "festival_id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "product_festivals",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "column": "product_id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_festivals",
+      "column": "product_id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "table": "product_images",
+      "column": "alt",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "alt",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "alt",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "alt",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_images",
+      "column": "alt",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_images",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_images",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_images",
+      "column": "is_primary",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "is_primary",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "is_primary",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "is_primary",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_images",
+      "column": "is_primary",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_images",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "product_id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "product_id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_images",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_images",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "sort_order",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "sort_order",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_images",
+      "column": "sort_order",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_images",
+      "column": "url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "url",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_images",
+      "column": "url",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_images",
+      "column": "url",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "column": "color",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "color",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "color",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "color",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "column": "color",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "product_id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "product_id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "column": "product_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "column": "size",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "size",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "size",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "size",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "column": "size",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "column": "sku",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "sku",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "sku",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "sku",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "column": "sku",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "column": "stock",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "stock",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "stock",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "stock",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "column": "stock",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "product_variants",
+      "column": "stock_reserved",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "stock_reserved",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "stock_reserved",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "product_variants",
+      "column": "stock_reserved",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "product_variants",
+      "column": "stock_reserved",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "audience",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "audience",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "audience",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "audience",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "audience",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "badge",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "badge",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "badge",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "badge",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "badge",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "category_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "category_id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "category_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "category_id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "category_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "compare_at_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "compare_at_paise",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "compare_at_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "compare_at_paise",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "compare_at_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "created_at",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "created_at",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "description",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "description",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "description",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "description",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "description",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "id",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "is_active",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "is_active",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "is_active",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "price_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "price_paise",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "price_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "price_paise",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "price_paise",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "product_details",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "product_details",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "product_details",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "product_details",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "product_details",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "slug",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "slug",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "slug",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "source",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "source",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "source",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "source",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "source",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "title",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "title",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "title",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "title",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "title",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "total_sold",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "total_sold",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "total_sold",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "total_sold",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "total_sold",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "table": "products",
+      "column": "updated_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "updated_at",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "updated_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "products",
+      "column": "updated_at",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "products",
+      "column": "updated_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "full_name",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "full_name",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "id",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "phone",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "phone",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": "role",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "created_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "event_id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "id",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "last_error",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "payload",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "payload_hash",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "processed_at",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "webhook_events",
+      "column": "provider",
+      "privilege": "SELECT"
+    }
+  ],
+  "productBucket": {
+    "limit": 5242880,
+    "public": false,
+    "mimeTypes": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ]
+  }
+}

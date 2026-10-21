@@ -34,7 +34,7 @@ const hooks = registerHooks({
   },
 });
 const { createCheckoutOrder } = await import("../src/features/checkout/services/checkout.ts");
-const { checkOrderStatusAction, createCheckoutOrderAction } = await import("../src/features/checkout/actions/checkout.ts");
+const { checkOrderStatusAction, createCheckoutOrderAction, verifyCheckoutPaymentAction, resumeCheckoutAction, resumeCheckoutAttemptAction } = await import("../src/features/checkout/actions/checkout.ts");
 const { addToCart, removeCartItem, updateCartItemQuantity, mergeGuestCartIntoUserCart, getOrCreateCart } = await import("../src/features/cart/services/cart.ts");
 const { getCartAction } = await import("../src/features/cart/actions/cart.ts");
 const { handleRazorpayWebhook, reconcilePendingPaymentEvents, reconcileCheckoutPayment, runReservationExpiryCleanup } =
@@ -71,8 +71,8 @@ test("actual commerce services/actions/HTTP handler with transactional Postgres"
     create function storage.allow_any_operation(text[]) returns boolean language sql as $$ select true $$;
   `);
   await db.exec(migration("001_schema.sql"));
-  await t.test("unmodified full migration history fails reproducibly", async () => {
-    await assert.rejects(db.exec(migration("20261011061713_phase_1_catalogue_auth.sql")), /already exists/);
+  await t.test("archived alternative is demonstrably incompatible with the canonical baseline", async () => {
+    await assert.rejects(db.exec(fs.readFileSync("supabase/history/phase-1-alternative/20261011061713_phase_1_catalogue_auth.sql", "utf8")), /already exists/);
     await db.exec("rollback");
   });
   for (const name of [
@@ -83,7 +83,7 @@ test("actual commerce services/actions/HTTP handler with transactional Postgres"
   ]) await db.exec(migration(name));
   await db.query("insert into auth.users(id) values($1),($2)", [userA, userB]);
 
-  let gatewayCalls, gatewayFailure, failRpc, providerOrders;
+  let gatewayCalls, gatewayFailure, failRpc, providerOrders, providerPayments, paymentFetches, paymentFetchFailure;
   const scalar = async (sql, args = []) => Object.values((await db.query(sql, args)).rows[0])[0];
   // Minimal PostgREST transport adapter: no business logic or state transitions.
   globalThis.commerceTestClient = {
@@ -127,6 +127,11 @@ test("actual commerce services/actions/HTTP handler with transactional Postgres"
     },
   };
   globalThis.fetch = async (url, options) => {
+    if (String(url).startsWith("https://api.razorpay.com/v1/payments/")) {
+      paymentFetches++;
+      if (paymentFetchFailure) throw Error("Simulated provider outage");
+      return Response.json(providerPayments.get(String(url).split("/").at(-1)) ?? null);
+    }
     assert.ok(String(url).startsWith("https://api.razorpay.com/v1/orders"));
     if (options.method === "GET") return Response.json(providerOrders.get(String(url).split("/").at(-1)));
     gatewayCalls++;
@@ -148,7 +153,9 @@ test("actual commerce services/actions/HTTP handler with transactional Postgres"
     process.env.RAZORPAY_KEY_ID = "rzp_test_fixture";
     process.env.RAZORPAY_KEY_SECRET = "fixture-secret";
     process.env.RAZORPAY_WEBHOOK_SECRET = "fixture-webhook-secret";
+    process.env.CHECKOUT_MODE = "test";
     gatewayCalls = 0; gatewayFailure = false; failRpc = null; providerOrders = new Map();
+    providerPayments = new Map(); paymentFetches = 0; paymentFetchFailure = false;
     identity(null, guestA);
     const category = await scalar("insert into categories(name,slug,is_active) values('Fixture','fixture',true) returning id");
     const product = await scalar("insert into products(title,slug,price_paise,is_active,source,category_id) values('Fixture','fixture',10000,true,'admin',$1) returning id", [category]);
@@ -171,6 +178,67 @@ test("actual commerce services/actions/HTTP handler with transactional Postgres"
     method: "POST", headers: { "x-razorpay-signature": options.signature, "x-razorpay-event-id": options.eventId },
     body: options.rawBody,
   }));
+  const callback = (order, changes = {}) => {
+    const payment = { id: "pay_callback", order_id: order.razorpayOrderId, amount: order.order.grandTotalPaise, currency: "INR", status: "captured", captured: true, ...changes };
+    providerPayments.set(payment.id, payment);
+    return { orderId: order.order.id, razorpay_order_id: order.razorpayOrderId, razorpay_payment_id: payment.id,
+      razorpay_signature: createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(`${order.razorpayOrderId}|${payment.id}`).digest("hex") };
+  };
+  await t.test("browser callback requires owner, stored order, signature and provider capture", async () => {
+    await fill(); const order = await checkout(); const input = callback(order, { status: "authorized", captured: false });
+    identity(null, guestB);
+    assert.equal((await verifyCheckoutPaymentAction(input)).isPaid, false);
+    identity(null, guestA);
+    assert.equal((await verifyCheckoutPaymentAction({ ...input, razorpay_signature: "0".repeat(64) })).isPaid, false);
+    assert.equal((await verifyCheckoutPaymentAction({ ...input, razorpay_order_id: "order_other" })).isPaid, false);
+    assert.equal(paymentFetches, 0);
+    assert.equal((await verifyCheckoutPaymentAction(input)).isPaid, false);
+    assert.equal(await scalar("select sum(stock_reserved)::int from product_variants"), 2);
+    for (const changes of [{ amount: 1 }, { currency: "USD" }, { order_id: "order_other" }, { captured: false }]) {
+      assert.equal((await verifyCheckoutPaymentAction(callback(order, changes))).isPaid, false);
+    }
+    assert.equal((await verifyCheckoutPaymentAction(callback(order))).isPaid, true);
+    assert.equal((await verifyCheckoutPaymentAction(callback(order))).isPaid, true);
+    assert.equal((await handleRazorpayWebhook(signed(order, "payment.captured", { id: "pay_callback" }))).status, "success");
+    assert.equal(await scalar("select sum(stock)::int from product_variants"), 18);
+    assert.equal(await scalar("select sum(stock_reserved)::int from product_variants"), 0);
+  });
+  await t.test("callback provider outage and interrupted inbox processing recover without duplicate stock", async () => {
+    await fill(); const order = await checkout(); const input = callback(order);
+    paymentFetchFailure = true;
+    assert.equal((await verifyCheckoutPaymentAction(input)).isPaid, false);
+    paymentFetchFailure = false; failRpc = "commerce_process_event";
+    assert.equal((await verifyCheckoutPaymentAction(input)).isPaid, false);
+    assert.equal(await scalar("select count(*)::int from webhook_events where processed_at is null"), 1);
+    failRpc = null; await reconcilePendingPaymentEvents();
+    assert.equal((await checkOrderStatusAction(order.order.id)).isPaid, true);
+    assert.equal((await verifyCheckoutPaymentAction(input)).isPaid, true);
+    assert.equal(await scalar("select sum(stock)::int from product_variants"), 18);
+  });
+  await t.test("reload and lost-response recovery remain owner-scoped and cannot reopen expired checkout", async () => {
+    await fill(); const key = randomUUID(); const order = await checkout(undefined, key);
+    assert.equal((await resumeCheckoutAction(order.order.id)).canPay, true);
+    assert.equal((await resumeCheckoutAttemptAction(key)).order.id, order.order.id);
+    identity(null, guestB);
+    assert.equal(await resumeCheckoutAction(order.order.id), null);
+    assert.equal(await resumeCheckoutAttemptAction(key), null);
+    identity(null, guestA);
+    await db.query("update orders set reservation_expires_at=now()-interval '1 minute' where id=$1", [order.order.id]);
+    await db.query("update inventory_reservations set expires_at=now()-interval '1 minute' where order_id=$1", [order.order.id]);
+    assert.equal((await resumeCheckoutAction(order.order.id)).canPay, false);
+    await runReservationExpiryCleanup();
+    assert.equal((await verifyCheckoutPaymentAction(callback(order))).isPaid, false);
+    assert.equal(await scalar("select payment_status from orders"), "captured_review");
+    assert.equal(await scalar("select sum(stock)::int from product_variants"), 20);
+  });
+  await t.test("disabling new test checkout still permits verified in-flight payment reconciliation", async () => {
+    await fill(); const order = await checkout(); process.env.CHECKOUT_MODE = "disabled";
+    assert.equal((await resumeCheckoutAction(order.order.id)).canPay, false);
+    assert.equal((await checkout()).success, false);
+    assert.equal((await handleRazorpayWebhook(signed(order))).status, "success");
+    assert.equal((await checkOrderStatusAction(order.order.id)).isPaid, true);
+    process.env.CHECKOUT_MODE = "test";
+  });
   const failTable = async (table, operation) => db.exec(`
     create function public.inject_failure() returns trigger language plpgsql as $$ begin raise exception 'injected write failure'; end $$;
     create trigger inject_failure before ${operation} on public.${table} for each row execute function public.inject_failure();

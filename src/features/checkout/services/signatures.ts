@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { GatewayConfigStatus } from "../types/checkout";
+import { validateEnvironment } from "../../../lib/config/environment";
 
 export function getRazorpayGatewayStatus(): GatewayConfigStatus {
   const keyId = process.env.RAZORPAY_KEY_ID;
@@ -9,21 +10,24 @@ export function getRazorpayGatewayStatus(): GatewayConfigStatus {
   const keyIdAvailable = Boolean(keyId && keyId.trim().length > 0);
   const keySecretAvailable = Boolean(keySecret && keySecret.trim().length > 0);
   const webhookSecretAvailable = Boolean(webhookSecret && webhookSecret.trim().length > 0);
-  const isConfigured = keyIdAvailable && keySecretAvailable && webhookSecretAvailable;
+  const environment = validateEnvironment(process.env);
+  const isConfigured = environment.valid && environment.environment !== "production"
+    && /^rzp_test_[A-Za-z0-9]+$/.test(keyId || "") && keySecretAvailable && webhookSecretAvailable;
 
   let mode: "test" | "live" | "unconfigured" = "unconfigured";
   if (isConfigured) {
-    mode = keyId?.startsWith("rzp_live_") ? "live" : "test";
+    mode = "test";
   }
 
   let blockerMessage = "";
   if (!isConfigured) {
     blockerMessage =
-      "Razorpay credentials are not configured. The store owner must provide RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and RAZORPAY_WEBHOOK_SECRET.";
+      "Test payments are unavailable. Check the isolated environment and test RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and RAZORPAY_WEBHOOK_SECRET configuration.";
   }
 
   return {
     isConfigured,
+    checkoutEnabled: isConfigured && environment.checkoutEnabled,
     mode,
     keyIdAvailable,
     keySecretAvailable,

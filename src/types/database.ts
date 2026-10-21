@@ -795,6 +795,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      commerce_order_view: { Args: { p_order_id: string }; Returns: Json }
       // Local proposed commerce migration contract; regenerate after staging approval.
       commerce_cart: { Args: { p_user_id: string | null; p_session_token: string | null }; Returns: string }
       commerce_mutate_cart: { Args: { p_user_id: string | null; p_session_token: string | null; p_operation: string; p_variant_id?: string | null; p_item_id?: string | null; p_qty?: number }; Returns: undefined }

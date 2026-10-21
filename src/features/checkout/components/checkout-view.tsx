@@ -1,162 +1,135 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Lock,
-  Package,
-  RefreshCw,
-  ShieldCheck,
-  ShoppingBag,
-  Truck,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Lock, Package, RefreshCw, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  createCheckoutOrderAction,
-  checkOrderStatusAction,
-} from "../actions/checkout";
+import { createCheckoutOrderAction, checkOrderStatusAction, verifyCheckoutPaymentAction, resumeCheckoutAction, resumeCheckoutAttemptAction } from "../actions/checkout";
+import { shippingAddressSchema } from "../schemas/checkout";
+import { openTestCheckout } from "./razorpay-browser";
 import type { CartSummary } from "@/features/cart/types/cart";
-import type { GatewayConfigStatus, ShippingAddress, CheckoutOrder } from "../types/checkout";
+import type { GatewayConfigStatus, ShippingAddress, CheckoutOrder, CheckoutSession } from "../types/checkout";
 
-type CheckoutState =
-  | "ready"
-  | "processing_checkout"
-  | "payment_popup_loading"
-  | "payment_pending_verification"
-  | "payment_failed"
-  | "order_confirmed";
+type CheckoutState = "ready" | "processing_checkout" | "payment_popup_loading" | "payment_pending_verification" | "payment_failed" | "order_confirmed";
 
-export function CheckoutView({
-  cart,
-  gatewayStatus,
-}: {
-  cart: CartSummary;
-  gatewayStatus: GatewayConfigStatus;
+export function CheckoutView({ cart, gatewayStatus, savedCheckout }: {
+  cart: CartSummary; gatewayStatus: GatewayConfigStatus; savedCheckout: CheckoutSession | null;
 }) {
   const [isPending, startTransition] = useTransition();
-  const [checkoutState, setCheckoutState] = useState<CheckoutState>("ready");
+  const [session, setSession] = useState<CheckoutSession | null>(savedCheckout);
+  const [checkoutState, setCheckoutState] = useState<CheckoutState>(savedCheckout?.isPaid ? "order_confirmed" : savedCheckout ? "payment_pending_verification" : "ready");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [stockError, setStockError] = useState<string | null>(null);
-  const [confirmedOrder, setConfirmedOrder] = useState<CheckoutOrder | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<CheckoutOrder | null>(savedCheckout?.order ?? null);
   const attemptKey = useRef<string | null>(null);
-
-  // Delivery Address Form State
-  const [address, setAddress] = useState<ShippingAddress>({
-    fullName: "",
-    phone: "",
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "IN",
+  const submitting = useRef(false);
+  const popup = useRef<{ close(): void } | null>(null);
+  const [address, setAddress] = useState<ShippingAddress>(savedCheckout?.order.shippingAddress ?? {
+    fullName: "", phone: "", addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "IN",
   });
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof ShippingAddress, string>>>({});
 
-  function validateAddress(): boolean {
-    const errors: Partial<Record<keyof ShippingAddress, string>> = {};
+  useEffect(() => () => popup.current?.close(), []);
+  useEffect(() => {
+    if (!session || checkoutState !== "payment_pending_verification") return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    let attempts = 0;
+    const poll = async () => {
+      try {
+        const status = await checkOrderStatusAction(session.order.id);
+        if (cancelled) return;
+        if (status.isPaid) { setCheckoutState("order_confirmed"); setErrorMessage(null); return; }
+        if ("paymentStatus" in status && typeof status.paymentStatus === "string" && ["failed", "captured_review"].includes(status.paymentStatus)) {
+          setCheckoutState("payment_failed");
+          setSession(current => current ? { ...current, canPay: false } : current);
+          setErrorMessage(status.paymentStatus === "captured_review" ? "Payment was received and needs review. Do not pay again; contact support with your order reference." : "The server confirmed that payment failed. This order cannot be paid again; return to your bag to start a new order.");
+          return;
+        }
+      } catch { /* Keep the saved order and expose a manual status retry. */ }
+      if (!cancelled && ++attempts < 8) timer = setTimeout(poll, 2500);
+    };
+    void poll();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [session, checkoutState]);
 
-    if (!address.fullName.trim()) {
-      errors.fullName = "Full name is required";
-    }
-    const cleanPhone = address.phone.replace(/\D/g, "");
-    if (!cleanPhone || cleanPhone.length < 10) {
-      errors.phone = "Enter a valid 10-digit Indian phone number";
-    }
-    if (!address.addressLine1.trim()) {
-      errors.addressLine1 = "Street address is required";
-    }
-    if (!address.city.trim()) {
-      errors.city = "City is required";
-    }
-    if (!address.state.trim()) {
-      errors.state = "State is required";
-    }
-    const cleanPin = address.postalCode.replace(/\D/g, "");
-    if (!cleanPin || cleanPin.length !== 6) {
-      errors.postalCode = "Enter a valid 6-digit postal PIN code";
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+  function acceptSaved(saved: CheckoutSession) {
+    setSession(saved); setConfirmedOrder(saved.order); setAddress(saved.order.shippingAddress);
+    window.history.replaceState(null, "", `/checkout?order=${saved.order.id}`);
+    setCheckoutState(saved.isPaid ? "order_confirmed" : "payment_pending_verification");
   }
-
+  async function refreshSaved() {
+    if (!session) return;
+    const saved = await resumeCheckoutAction(session.order.id);
+    if (saved) { acceptSaved(saved); setErrorMessage(saved.canPay || saved.isPaid ? null : "This saved order is not currently payable. Check its status or contact support before starting another payment."); }
+    else setErrorMessage("The saved order could not be loaded. Sign in with the same account or retry in this browser.");
+  }
+  async function pay(saved: CheckoutSession) {
+    if (!saved.canPay || saved.isPaid) return;
+    setCheckoutState("payment_popup_loading");
+    try {
+      popup.current = await openTestCheckout(saved, {
+        success: async result => {
+          setCheckoutState("payment_pending_verification");
+          setErrorMessage("Checking payment with the server. Do not pay again while verification is pending.");
+          try {
+            const status = await verifyCheckoutPaymentAction({ ...result, orderId: saved.order.id });
+            if (status.isPaid) { setCheckoutState("order_confirmed"); setErrorMessage(null); }
+          } catch { setErrorMessage("Verification was interrupted. Use Check payment status before retrying payment."); }
+        },
+        failed: () => { setCheckoutState("payment_pending_verification"); setErrorMessage("The payment attempt did not complete. Check the saved status before retrying."); },
+        dismissed: () => { setCheckoutState("payment_pending_verification"); setErrorMessage("Payment window closed. Your order is saved; check its status before resuming."); },
+      });
+    } catch {
+      setCheckoutState("payment_pending_verification");
+      setErrorMessage("The payment window could not load. Your order is saved and can be resumed while its reservation is valid.");
+    }
+  }
   function handleAddressChange(field: keyof ShippingAddress, value: string) {
-    setAddress((prev) => ({ ...prev, [field]: value }));
-    if (validationErrors[field]) {
-      setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  }
-
-  async function handleSubmitOrder() {
-    if (!validateAddress()) {
-      setErrorMessage("Please complete all required delivery fields.");
-      return;
-    }
-
+    setAddress(previous => ({ ...previous, [field]: value }));
+    setValidationErrors(previous => ({ ...previous, [field]: undefined }));
     setErrorMessage(null);
-    setStockError(null);
-    setCheckoutState("processing_checkout");
-
+  }
+  function handleSubmitOrder() {
+    if (submitting.current || !gatewayStatus.checkoutEnabled) return;
+    if (!session) {
+      const result = shippingAddressSchema.safeParse(address);
+      if (!result.success) {
+        setValidationErrors(Object.fromEntries(result.error.issues.map(issue => [String(issue.path[0]), issue.message])));
+        setErrorMessage("Please complete all required delivery fields."); return;
+      }
+    }
+    submitting.current = true; setErrorMessage(null); setStockError(null);
     startTransition(async () => {
       try {
-        const res = await createCheckoutOrderAction({
-          shippingAddress: address,
-          idempotencyKey: (attemptKey.current ??= crypto.randomUUID()),
-        });
-
-        if (!res.success) {
-          if (res.code === "OUT_OF_STOCK") {
-            setStockError(res.error);
-            setCheckoutState("ready");
-          } else {
-            setErrorMessage(res.error);
-            setCheckoutState("payment_failed");
-          }
+        if (session) {
+          const saved = await resumeCheckoutAction(session.order.id);
+          if (!saved) { setErrorMessage("Could not load the saved order. Check its status before retrying."); return; }
+          acceptSaved(saved); await pay(saved); return;
+        }
+        setCheckoutState("processing_checkout");
+        const attempt = (attemptKey.current ??= crypto.randomUUID());
+        window.history.replaceState(null, "", `/checkout?attempt=${attempt}`);
+        const result = await createCheckoutOrderAction({ shippingAddress: address, idempotencyKey: attempt });
+        if (!result.success) {
+          const saved = await resumeCheckoutAttemptAction(attempt);
+          if (saved) acceptSaved(saved); else setCheckoutState("ready");
+          if (result.code === "OUT_OF_STOCK") setStockError(result.error); else setErrorMessage(result.error);
           return;
         }
-
-        if (!res.order) {
-          setErrorMessage("Failed to initialize order details.");
-          setCheckoutState("payment_failed");
-          return;
-        }
-
-        // If payment gateway is not configured (store owner preview mode)
-        if (!res.gatewayStatus.isConfigured) {
-          setCheckoutState("ready");
-          setErrorMessage(
-            "Payment Gateway is in preview mode. The order record and stock reservation have been validated on the server, but no payment can be charged until the store owner adds gateway keys."
-          );
-          return;
-        }
-
-        // A provider order alone is not payment confirmation.
+        const saved = await resumeCheckoutAction(result.order.id);
+        if (!saved) { setErrorMessage("Order saved, but payment details could not be loaded. Reload this page before retrying."); setCheckoutState("payment_pending_verification"); return; }
+        acceptSaved(saved); await pay(saved);
+      } catch {
         setCheckoutState("payment_pending_verification");
-
-        // Authoritative verification poll (checks server database status)
-        const pollResult = await checkOrderStatusAction(res.order.id);
-        if (pollResult.isPaid) {
-          setConfirmedOrder(res.order);
-          setCheckoutState("order_confirmed");
-        } else {
-          // In test mode without user completing payment: remains in pending state
-          setConfirmedOrder(res.order);
-          setCheckoutState("payment_pending_verification");
-        }
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setErrorMessage(`Checkout error: ${msg}`);
-        setCheckoutState("payment_failed");
-      }
+        setErrorMessage("Checkout was interrupted. Reload this page to recover the same attempt before retrying.");
+      } finally { submitting.current = false; }
     });
   }
 
   // 1. Empty Cart State
-  if (cart.items.length === 0 && checkoutState !== "order_confirmed") {
+  if (cart.items.length === 0 && !session && checkoutState !== "order_confirmed") {
     return (
       <div className="page-width checkout-page" style={{ paddingBlock: "48px 96px", textAlign: "center" }}>
         <div style={{ maxWidth: "480px", margin: "0 auto", padding: "32px", background: "var(--tan)", borderRadius: "12px", border: "1px solid var(--border)" }}>
@@ -194,7 +167,7 @@ export function CheckoutView({
             Thank you for your order!
           </h1>
           <p style={{ fontSize: "15px", color: "var(--muted)", marginTop: "8px" }}>
-            Order <strong>{confirmedOrder.orderNumber}</strong> has been confirmed and is being prepared.
+            Order <strong>{confirmedOrder.orderNumber}</strong> has a verified payment and confirmed stock allocation.
           </p>
 
           <div
@@ -283,6 +256,7 @@ export function CheckoutView({
         </div>
       )}
 
+      {Object.keys(validationErrors).some(key => validationErrors[key as keyof ShippingAddress]) && <ul id="checkout-form-errors" role="alert">{Object.entries(validationErrors).filter(([, value]) => value).map(([key, value]) => <li key={key}>{value}</li>)}</ul>}
       {/* General Error Notification */}
       {errorMessage && (
         <div
@@ -306,7 +280,7 @@ export function CheckoutView({
       )}
 
       {/* Payment Pending Verification State Banner */}
-      {checkoutState === "payment_pending_verification" && confirmedOrder && (
+      {session && checkoutState !== "order_confirmed" && confirmedOrder && (
         <div
           style={{
             background: "#eff6ff",
@@ -320,13 +294,13 @@ export function CheckoutView({
             gap: "14px",
           }}
         >
-          <RefreshCw size={22} className="animate-spin" style={{ flexShrink: 0 }} />
+          <RefreshCw size={22} aria-hidden="true" style={{ flexShrink: 0 }} />
           <div>
             <strong style={{ fontSize: "15px", display: "block" }}>
-              Order {confirmedOrder.orderNumber} Created &amp; Stock Reserved
+              Saved order {confirmedOrder.orderNumber}
             </strong>
             <p style={{ margin: "4px 0 0", fontSize: "13px", lineHeight: "1.6" }}>
-              Awaiting authoritative webhook payment confirmation from Razorpay. Inventory has been leased for 15 minutes.
+              Payment is confirmed only after a server check. {confirmedOrder.reservationExpiresAt && <>Reservation ends <time dateTime={confirmedOrder.reservationExpiresAt}>{new Date(confirmedOrder.reservationExpiresAt).toLocaleString("en-IN")}</time>.</>}
             </p>
           </div>
         </div>
@@ -336,7 +310,7 @@ export function CheckoutView({
         className="checkout-grid"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
           gap: "48px",
           alignItems: "start",
         }}
@@ -344,7 +318,7 @@ export function CheckoutView({
         {/* Left Column: Delivery Address & Payment Mode */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Owner configuration banner when gateway is unconfigured */}
-          {!gatewayStatus.isConfigured && (
+          {!gatewayStatus.checkoutEnabled && (
             <div
               style={{
                 background: "#fffbeb",
@@ -361,8 +335,7 @@ export function CheckoutView({
                     Owner Preview Mode (Payments Disabled)
                   </h2>
                   <p style={{ fontSize: "12px", lineHeight: "1.6", margin: "4px 0 0" }}>
-                    Payment gateway credentials are not yet configured on this environment.
-                    Address validation, pricing calculations, and reservation logic can be tested safely.
+                    Checkout is disabled in this environment. Test checkout requires approved staging configuration; live payments remain unavailable.
                   </p>
                 </div>
               </div>
@@ -387,11 +360,12 @@ export function CheckoutView({
 
             <div style={{ display: "grid", gap: "16px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
+                <label htmlFor="checkout-fullName" style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
                   Full Name *
                 </label>
                 <input
                   type="text"
+                  id="checkout-fullName" disabled={isPending || Boolean(session)} aria-invalid={Boolean(validationErrors.fullName)} aria-describedby={validationErrors.fullName ? "checkout-form-errors" : undefined}
                   value={address.fullName}
                   onChange={(e) => handleAddressChange("fullName", e.target.value)}
                   placeholder="e.g. Vikram Sharma"
@@ -412,11 +386,12 @@ export function CheckoutView({
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
+                <label htmlFor="checkout-phone" style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
                   Phone Number (10 digits) *
                 </label>
                 <input
                   type="tel"
+                  id="checkout-phone" disabled={isPending || Boolean(session)} aria-invalid={Boolean(validationErrors.phone)} aria-describedby={validationErrors.phone ? "checkout-form-errors" : undefined}
                   value={address.phone}
                   onChange={(e) => handleAddressChange("phone", e.target.value)}
                   placeholder="e.g. 9876543210"
@@ -437,11 +412,12 @@ export function CheckoutView({
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
+                <label htmlFor="checkout-addressLine1" style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
                   Street Address / Flat / Floor *
                 </label>
                 <input
                   type="text"
+                  id="checkout-addressLine1" disabled={isPending || Boolean(session)} aria-invalid={Boolean(validationErrors.addressLine1)} aria-describedby={validationErrors.addressLine1 ? "checkout-form-errors" : undefined}
                   value={address.addressLine1}
                   onChange={(e) => handleAddressChange("addressLine1", e.target.value)}
                   placeholder="e.g. 402, Lotus Apartments, 5th Cross"
@@ -462,12 +438,12 @@ export function CheckoutView({
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
+                <label htmlFor="checkout-addressLine2" style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
                   Locality / Landmark (Optional)
                 </label>
                 <input
                   type="text"
-                  value={address.addressLine2 || ""}
+                  id="checkout-addressLine2" disabled={isPending || Boolean(session)} value={address.addressLine2 || ""}
                   onChange={(e) => handleAddressChange("addressLine2", e.target.value)}
                   placeholder="e.g. Near City Center Mall"
                   style={{
@@ -481,14 +457,15 @@ export function CheckoutView({
                 />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))", gap: "12px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
+                  <label htmlFor="checkout-city" style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
                     City *
                   </label>
                   <input
                     type="text"
-                    value={address.city}
+                    id="checkout-city" disabled={isPending || Boolean(session)} aria-invalid={Boolean(validationErrors.city)} aria-describedby={validationErrors.city ? "checkout-form-errors" : undefined}
+                  value={address.city}
                     onChange={(e) => handleAddressChange("city", e.target.value)}
                     placeholder="e.g. Mumbai"
                     style={{
@@ -503,12 +480,13 @@ export function CheckoutView({
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
+                  <label htmlFor="checkout-state" style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
                     State *
                   </label>
                   <input
                     type="text"
-                    value={address.state}
+                    id="checkout-state" disabled={isPending || Boolean(session)} aria-invalid={Boolean(validationErrors.state)} aria-describedby={validationErrors.state ? "checkout-form-errors" : undefined}
+                  value={address.state}
                     onChange={(e) => handleAddressChange("state", e.target.value)}
                     placeholder="e.g. Maharashtra"
                     style={{
@@ -523,13 +501,14 @@ export function CheckoutView({
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
+                  <label htmlFor="checkout-postalCode" style={{ display: "block", fontSize: "12px", fontWeight: 500, marginBottom: "6px" }}>
                     PIN Code *
                   </label>
                   <input
                     type="text"
                     maxLength={6}
-                    value={address.postalCode}
+                    id="checkout-postalCode" disabled={isPending || Boolean(session)} aria-invalid={Boolean(validationErrors.postalCode)} aria-describedby={validationErrors.postalCode ? "checkout-form-errors" : undefined}
+                  value={address.postalCode}
                     onChange={(e) => handleAddressChange("postalCode", e.target.value)}
                     placeholder="e.g. 400001"
                     style={{
@@ -616,13 +595,13 @@ export function CheckoutView({
               Bag Summary
             </h2>
             <span style={{ fontSize: "13px", color: "var(--muted)" }}>
-              {cart.totalItemCount} {cart.totalItemCount === 1 ? "item" : "items"}
+              {(session ? session.order.items.reduce((total, item) => total + item.quantity, 0) : cart.totalItemCount)} {(session ? session.order.items.reduce((total, item) => total + item.quantity, 0) : cart.totalItemCount) === 1 ? "item" : "items"}
             </span>
           </div>
 
           {/* Cart Item Rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {cart.items.map((item) => (
+            {(session ? session.order.items.map(item => ({ ...item, id: item.variantId, productTitle: item.title })) : cart.items).map((item) => (
               <div
                 key={item.id}
                 style={{
@@ -676,15 +655,15 @@ export function CheckoutView({
           >
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "var(--muted)" }}>Subtotal</span>
-              <strong>{formatPrice(cart.subtotalPaise)}</strong>
+              <strong>{formatPrice((session?.order.grandTotalPaise ?? cart.subtotalPaise))}</strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "var(--muted)" }}>Shipping</span>
-              <span style={{ color: "#15803d", fontWeight: 500 }}>Free (Launch Preview)</span>
+              <span style={{ color: "var(--muted)", fontWeight: 500 }}>Not a delivery quote</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "var(--muted)" }}>Estimated 5% Inclusive GST</span>
-              <span>{formatPrice(Math.round((cart.subtotalPaise * 500) / 10500))}</span>
+              <span style={{ color: "var(--muted)" }}>Test tax model (not an invoice)</span>
+              <span>{formatPrice(session ? session.order.items.reduce((total, item) => total + item.taxPaise, 0) : cart.items.reduce((total, item) => total + Math.round(item.lineTotalPaise * 500 / 10500), 0))}</span>
             </div>
             <div
               style={{
@@ -697,14 +676,16 @@ export function CheckoutView({
               }}
             >
               <strong>Grand Total</strong>
-              <strong style={{ color: "var(--rust)" }}>{formatPrice(cart.subtotalPaise)}</strong>
+              <strong style={{ color: "var(--new)" }}>{formatPrice((session?.order.grandTotalPaise ?? cart.subtotalPaise))}</strong>
             </div>
           </div>
 
+          {session && <Button type="button" onClick={() => startTransition(refreshSaved)} disabled={isPending}>Check payment status</Button>}
+          <p role="status" style={{ fontSize: "12px", lineHeight: 1.6 }}>Test mode only. No real payment or delivery commitment. Reloading this page resumes the same saved attempt.</p>
           {/* Action Button */}
           <Button
             type="button"
-            disabled={isPending || checkoutState === "processing_checkout"}
+            disabled={isPending || checkoutState === "processing_checkout" || checkoutState === "payment_popup_loading" || !gatewayStatus.checkoutEnabled || Boolean(session && !session.canPay)}
             onClick={handleSubmitOrder}
             style={{
               width: "100%",
@@ -718,9 +699,9 @@ export function CheckoutView({
           >
             {isPending || checkoutState === "processing_checkout"
               ? "Reserving Inventory & Creating Order..."
-              : gatewayStatus.isConfigured
-              ? `Pay ${formatPrice(cart.subtotalPaise)}`
-              : "Verify & Place Order (Preview Mode)"}
+              : gatewayStatus.checkoutEnabled
+              ? session ? "Resume test payment" : `Test pay ${formatPrice(cart.subtotalPaise)}`
+              : "Checkout unavailable"}
           </Button>
 
           <div

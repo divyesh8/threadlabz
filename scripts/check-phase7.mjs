@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import AxeBuilder from "@axe-core/playwright";
 import sharp from "sharp";
+import { isolatedEnvironment } from "./fixtures/isolated-env.mjs";
 import { createPhase7Database, seedPhase7Database, id } from "./fixtures/phase7-db.mjs";
 import { createFixtureServer, publicKey, privateKey, fixtureUser, fixtureToken } from "./fixtures/phase7-server.mjs";
 
@@ -31,9 +32,9 @@ const stopApp = async () => {
 const startApp = async policies => {
   app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "--hostname", "127.0.0.1", "--port", "3107"], {
     windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: origin, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicKey,
+    env: isolatedEnvironment({ NEXT_PUBLIC_SUPABASE_URL: origin, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicKey,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "", SUPABASE_SERVICE_ROLE_KEY: privateKey, SITE_URL: base,
-      RAZORPAY_KEY_ID: "", RAZORPAY_KEY_SECRET: "", RAZORPAY_WEBHOOK_SECRET: "", SHOPPING_POLICIES_JSON: policies },
+      SHOPPING_POLICIES_JSON: policies }),
   });
   app.stdout.on("data", chunk => { appOutput += chunk; });
   app.stderr.on("data", chunk => { appOutput += chunk; });

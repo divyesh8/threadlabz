@@ -140,7 +140,7 @@ export function CartView({ initialCart }: { initialCart: CartSummary }) {
                     <> · Colour: <strong>{item.colour}</strong></>
                   )}
                 </p>
-                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--rust)", margin: "4px 0 0" }}>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--new)", margin: "4px 0 0" }}>
                   {formatPrice(item.unitPricePaise)}
                 </p>
 
@@ -240,11 +240,11 @@ export function CartView({ initialCart }: { initialCart: CartSummary }) {
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "var(--muted)" }}>Estimated delivery</span>
-              <span>Calculated at checkout</span>
+              <span>Not yet configured</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "var(--muted)" }}>Taxes (GST)</span>
-              <span>Included</span>
+              <span style={{ color: "var(--muted)" }}>Test tax model</span>
+              <span>Not a tax invoice</span>
             </div>
 
             <div
@@ -258,12 +258,12 @@ export function CartView({ initialCart }: { initialCart: CartSummary }) {
               }}
             >
               <strong>Total</strong>
-              <strong style={{ color: "var(--rust)" }}>{formatPrice(initialCart.subtotalPaise)}</strong>
+              <strong style={{ color: "var(--new)" }}>{formatPrice(initialCart.subtotalPaise)}</strong>
             </div>
           </div>
 
           {/* Checkout disabled banner */}
-          <div
+          {initialCart.checkoutDisabledReason && <div
             style={{
               background: "#fef3c7",
               border: "1px solid #fde68a",
@@ -282,9 +282,9 @@ export function CartView({ initialCart }: { initialCart: CartSummary }) {
               <strong style={{ display: "block", marginBottom: "4px" }}>Checkout Preview Only</strong>
               {initialCart.checkoutDisabledReason}
             </div>
-          </div>
+          </div>}
 
-          <Button
+          {!initialCart.checkoutDisabledReason ? <Link className="btn-primary" href="/checkout" style={{ minHeight: "48px", display: "grid", placeItems: "center" }}>Proceed to test checkout</Link> : <Button
             type="button"
             disabled
             style={{
@@ -297,7 +297,7 @@ export function CartView({ initialCart }: { initialCart: CartSummary }) {
             }}
           >
             Proceed to Checkout (Disabled in Preview)
-          </Button>
+          </Button>}
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", color: "var(--muted)", fontSize: "11px" }}>
             <ShieldCheck size={14} />
