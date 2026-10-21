@@ -20,6 +20,7 @@ await seedPhase7Database(db);
 const { server, state, origin } = await createFixtureServer(db);
 let app, browser, appOutput = "";
 const reports = [];
+const widths = process.env.QA_VIEWPORTS === "none" ? [] : (process.env.QA_VIEWPORTS ?? "390,768,1280,1440").split(",").filter(Boolean).map(Number);
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 const stopApp = async () => {
   if (app && app.exitCode === null) {
@@ -52,7 +53,7 @@ const shot = async (page, name) => {
 try {
   await startApp("");
   browser = await chromium.launch({ headless: true, channel: process.env.QA_BROWSER_CHANNEL || "msedge" });
-  for (const width of [390, 768, 1280, 1440]) {
+  for (const width of widths) {
     await db.exec("truncate carts cascade");
     console.log(`Product detail browser checks: ${width}px`);
     const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: "reduce" });
@@ -121,6 +122,7 @@ try {
     assert.equal(await page.locator(".quantity-control output").innerText(), "10");
     await page.getByRole("radio", { name: "Stone Unavailable", exact: true }).check();
     assert.equal(await page.locator('input[name="variant"]:enabled').count(), 0);
+    await page.getByText("This colour is currently unavailable. Choose another colour.", { exact: true }).waitFor();
     await page.getByRole("radio", { name: "Ink", exact: true }).check();
     await small.check(); await small.focus(); await page.keyboard.press("ArrowRight");
     assert.equal(await page.getByRole("radio", { name: "M", exact: true }).isChecked(), true);
@@ -184,7 +186,8 @@ try {
     await context.close();
   }
 
-  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const adminContext = await browser.newContext({ viewport: { width: 390, height: 900 } });
+  const page = await adminContext.newPage();
   await page.goto(`${base}/products/qa-reference-shirt`, { waitUntil: "networkidle" });
   assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector(".product-actions button")).transitionDuration), "0.15s", "Normal motion is lightweight");
   await page.keyboard.press("Tab");
@@ -226,10 +229,13 @@ try {
   await page.context().addCookies([{ name: "sb-127-auth-token", value: `base64-${Buffer.from(JSON.stringify(session)).toString("base64url")}`, url: base, httpOnly: false, sameSite: "Lax" }]);
   await page.goto(`${base}/admin/products/${id(1)}`, { waitUntil: "networkidle" });
   await page.getByRole("heading", { name: /Edit Product/ }).waitFor();
+  const editorAxe = await new AxeBuilder({ page }).include(".product-details-editor").withTags(["wcag2a", "wcag2aa"]).analyze();
+  assert.deepEqual(editorAxe.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => node.target) })), []);
   await page.getByLabel("Garment-care instructions", { exact: true }).fill("QA fixture: updated care from the editor.");
-  await page.getByRole("button", { name: "Save Changes", exact: true }).click();
+  await page.getByRole("button", { name: "Save Changes", exact: true }).last().click();
   await page.getByText("Product updated successfully.", { exact: true }).waitFor();
   assert.equal((await db.query("select product_details from products where id=$1", [id(1)])).rows[0].product_details.care, "QA fixture: updated care from the editor.");
+  await page.waitForURL(`${base}/admin/products`);
   await page.context().clearCookies();
   await page.goto(`${base}/products/qa-reference-shirt`, { waitUntil: "networkidle" });
   await page.getByText("Care instructions", { exact: true }).click();

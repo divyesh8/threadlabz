@@ -34,7 +34,8 @@ export const productDetailsSchema = z.object({
   specifications: z.array(z.object({ label, value: text(400).min(1) }).strict()).max(12).default([]),
   size_guide: sizeGuideSchema.nullable().default(null),
 }).strict().superRefine((details, ctx) => {
-  if (new TextEncoder().encode(JSON.stringify(details)).length > 32768) ctx.addIssue({ code: "custom", message: "Product information is too long. Shorten the supplied text." });
+  // Pretty JSON is a conservative bound for Postgres's spaced JSONB text form.
+  if (new TextEncoder().encode(JSON.stringify(details, null, 1)).length > 32768) ctx.addIssue({ code: "custom", message: "Product information is too long. Shorten the supplied text." });
   if (details.fit && !details.size_guide) ctx.addIssue({ code: "custom", path: ["fit"], message: "Add verified size-guide measurements to support the fit description" });
   if (!unique(details.specifications.map(spec => spec.label))) ctx.addIssue({ code: "custom", path: ["specifications"], message: "Specification labels must be unique" });
 });

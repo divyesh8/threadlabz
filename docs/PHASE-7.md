@@ -100,7 +100,26 @@ The browser matrix covers 390, 768, 1280 and 1440 pixels; no horizontal overflow
 
 Auth, PostgREST transport and Storage are fixtures. PGlite runs the real PostgreSQL migrations/RPCs; this is **not authenticated hosted Supabase verification**, and automated accessibility checks are **not manual NVDA/VoiceOver certification**.
 
-Final command outcomes are appended after verification below.
+Final verification on 21 October 2026:
+
+| Check | Outcome |
+| --- | --- |
+| `npm test` | **83 passed, 0 failed, 0 skipped**: all 74 existing tests plus nine Phase 7 tests, including disposable PostgreSQL integration tests |
+| `npm run lint` | **Passed**, zero warnings; 104 modules / 21 client entries checked, no runtime import cycles |
+| `npm run typecheck` | **Passed** |
+| `npm run build` | **Passed**, optimized Next.js 16.4 build; isolated loopback service configuration, no hosted service used |
+| `npm run test:product` / `node scripts/check-phase7.mjs` | **Passed** at **390 / 768 / 1280 / 1440**; real cart SQL, admin round trip, keyboard/dialog focus, missing/error/loading states and policy configurations |
+| axe WCAG checks / accessible labels | **Passed** at all four widths; zero reported violations on the PDP; guide and new admin fields also pass axe. Accessibility-tree snapshots saved; zoom keyboard interaction checked. |
+| `node scripts/check-phase3.mjs` | **Passed** at 390 / 1280, including existing catalogue filters, pagination, visibility, metadata, image handling and keyboard navigation |
+| `node scripts/check-phase1.mjs` | **Passed** at 390 / 1280, existing isolated authentication/catalogue contracts |
+| `node scripts/check-layout.mjs` | **Passed** against the local production build at 390 / 1280; shared shell/routes, no overflow, broken images, undersized controls or browser errors |
+| `python scripts/check-sql.py` | **Passed**, all migration and test SQL syntax, plus existing configuration assertions |
+| `npm run test:db` / `npm run db:lint` | **Blocked by local infrastructure**: connection refused at `127.0.0.1:54322`; Docker's Linux engine was unavailable. These CLI checks did not pass and are not replaced by the SQL parser. |
+| Original-work preservation | 14 unrelated originally modified files still match the saved baseline after Git line-ending normalization; five intentional overlapping files were reviewed and covered by regression tests |
+
+The existing Phase 3 keyboard test now waits for the cart action transition to unlock the size fieldset before sending arrow keys. The native keyboard-selection assertion remains. All temporary test servers were stopped.
+
+The browser scripts follow the repository's existing external Playwright/Edge workflow: set `PLAYWRIGHT_MODULE` to the absolute path of an installed Playwright package before running them. The new script defaults to all four widths; `QA_BROWSER_CHANNEL` can select another installed Chromium channel. Automated reports, accessibility snapshots, screenshots and command logs are saved under `artifacts/phase-7/` (ignored by Git). The local production smoke runner also lives there; it binds only to loopback and shuts down after the checks.
 
 ## Owner data and remaining limitations
 
@@ -112,6 +131,8 @@ Final command outcomes are appended after verification below.
 - Size guides currently apply to all variants of one product. Products with materially different cuts need separate measured guides/products rather than guessed shared measurements.
 - The existing admin product/child save flow is sequential, not one database transaction. This phase preserves its checked-write behavior; a failure in a later child write can still leave an earlier product update persisted. Reload before retrying.
 - Authorized image resizing trades caching for immediate visibility enforcement. Production traffic may eventually need an authorization-aware derivative store or cache invalidation design.
+- Hosted Auth/PostgREST/Storage checks and manual NVDA/VoiceOver review remain outstanding. Start a functioning local Supabase database to rerun the blocked pgTAP and database-lint commands.
+- The dependency audit still reports five high-severity findings in the existing ESLint toolchain (`eslint-config-next` → `fast-glob` / `micromatch` / `braces`). The suggested automatic fix changes the Next ESLint package major version; no unrelated tooling downgrade was applied.
 - The existing preview `noindex` and checkout gate remain. No discounts, ratings, reviews, popularity, urgency, wishlist, custom studio or AI recommendation feature was added.
 
 ## References consulted

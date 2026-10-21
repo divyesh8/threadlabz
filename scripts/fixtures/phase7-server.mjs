@@ -87,8 +87,11 @@ export async function createFixtureServer(db) {
       if (table === "festivals" || table === "product_festivals") return rows([]);
       if (table === "products") {
         await delay(state.productDelay);
+        // A parallel admin-page render may still read as its layout redirects
+        // after sign-out. Deny that read instead of treating it as public API.
+        if (!q.has("source") && !isAdmin) return send({ message: "Fixture admin read denied" }, 403);
         let result;
-        if (isAdmin && !q.has("source")) result = (await db.query("select * from products where id=$1", [q.get("id").slice(3)])).rows;
+        if (isAdmin && !q.has("source")) result = (await db.query(`select * from products${q.has("id") ? " where id=$1" : ""}`, q.has("id") ? [q.get("id").slice(3)] : [])).rows;
         else {
           assert.equal(q.get("source"), "in.(admin,manual)");
           assert.equal(q.get("is_active"), "eq.true");
@@ -124,7 +127,7 @@ export async function createFixtureServer(db) {
       }
       throw Error(`Unhandled fixture table ${table}`);
     } catch (error) {
-      state.failures.push(error.message);
+      state.failures.push(`${req.method} ${url.pathname}${url.search}: ${error.message}`);
       return send({ message: "Fixture transport error" }, 500);
     }
   });

@@ -126,7 +126,12 @@ try {
   // No service-role database is configured in this isolated browser fixture.
   await page.getByRole('button',{name:'Add to bag',exact:true}).click();
   await page.getByText('Could not update your bag. Check availability and retry.',{exact:true}).waitFor();
-  await small.focus();await page.keyboard.press('ArrowRight');assert.equal(await page.getByRole('radio',{name:'M',exact:true}).isChecked(),true);
+  // Feedback can render before React finishes the action transition. Wait until
+  // the fieldset is interactive before exercising native radio-key navigation.
+  await page.waitForFunction(()=>!document.querySelector('input[name="variant"][aria-label="S"]').matches(':disabled'));
+  await small.focus();await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(()=>document.querySelector('input[name="variant"][aria-label="M"]').checked);
+  assert.equal(await page.getByRole('radio',{name:'M',exact:true}).isChecked(),true);
   assert.equal(await page.locator('.variant-option:has(:focus-visible)').count(),1);
   assert.ok(await page.locator('.related-products .catalogue-card').count());
   assert.equal(await page.evaluate(()=>getComputedStyle(document.querySelector('.gallery-main img')).transitionDuration),'0s');

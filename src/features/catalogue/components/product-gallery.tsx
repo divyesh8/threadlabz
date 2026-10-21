@@ -8,13 +8,22 @@ import { ProductDialog } from "./product-dialog";
 
 function ZoomPhotograph({ image }: { image: CatalogueImageData }) {
   const [magnified, setMagnified] = useState(false);
+  const viewport = useRef<HTMLDivElement>(null);
+  const toggleZoom = () => {
+    const next = !magnified;
+    setMagnified(next);
+    requestAnimationFrame(() => {
+      const element = viewport.current;
+      if (element) element.scrollTo({ left: next ? (element.scrollWidth - element.clientWidth) / 2 : 0, top: next ? (element.scrollHeight - element.clientHeight) / 2 : 0, behavior: "instant" });
+    });
+  };
   return <div className="photo-zoom">
     <div className="photo-zoom-tools"><p>Scroll to explore the enlarged photograph.</p>
-      <button className="pdp-icon-button" type="button" aria-label={magnified ? "Zoom out" : "Zoom in"} aria-pressed={magnified} onClick={() => setMagnified(value => !value)}>
+      <button className="pdp-icon-button" type="button" aria-label={magnified ? "Zoom out" : "Zoom in"} aria-pressed={magnified} onClick={toggleZoom}>
         {magnified ? <ZoomOut size={20} aria-hidden="true" /> : <ZoomIn size={20} aria-hidden="true" />}
       </button>
     </div>
-    <div className="photo-zoom-scroll" tabIndex={0} role="region" aria-label="Enlarged photograph, use arrow keys to scroll">
+    <div ref={viewport} className="photo-zoom-scroll" tabIndex={0} role="region" aria-label="Enlarged photograph, use arrow keys to scroll">
       <div className={`photo-zoom-image${magnified ? " is-magnified" : ""}`}>
         <CatalogueImage id={image.id} alt={image.alt} priority sizes={magnified ? "180vw" : "90vw"} />
       </div>

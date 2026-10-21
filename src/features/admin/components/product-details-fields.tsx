@@ -12,20 +12,20 @@ export function ProductDetailsFields({ value, onChange, sizes, disabled }: {
   const guide = value.size_guide;
   const updateGuide = (next: SizeGuide) => onChange({ ...value, size_guide: next });
   const uniqueSizes = [...new Set(sizes.filter(Boolean))];
-  return <fieldset disabled={disabled} className="bg-white rounded-2xl border border-stone-200 p-6 space-y-6 min-w-0">
+  return <fieldset disabled={disabled} className="product-details-editor bg-white rounded-2xl border border-stone-200 p-6 space-y-6 min-w-0">
     <legend className="text-lg font-semibold px-2">Verified product information</legend>
     <p className="text-sm text-stone-600">Optional. Enter only facts checked against this garment, its label or approved supplier measurements. Empty fields are hidden on the product page. Never estimate measurements from a photograph.</p>
     <div className="grid gap-6 md:grid-cols-2">
-      <label className={labelClass}>Material & fabric composition
-        <textarea className={`${inputClass} mt-2`} rows={4} maxLength={1600} value={value.materials} onChange={e => onChange({ ...value, materials: e.target.value })} />
-      </label>
-      <label className={labelClass}>Garment-care instructions
-        <textarea className={`${inputClass} mt-2`} rows={4} maxLength={1600} value={value.care} onChange={e => onChange({ ...value, care: e.target.value })} />
-      </label>
+      <div><label htmlFor="details-materials" className={labelClass}>Material & fabric composition</label>
+        <textarea id="details-materials" className={inputClass} rows={4} maxLength={1600} value={value.materials} onChange={e => onChange({ ...value, materials: e.target.value })} />
+      </div>
+      <div><label htmlFor="details-care" className={labelClass}>Garment-care instructions</label>
+        <textarea id="details-care" className={inputClass} rows={4} maxLength={1600} value={value.care} onChange={e => onChange({ ...value, care: e.target.value })} />
+      </div>
     </div>
-    <label className={labelClass}>Fit description (requires the measured size guide below)
-      <textarea className={`${inputClass} mt-2`} rows={2} maxLength={800} value={value.fit} onChange={e => onChange({ ...value, fit: e.target.value })} />
-    </label>
+    <div><label htmlFor="details-fit" className={labelClass}>Fit description (requires the measured size guide below)</label>
+      <textarea id="details-fit" className={inputClass} rows={2} maxLength={800} value={value.fit} onChange={e => onChange({ ...value, fit: e.target.value })} />
+    </div>
     <div className="border-t border-stone-200 pt-5 space-y-4">
       <label className="flex items-center gap-3 min-h-11 text-sm font-medium">
         <input type="checkbox" checked={!!value.model} onChange={e => onChange({ ...value, model: e.target.checked ? { height_cm: 0, wears_size: "" } : null })} />
@@ -62,9 +62,9 @@ export function ProductDetailsFields({ value, onChange, sizes, disabled }: {
           <label className={labelClass}>Measurement type<select className={inputClass} value={guide.kind} onChange={e => updateGuide({ ...guide, kind: e.target.value as SizeGuide["kind"] })}><option value="garment">Garment measurements</option><option value="body">Body measurements</option></select></label>
         </div>
         <p className="text-xs text-stone-600">Changing the unit does not convert values. Enter verified measurements in the selected unit. For a different cut or colour, use a separate product if its measurements differ.</p>
-        <label className={labelClass}>How these measurements were taken
-          <textarea className={inputClass} required rows={3} maxLength={1200} value={guide.instructions} onChange={e => updateGuide({ ...guide, instructions: e.target.value })} />
-        </label>
+        <div><label htmlFor="guide-instructions" className={labelClass}>How these measurements were taken</label>
+          <textarea id="guide-instructions" className={inputClass} required rows={3} maxLength={1200} value={guide.instructions} onChange={e => updateGuide({ ...guide, instructions: e.target.value })} />
+        </div>
         <div className="space-y-3">{guide.columns.map((column, index) => <div className="flex items-end gap-3" key={index}>
           <label className={`${labelClass} flex-1`}>Measurement label {index + 1}<input className={inputClass} required maxLength={60} value={column} onChange={e => updateGuide({ ...guide, columns: guide.columns.map((item, i) => i === index ? e.target.value : item) })} /></label>
           <button type="button" className={buttonClass} disabled={guide.columns.length <= 1} aria-label={`Remove measurement ${index + 1}`} onClick={() => updateGuide({ ...guide, columns: guide.columns.filter((_, i) => i !== index), rows: guide.rows.map(row => ({ ...row, values: row.values.filter((_, i) => i !== index) })) })}>Remove</button>

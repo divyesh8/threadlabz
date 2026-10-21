@@ -17,6 +17,7 @@ export function ProductOptions({ variants, pricePaise, sizeGuide }: { variants: 
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const variant = variants.find(v => v.id === selected && v.colour === colour);
   const available = variants.some(v => v.stock > 0);
+  const colourAvailable = variants.some(v => v.colour === colour && v.stock > 0);
   const limit = quantityLimit(variant?.stock ?? 0);
   const priced = Number.isSafeInteger(pricePaise) && pricePaise > 0;
   const changeColour = (value: string) => {
@@ -62,8 +63,12 @@ export function ProductOptions({ variants, pricePaise, sizeGuide }: { variants: 
       </label>)}</div>
     </fieldset> : <p className="product-note">Size and availability information has not been supplied.</p>}
     <p className="selection-status" aria-live="polite" id="selection-status">
-      {variant && limit ? <><Check size={14} aria-hidden="true" /> Size {variant.size} selected · {colourLabel(colour)}</>
-        : available ? "Choose an available size to add this piece to your bag." : "This product is currently unavailable."}
+      {!priced ? "Pricing has not been confirmed for this piece."
+        : !available ? "This product is currently unavailable."
+        : !colourAvailable ? "This colour is currently unavailable. Choose another colour."
+        : variant && limit ? <><Check size={14} aria-hidden="true" /> Size {variant.size} selected · {colourLabel(colour)}</>
+        : variant ? "This size is no longer available. Choose another size."
+        : "Choose an available size to add this piece to your bag."}
     </p>
     {variant && limit > 0 && <div className="quantity-row">
       <span id="quantity-label">Quantity</span>
@@ -75,7 +80,7 @@ export function ProductOptions({ variants, pricePaise, sizeGuide }: { variants: 
     </div>}
     <div className="product-actions">
       <button type="button" disabled={!priced || !variant || !limit || pending || quantity > limit} onClick={add} aria-busy={pending} aria-describedby="selection-status">
-        <span>{pending ? "Adding to bag…" : !priced ? "Price unavailable" : !available ? "Currently unavailable" : !variant ? "Select a size" : !limit ? "Size unavailable" : "Add to bag"}</span>
+        <span>{pending ? "Adding to bag…" : !priced ? "Price unavailable" : !available ? "Currently unavailable" : !colourAvailable ? "Colour unavailable" : !variant ? "Select a size" : !limit ? "Size unavailable" : "Add to bag"}</span>
         <ArrowUpRight size={19} aria-hidden="true" />
       </button>
     </div>
