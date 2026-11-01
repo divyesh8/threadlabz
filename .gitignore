@@ -10,4 +10,6 @@ tmp/
 artifacts/
 .vercel/
 *.log
+public/_landing-intro/
+src/features/landing-intro/generated/
 

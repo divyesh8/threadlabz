@@ -18,6 +18,11 @@ const baseUrl = process.env.QA_BASE_URL || "http://127.0.0.1:3000";
     page.on("pageerror", error => errors.push(error.message));
     const response = await page.goto(baseUrl, { waitUntil: "networkidle" });
     assert.equal(response.status(), 200);
+    const intro = page.locator('dialog[data-landing-intro]');
+    if (await intro.isVisible()) {
+      await page.getByRole('button', { name: 'Skip intro' }).click();
+      await intro.waitFor({ state: 'detached' });
+    }
     await page.evaluate(() => document.fonts.ready);
     await page.evaluate(() => { for (const img of document.images) img.loading = "eager"; });
     await page.evaluate(async () => { await Promise.all([...document.images].map(img => img.decode().catch(() => {}))); });

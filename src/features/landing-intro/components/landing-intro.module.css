@@ -1,0 +1,26 @@
+.dialog {
+  position: fixed; inset: 0; width: 100vw; max-width: none;
+  height: 100vh; height: 100dvh; max-height: none;
+  margin: 0; padding: 0; border: 0; overflow: hidden;
+  background: transparent; color: #fff; overscroll-behavior: contain;
+}
+.dialog::backdrop { background: transparent; }
+.stage { position: absolute; inset: 0; background: #080808; overflow: hidden; }
+.video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; object-position: center; }
+.curtains { position: absolute; inset: 0; pointer-events: none; }
+.curtain { position: absolute; left: 0; width: 100%; height: 50.1%; background: #080808; will-change: transform, opacity; }
+.top { top: 0; }
+.bottom { bottom: 0; }
+.controls {
+  position: absolute; inset: auto 0 0; display: flex; justify-content: space-between; align-items: center;
+  padding: 24px max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  transition: opacity 180ms ease;
+}
+.controls button { min-width: 44px; min-height: 44px; border: 1px solid #ffffff40; background: #080808b8; color: #fff; cursor: pointer; }
+.controls button:focus-visible { outline: 2px solid white; outline-offset: 5px; }
+.controls button:hover { background: #252525; border-color: #ffffff80; }
+.sound { display: grid; place-items: center; border-radius: 50%; }
+.skip { margin-left: auto; display: inline-flex; align-items: center; gap: 18px; padding: 0 18px; border-radius: 24px; font-size: 12px; letter-spacing: .06em; }
+.dialog[data-phase='revealing'] .controls { opacity: 0; }
+@media (min-width: 768px) { .controls { padding: 32px max(36px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(36px, env(safe-area-inset-left)); } }
+@media (prefers-reduced-motion: reduce) { .controls { transition: none; } }
