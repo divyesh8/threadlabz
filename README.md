@@ -66,7 +66,7 @@ The app uses a domain-oriented layout within the existing single Next.js project
 - `src/features/admin`: guarded mutations/uploads, management forms and validation.
 - `src/features/media`: image components and shared Storage-path/raster validation.
 - `src/lib/observability`: structured commerce event logger.
-- `src/lib/config`: runtime environment validation and safe public configuration.
+- `src/lib/config`: runtime environment validation and server-only configuration.
 - `supabase`: seven canonical migrations through Phase 8, preserved alternative history, reviewed migration hashes, drift contract, read-only preflight and isolated test fixtures.
 - `.github/workflows/ci.yml`: least-privilege PR/develop quality checks; no deploy job. `vercel.json` disables Git-triggered deployments and validates build configuration.
 

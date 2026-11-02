@@ -6,11 +6,11 @@
 
 | Setting | Local development / CI | Staging | Production |
 | --- | --- | --- | --- |
-| `APP_ENV`, `NEXT_PUBLIC_APP_ENV` | `local` | `staging` | `production` |
+| `APP_ENV` | `local` | `staging` | `production` |
 | `SITE_URL` | Loopback origin | Dedicated HTTPS staging origin | Approved HTTPS store origin |
-| `NEXT_PUBLIC_SUPABASE_URL` | Blank for disconnected preview, or loopback | Separate staging project URL | Production project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Blank or local `sb_publishable_…` | Staging publishable key | Production publishable key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Local key only, server only | Staging `sb_secret_…`, server only | Production `sb_secret_…`, server only |
+| `THREADLABZ_SUPABASE_URL` | Blank for disconnected preview, or loopback | Separate staging project URL | Production project URL |
+| `THREADLABZ_SUPABASE_PUBLISHABLE_KEY` | Blank or local `sb_publishable_…` | Staging publishable key | Production publishable key |
+| `THREADLABZ_SUPABASE_SECRET_KEY` | Local key only, server only | Staging `sb_secret_…`, server only | Production `sb_secret_…`, server only |
 | `SUPABASE_PROJECT_REF` | Blank | Exact approved staging reference | Exact approved production reference |
 | `PRODUCTION_SUPABASE_PROJECT_REF`, `PRODUCTION_SITE_URL` | Blank | Production identities, not credentials; must differ | Must equal production identities |
 | `CHECKOUT_MODE` | `disabled`; `test` only with isolated fixtures/local DB | `disabled` until sandbox configuration is approved, then `test` | `disabled` |
@@ -18,7 +18,7 @@
 | `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Blank or local test values | Separate TEST API/webhook secrets, server only | Blank |
 | `SHOPPING_POLICIES_JSON` | Blank/`{}` or explicit QA copy | Owner-approved staging copy | Owner-approved real policy copy |
 
-`NEXT_PUBLIC_*` values become browser assets at build time. Never promote a staging-built artifact to production. Rebuild with the target's own public configuration. Do not put API secrets in these variables or in `vercel.json`. The legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` is not used. The server variable named `SUPABASE_SERVICE_ROLE_KEY` accepts the modern Supabase secret-key format on hosted environments; its historical name is retained for compatibility.
+The three `THREADLABZ_SUPABASE_*` settings are read only by server modules. The publishable key is still the least-privileged credential used for RLS-protected requests; the secret key is used only by privileged server code. Do not add Supabase configuration to browser-exposed variables or `vercel.json`. Rebuild each target with its own server configuration and never promote a staging build to production.
 
 Runtime instrumentation fails before serving when identities are mismatched, local development points at hosted Supabase, a public variable contains a recognized secret name, or test checkout is incompletely configured. Hosted runtime requires a configured database; disconnected local preview remains supported. `npm run check:env` validates the current process environment only, without printing values or reading `.env.local`. Next performs the same validation after loading its environment files. Key-to-project association still needs a real authenticated staging test; opaque secret keys cannot prove project identity offline.
 
@@ -92,7 +92,7 @@ Use short `codex/*` feature branches → reviewed PR to `develop` → manually a
 Owner staging setup, with approval before creating any resource:
 
 1. Identify the authoritative production Supabase project and production origin. Record project references and access owners, never secrets, in the release ticket. Approve a **different** staging Supabase project and isolated storage/auth users. Do not use a production database branch containing customers without an approved sanitization process.
-2. Approve/select a Vercel target. Use **Preview** scoped variables for staging (`VERCEL_ENV=preview`, `APP_ENV=staging`) and **Production** scoped variables only for production. A separate Vercel project is also acceptable, but staging must still be deployed to its Preview target; this validator intentionally rejects `APP_ENV=staging` on a Vercel Production deployment. Use a stable approved staging domain/origin and rebuild when public variables change. Never share `.vercel/project.json` between targets blindly.
+2. Approve/select a Vercel target. Use **Preview** scoped variables for staging (`VERCEL_ENV=preview`, `APP_ENV=staging`) and **Production** scoped variables only for production. A separate Vercel project is also acceptable, but staging must still be deployed to its Preview target; this validator intentionally rejects `APP_ENV=staging` on a Vercel Production deployment. Use a stable approved staging domain/origin and rebuild when server configuration changes. Never share `.vercel/project.json` between targets blindly.
 3. Configure staging Supabase Auth Site URL and exact redirect allowlist for the staging origin and `/auth/callback`; install the repository confirmation email template and test `/auth/confirm` with the expected token-hash flow. Keep email confirmations on. Use dedicated test mailboxes/SMTP; never copy production sessions/users. Verify signup, confirmation, login, refresh, logout and blocked cross-origin redirects. Avoid broad production/staging redirect wildcards.
 4. Use the private `product-images` bucket, 5 MiB limit, JPEG/PNG/WebP types and reviewed storage policies. Verify anonymous direct-list/sign access is denied, registered visible images load through `/catalogue-image/[id]`, and unpublishing removes access. Admin role assignment is an owner-controlled database operation after verifying the test account, not browser-supplied metadata.
 5. Approve and rehearse the migration suffix. Configure keys through Vercel's protected UI/CLI prompts, validate configuration, then approve a **manual Preview deployment** of the exact reviewed commit. Check project and target in the confirmation before deploying. No command was executed here to create, link or deploy a cloud project.

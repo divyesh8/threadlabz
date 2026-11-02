@@ -45,11 +45,12 @@ Public catalogue queries deliberately omit user cookies. Both RLS and explicit q
 
 Copy `.env.example` to `.env.local` and set values locally only after choosing the correct project. The template contains names and empty values only:
 
-- `NEXT_PUBLIC_SUPABASE_URL`: the selected project's API origin.
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: its **publishable** key. Legacy JWT keys and `sb_secret_*` are rejected by the client factory. Never put a privileged credential in any `NEXT_PUBLIC_*` variable; Next can embed public variables in browser builds before runtime validation.
+- `THREADLABZ_SUPABASE_URL`: the selected project's API origin.
+- `THREADLABZ_SUPABASE_PUBLISHABLE_KEY`: its **publishable** key. Legacy JWT keys and `sb_secret_*` are rejected by server-side configuration validation.
+- `THREADLABZ_SUPABASE_SECRET_KEY`: its modern **secret** key for privileged server operations. Never expose this value to browser code.
 - `SITE_URL`: the canonical app origin, including the local port during development. HTTPS is required except for loopback origins.
 
-No service-role, payment, email-provider or database password is needed by this implementation. No `.env.local` was created in this run. Restart/rebuild after changing public configuration.
+No database password is needed by this implementation. Restart/rebuild after changing server configuration.
 
 The current `@supabase/ssr` cookie adapter uses `getAll`/`setAll`. `src/proxy.ts` refreshes sessions on account/auth routes with `getClaims`, preserves response cookies and the SDK cache headers, and applies private/no-store. Account and auth actions verify identity with **getUser** before using user IDs. The public storefront remains independent of sessions. Server Actions validate input, rely on Next's origin checks, and return generic errors rather than raw service messages. Redirects accept a small allowlist of app paths; callbacks use the configured canonical origin and discard tokens from the destination URL.
 

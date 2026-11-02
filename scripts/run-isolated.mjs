@@ -10,8 +10,8 @@ const tasks = {
 };
 if (!tasks[task]) throw Error("Choose test, build or typecheck.");
 const env = isolatedEnvironment(task === "test" ? {
-  NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:1", NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_unit_fixture",
-  SUPABASE_SERVICE_ROLE_KEY: "local_unit_fixture", CHECKOUT_MODE: "test",
+  THREADLABZ_SUPABASE_URL: "http://127.0.0.1:1", THREADLABZ_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_unit_fixture",
+  THREADLABZ_SUPABASE_SECRET_KEY: "local_unit_fixture", CHECKOUT_MODE: "test",
 } : {});
 const child = spawn(process.execPath, tasks[task], { env, stdio: "inherit", windowsHide: true });
 child.on("error", () => { process.exitCode = 1; });

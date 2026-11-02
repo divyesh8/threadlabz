@@ -6,21 +6,21 @@ import { isolatedEnvironment } from "./fixtures/isolated-env.mjs";
 import { createPhase7Database, id } from "./fixtures/phase7-db.mjs";
 import { contractDifferences } from "./schema-drift.mjs";
 
-const local = () => isolatedEnvironment({ NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321", NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_fixture", SUPABASE_SERVICE_ROLE_KEY: "local_fixture" });
-const staging = () => ({ ...local(), APP_ENV: "staging", NEXT_PUBLIC_APP_ENV: "staging", VERCEL: "1", VERCEL_ENV: "preview",
-  SITE_URL: "https://staging.example.invalid", SUPABASE_PROJECT_REF: "s".repeat(20), NEXT_PUBLIC_SUPABASE_URL: `https://${"s".repeat(20)}.supabase.co`,
-  PRODUCTION_SUPABASE_PROJECT_REF: "p".repeat(20), PRODUCTION_SITE_URL: "https://shop.example.invalid", SUPABASE_SERVICE_ROLE_KEY: "sb_secret_fixture" });
+const local = () => isolatedEnvironment({ THREADLABZ_SUPABASE_URL: "http://127.0.0.1:54321", THREADLABZ_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_fixture", THREADLABZ_SUPABASE_SECRET_KEY: "local_fixture" });
+const staging = () => ({ ...local(), APP_ENV: "staging", VERCEL: "1", VERCEL_ENV: "preview",
+  SITE_URL: "https://staging.example.invalid", SUPABASE_PROJECT_REF: "s".repeat(20), THREADLABZ_SUPABASE_URL: `https://${"s".repeat(20)}.supabase.co`,
+  PRODUCTION_SUPABASE_PROJECT_REF: "p".repeat(20), PRODUCTION_SITE_URL: "https://shop.example.invalid", THREADLABZ_SUPABASE_SECRET_KEY: "sb_secret_fixture" });
 
 test("environment isolation rejects accidental production connections and mismatched deployments", () => {
   assert.equal(validateEnvironment(isolatedEnvironment()).valid, true);
   assert.equal(validateEnvironment(local()).valid, true);
   assert.equal(validateEnvironment(staging()).valid, true);
   for (const env of [
-    { ...local(), NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" },
+    { ...local(), THREADLABZ_SUPABASE_URL: "https://example.supabase.co" },
     { ...staging(), APP_ENV: "local" }, { ...staging(), VERCEL_ENV: "production" },
-    { ...staging(), SUPABASE_PROJECT_REF: "p".repeat(20), NEXT_PUBLIC_SUPABASE_URL: `https://${"p".repeat(20)}.supabase.co` },
+    { ...staging(), SUPABASE_PROJECT_REF: "p".repeat(20), THREADLABZ_SUPABASE_URL: `https://${"p".repeat(20)}.supabase.co` },
     { ...staging(), SITE_URL: "https://shop.example.invalid" }, { ...staging(), SUPABASE_PROJECT_REF: "different" },
-    { ...staging(), SUPABASE_SERVICE_ROLE_KEY: "legacy-jwt" }, { ...staging(), PRODUCTION_SUPABASE_PROJECT_REF: "" },
+    { ...staging(), THREADLABZ_SUPABASE_SECRET_KEY: "legacy-jwt" }, { ...staging(), PRODUCTION_SUPABASE_PROJECT_REF: "" },
     { ...staging(), NEXT_PUBLIC_SERVICE_ROLE_KEY: "must-not-be-public" },
   ]) assert.equal(validateEnvironment(env).valid, false);
 });
@@ -29,20 +29,20 @@ test("checkout requires explicit test configuration; live and production payment
   const enabled = { ...local(), CHECKOUT_MODE: "test", RAZORPAY_KEY_ID: "rzp_test_fixture", RAZORPAY_KEY_SECRET: "fixture", RAZORPAY_WEBHOOK_SECRET: "fixture" };
   assert.equal(validateEnvironment(enabled).checkoutEnabled, true);
   assert.equal(validateEnvironment({ ...enabled, CHECKOUT_MODE: "disabled" }).checkoutEnabled, false);
-  for (const change of [{ RAZORPAY_KEY_ID: "rzp_live_fixture" }, { CHECKOUT_MODE: "live" }, { RAZORPAY_WEBHOOK_SECRET: "" }, { APP_ENV: "production", NEXT_PUBLIC_APP_ENV: "production" }]) {
+  for (const change of [{ RAZORPAY_KEY_ID: "rzp_live_fixture" }, { CHECKOUT_MODE: "live" }, { RAZORPAY_WEBHOOK_SECRET: "" }, { APP_ENV: "production" }]) {
     const result = validateEnvironment({ ...enabled, ...change }); assert.equal(result.valid, false); assert.equal(result.checkoutEnabled, false);
   }
 });
 
 test("test environment sanitization blocks inherited secrets and dotenv fallback", () => {
-  const names = ["RAZORPAY_KEY_SECRET", "NEXT_PUBLIC_SERVICE_ROLE_KEY", "SUPABASE_SERVICE_ROLE_KEY", "VERCEL_ENV"];
+  const names = ["RAZORPAY_KEY_SECRET", "NEXT_PUBLIC_SERVICE_ROLE_KEY", "THREADLABZ_SUPABASE_SECRET_KEY", "VERCEL_ENV"];
   const before = Object.fromEntries(names.map(name => [name, process.env[name]]));
   try {
     for (const name of names) process.env[name] = "sensitive-fixture";
     const env = isolatedEnvironment();
     for (const name of names) assert.equal(env[name], "");
     assert.equal(env.CHECKOUT_MODE, "disabled");
-    assert.equal(env.NEXT_PUBLIC_SUPABASE_URL, "");
+    assert.equal(env.THREADLABZ_SUPABASE_URL, "");
   } finally { for (const name of names) { if (before[name] === undefined) delete process.env[name]; else process.env[name] = before[name]; } }
 });
 

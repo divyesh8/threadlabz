@@ -79,7 +79,7 @@ const mock=http.createServer((req,res)=>{
 try {
  await new Promise(resolve=>mock.listen(0,'127.0.0.1',resolve));
  origin=`http://127.0.0.1:${mock.address().port}`;
- app=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port','3102'],{windowsHide:true,env:isolatedEnvironment({NEXT_PUBLIC_SUPABASE_URL:origin,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:key,SITE_URL:base}),stdio:['ignore','pipe','pipe']});
+ app=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port','3102'],{windowsHide:true,env:isolatedEnvironment({THREADLABZ_SUPABASE_URL:origin,THREADLABZ_SUPABASE_PUBLISHABLE_KEY:key,SITE_URL:base}),stdio:['ignore','pipe','pipe']});
  app.stdout.on('data',d=>{appOutput+=d});app.stderr.on('data',d=>{appOutput+=d});
  let ready=false;
  for(let i=0;i<100;i++){if(app.exitCode!==null)throw Error('Fixture app stopped');try{if((await fetch(`${base}/shop`)).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,500));}

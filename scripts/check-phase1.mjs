@@ -71,7 +71,7 @@ try {
   const address = mock.address();
   app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "--hostname", "127.0.0.1", "--port", "3101"], {
     cwd: process.cwd(), windowsHide: true,
-    env: isolatedEnvironment({ NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${address.port}`, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicKey, SITE_URL: base }),
+    env: isolatedEnvironment({ THREADLABZ_SUPABASE_URL: `http://127.0.0.1:${address.port}`, THREADLABZ_SUPABASE_PUBLISHABLE_KEY: publicKey, SITE_URL: base }),
     stdio: ["ignore", "pipe", "pipe"],
   });
   app.stdout.on("data", chunk => { appOutput += chunk.toString(); });

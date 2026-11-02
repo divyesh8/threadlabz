@@ -1,27 +1,30 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@supabase/server/core";
 import type { Database } from "@/types/database";
 import { assertRuntimeConfiguration } from "@/lib/config/runtime";
+import { getSupabaseConfig } from "@/lib/supabase/config";
 
 export function createAdminSupabaseClient() {
   assertRuntimeConfiguration();
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const config = getSupabaseConfig();
+  const secretKey = process.env.THREADLABZ_SUPABASE_SECRET_KEY;
 
-  if (!url || !serviceRoleKey) {
+  if (!config || !secretKey) {
     throw new Error(
-      "Missing Supabase admin configuration. Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set."
+      "Missing ThreadLabz Supabase admin configuration."
     );
   }
 
-  return createClient<Database>(url, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
+  return createAdminClient<Database>({
+    env: {
+      url: config.url,
+      secretKeys: { default: secretKey },
     },
-    global: {
-      fetch: (input, init) =>
-        fetch(input, { ...init, cache: "no-store", signal: AbortSignal.timeout(10000) }),
+    supabaseOptions: {
+      global: {
+        fetch: (input, init) =>
+          fetch(input, { ...init, cache: "no-store", signal: AbortSignal.timeout(10000) }),
+      },
     },
   });
 }

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn, signUp, signOut, requestPasswordReset, updatePassword } from "@/features/auth/actions/account";
+import { signIn, signInWithGoogle, signUp, signOut, requestPasswordReset, updatePassword } from "@/features/auth/actions/account";
 import {
   signInSchema,
   signUpSchema,
@@ -16,7 +16,6 @@ import {
   type AuthResult,
 } from "@/features/auth/schemas/auth";
 import { Button } from "@/components/ui/button";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 export function AuthForm({ mode, next }: { mode: "signin" | "signup"; next: string }) {
   const [result, setResult] = useState<AuthResult>({});
@@ -33,25 +32,7 @@ export function AuthForm({ mode, next }: { mode: "signin" | "signup"; next: stri
     setResult({});
     setGooglePending(true);
     try {
-      const client = createBrowserSupabaseClient();
-      if (!client) {
-        setResult({ error: "Authentication service is not configured yet." });
-        setGooglePending(false);
-        return;
-      }
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
-      const { error } = await client.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo },
-      });
-      if (error) {
-        setResult({
-          error:
-            error.message.includes("not enabled") || error.message.includes("provider")
-              ? "Google sign-in is not configured yet on this project. Please use email and password."
-              : error.message,
-        });
-      }
+      setResult(await signInWithGoogle(next));
     } catch {
       setResult({ error: "Google sign-in is temporarily unavailable. Please use email and password." });
     } finally {

@@ -7,7 +7,9 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   await requireAdmin();
   const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "default-src 'none'; sandbox" };
-  const path = productStoragePath(new URL(request.url).searchParams.get("path") ?? "", getSupabaseConfig()!.url);
+  const config = getSupabaseConfig();
+  if (!config) return new Response(null, { status: 503, headers });
+  const path = productStoragePath(new URL(request.url).searchParams.get("source") ?? "", config.url);
   if (!path) return new Response(null, { status: 404, headers });
   try {
     // Uses the verified admin's session and Storage RLS, never a service key.

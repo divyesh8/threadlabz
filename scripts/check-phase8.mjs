@@ -28,8 +28,8 @@ const fixture = await createFixtureServer(db, { checkout: true, onRequest: async
   else throw Error('Unexpected provider fixture request');
   return true;
 } });
-const env = isolatedEnvironment({ NEXT_PUBLIC_SUPABASE_URL: fixture.origin, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicKey,
-  SUPABASE_SERVICE_ROLE_KEY: privateKey, SITE_URL: base, CHECKOUT_MODE: 'test', RAZORPAY_KEY_ID: 'rzp_test_phase8',
+const env = isolatedEnvironment({ THREADLABZ_SUPABASE_URL: fixture.origin, THREADLABZ_SUPABASE_PUBLISHABLE_KEY: publicKey,
+  THREADLABZ_SUPABASE_SECRET_KEY: privateKey, SITE_URL: base, CHECKOUT_MODE: 'test', RAZORPAY_KEY_ID: 'rzp_test_phase8',
   RAZORPAY_KEY_SECRET: 'phase8-fixture-secret', RAZORPAY_WEBHOOK_SECRET: 'phase8-fixture-webhook', QA_GATEWAY_ORIGIN: fixture.origin });
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 const scalar = async (sql, args = []) => Object.values((await db.query(sql, args)).rows[0])[0];

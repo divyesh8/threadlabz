@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseSupabaseConfig } from "../src/lib/supabase/config.ts";
+import { parseSupabaseConfig } from "../src/lib/supabase/parse-config.ts";
 import { parseSiteUrl } from "../src/lib/config/site.ts";
 import { safeNext, signInSchema, signUpSchema } from "../src/features/auth/schemas/auth.ts";
 import { catalogueFilters, literalSearch, imageIdSchema } from "../src/features/catalogue/schemas/catalogue.ts";

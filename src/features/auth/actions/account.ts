@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSupabaseConfig } from "@/lib/supabase/config";
 import { parseSiteUrl } from "@/lib/config/site";
 import {
   signInSchema,
@@ -14,6 +15,36 @@ import {
   type AuthResult,
 } from "@/features/auth/schemas/auth";
 import { ensureProfile } from "@/features/auth/services/profile";
+
+export async function signInWithGoogle(next: string): Promise<AuthResult> {
+  const siteUrl = parseSiteUrl(process.env.SITE_URL);
+  const config = getSupabaseConfig();
+  if (!siteUrl || !config) return { error: "Google sign-in is not available yet." };
+
+  let destination: string;
+  try {
+    const client = await createServerSupabaseClient();
+    if (!client) return { error: "Google sign-in is not available yet." };
+    const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(safeNext(next))}`;
+    const { data, error } = await client.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    if (error || !data.url) return { error: "Google sign-in is not configured yet. Please use email and password." };
+    const authorizationUrl = new URL(data.url);
+    if (
+      authorizationUrl.origin !== config.url ||
+      authorizationUrl.pathname !== "/auth/v1/authorize"
+    ) {
+      return { error: "Google sign-in could not be started safely." };
+    }
+    destination = authorizationUrl.toString();
+  } catch {
+    return { error: "Google sign-in is temporarily unavailable. Please use email and password." };
+  }
+
+  redirect(destination);
+}
 
 export async function signIn(input: AuthInput, next: string): Promise<AuthResult> {
   const parsed = signInSchema.safeParse(input);

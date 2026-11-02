@@ -32,8 +32,8 @@ const stopApp = async () => {
 const startApp = async policies => {
   app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "--hostname", "127.0.0.1", "--port", "3107"], {
     windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
-    env: isolatedEnvironment({ NEXT_PUBLIC_SUPABASE_URL: origin, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicKey,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: "", SUPABASE_SERVICE_ROLE_KEY: privateKey, SITE_URL: base,
+    env: isolatedEnvironment({ THREADLABZ_SUPABASE_URL: origin, THREADLABZ_SUPABASE_PUBLISHABLE_KEY: publicKey,
+      THREADLABZ_SUPABASE_SECRET_KEY: privateKey, SITE_URL: base,
       SHOPPING_POLICIES_JSON: policies }),
   });
   app.stdout.on("data", chunk => { appOutput += chunk; });
