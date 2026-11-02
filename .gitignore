@@ -4,6 +4,8 @@ out/
 dist/
 .env*
 !.env.example
+# Local Vercel import bundle; contains production secrets.
+threadlabz-vercel-production.env
 *.tsbuildinfo
 next-env.d.ts
 tmp/
