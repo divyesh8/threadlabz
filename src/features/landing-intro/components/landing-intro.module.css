@@ -15,15 +15,21 @@
   background-image: var(--intro-poster-desktop);
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: 50% 50.8%;
+  background-position: var(--intro-pos-desktop, 50% 50%);
 }
 
-@media (max-width: 767px), (orientation: portrait) {
+@media (max-width: 767px), (max-aspect-ratio: 4/5) {
   :global(html[data-intro-boot]) .bootOverlay {
     background-color: var(--intro-bg-mobile, #f4ede5);
     background-image: var(--intro-poster-mobile);
-    background-position: 50% 50%;
+    background-position: var(--intro-pos-mobile, 50% 50%);
   }
+}
+
+:global(html[data-intro-boot][data-intro-variant='mobile']) .bootOverlay {
+  background-color: var(--intro-bg-mobile, #f4ede5);
+  background-image: var(--intro-poster-mobile);
+  background-position: var(--intro-pos-mobile, 50% 50%);
 }
 
 .dialog[open] {
@@ -59,62 +65,128 @@
 }
 
 .stage {
+  --clip-top: 18%;
+  --clip-right: 6%;
+  --clip-bottom: 10%;
+  --clip-left: 6%;
+  --clip-radius: 20px;
+  --morph-x: 0px;
+  --morph-y: 0px;
+  --morph-scale: 0.88;
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background-color: var(--intro-bg, #f4ede5);
-  transform-origin: 50% 50%;
+  background-image: var(--intro-poster);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: var(--intro-pos, 50% 50%);
+  clip-path: inset(0px 0px 0px 0px round 0px);
   opacity: 1;
-  transform: scale(1);
-  will-change: transform, opacity;
+  will-change: clip-path, opacity;
   transition:
-    opacity var(--intro-duration, 850ms) cubic-bezier(0.4, 0, 0.2, 1),
-    transform var(--intro-duration, 850ms) cubic-bezier(0.22, 1, 0.36, 1);
+    clip-path calc(var(--intro-duration, 900ms) * 0.88) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity calc(var(--intro-duration, 900ms) * 0.78) cubic-bezier(0.33, 1, 0.68, 1) calc(var(--intro-duration, 900ms) * 0.2);
 
   @media (prefers-reduced-motion: reduce) {
-    transform: none;
+    clip-path: none;
+    will-change: opacity;
     transition: opacity 200ms ease-out;
   }
 }
 
 .dialog[data-phase='revealing'] .stage {
+  clip-path: inset(
+    var(--clip-top)
+    var(--clip-right)
+    var(--clip-bottom)
+    var(--clip-left)
+    round var(--clip-radius)
+  );
   opacity: 0;
-  transform: scale(1.045);
+
+  @media (prefers-reduced-motion: reduce) {
+    clip-path: none;
+  }
+}
+
+.mediaPlane {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: transform;
+  transition: transform calc(var(--intro-duration, 900ms) * 0.92) cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transform: none;
+    will-change: auto;
+    transition: none;
+  }
+}
+
+.dialog[data-phase='revealing'] .mediaPlane {
+  transform: translate3d(var(--morph-x), var(--morph-y), 0) scale(var(--morph-scale));
 
   @media (prefers-reduced-motion: reduce) {
     transform: none;
   }
 }
 
-.video {
+.canvas {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  min-width: 100%;
-  min-height: 100%;
-  object-fit: cover;
-  object-position: 50% 50.8%;
   pointer-events: none;
-  background-color: var(--intro-bg, #f4ede5);
-
-  @media (max-width: 767px), (orientation: portrait) {
-    object-position: 50% 50%;
-  }
+  opacity: 0;
 }
 
-.video::-webkit-media-controls,
-.video::-webkit-media-controls-enclosure,
-.video::-webkit-media-controls-panel,
-.video::-webkit-media-controls-play-button,
-.video::-webkit-media-controls-start-playback-button,
-.video::-webkit-media-controls-overlay-play-button {
+.canvas[data-painted='true'] {
+  opacity: 1;
+}
+
+/* Hidden 2x2px hardware frame decoder: stays in-viewport so iOS WebKit and Blink
+   never throttle frame decoding, while staying far below mobile browser Video
+   Assistant size thresholds so floating video toolbars never attach. */
+.decoderVideo {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 2px;
+  opacity: 0.001;
+  pointer-events: none;
+  z-index: -1;
+  contain: strict;
+}
+
+.decoderVideo::-webkit-media-controls,
+.decoderVideo::-webkit-media-controls-enclosure,
+.decoderVideo::-webkit-media-controls-panel,
+.decoderVideo::-webkit-media-controls-play-button,
+.decoderVideo::-webkit-media-controls-start-playback-button,
+.decoderVideo::-webkit-media-controls-overlay-play-button {
   display: none !important;
   opacity: 0 !important;
   -webkit-appearance: none;
+}
+
+.edgeBlend {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.34;
+  background: radial-gradient(
+    125% 105% at 50% 50%,
+    transparent 66%,
+    color-mix(in srgb, var(--intro-bg, #f4ede5) 68%, #f4ede5) 100%
+  );
 }
 
 .veil {
@@ -124,10 +196,10 @@
   opacity: 0;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(244, 237, 229, 0.1) 0%,
-    rgba(232, 215, 196, 0.38) 100%
+    rgba(232, 215, 196, 0.28) 0%,
+    rgba(232, 215, 196, 0.72) 100%
   );
-  transition: opacity calc(var(--intro-duration, 850ms) * 0.65) cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity calc(var(--intro-duration, 900ms) * 0.65) cubic-bezier(0.22, 1, 0.36, 1);
 
   @media (prefers-reduced-motion: reduce) {
     display: none;

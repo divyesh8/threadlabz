@@ -4,7 +4,8 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { generateLandingManifest, mediaTools } from './generate-landing-manifest.mjs';
+import { generateLandingManifest, mediaTools, probe } from './generate-landing-manifest.mjs';
+import { MOBILE_MODE_MEDIA_QUERY, prefersDataSaving, resolveIntroVariant } from '../src/features/landing-intro/config/intro.config.ts';
 
 async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threadlabz-intro-'));
@@ -89,6 +90,52 @@ test('desktop and mobile role naming convention pairs variants and falls back se
   assert.notEqual(paired.version, mobileOnly.version, 'adding desktop variant updates combined campaign version');
 });
 
+test('desktop and mobile subfolders pair separate videos regardless of filename and resolve by browser mode', async t => {
+  const f = await fixture(t);
+  const desktopDir = path.join(f.folder, 'desktop');
+  const mobileDir = path.join(f.folder, 'mobile');
+  await fs.mkdir(desktopDir, { recursive: true });
+  await fs.mkdir(mobileDir, { recursive: true });
+  await fs.writeFile(path.join(desktopDir, '.gitkeep'), '');
+
+  video(path.join(mobileDir, '1000100811.mp4'), { size: '180x320' });
+  const mobileOnly = await f.generate();
+  assert.equal(mobileOnly.mobile.source, 'mobile/1000100811.mp4');
+  assert.equal(mobileOnly.mobile.role, 'mobile');
+  assert.equal(mobileOnly.desktop.source, 'mobile/1000100811.mp4', 'desktop falls back until desktop folder has a video');
+
+  video(path.join(desktopDir, '1000100999.mp4'), { size: '320x180' });
+  const paired = await f.generate();
+  assert.equal(paired.desktop.source, 'desktop/1000100999.mp4');
+  assert.equal(paired.desktop.role, 'desktop');
+  assert.equal(paired.desktop.width, 320);
+  assert.equal(paired.desktop.height, 180);
+  assert.equal(paired.mobile.source, 'mobile/1000100811.mp4');
+  assert.equal(paired.mobile.role, 'mobile');
+  assert.equal(paired.mobile.width, 180);
+  assert.equal(paired.mobile.height, 320);
+  assert.notEqual(paired.desktop.src, paired.mobile.src);
+  assert.notEqual(paired.desktop.poster, paired.mobile.poster);
+
+  assert.equal(MOBILE_MODE_MEDIA_QUERY, '(max-width: 767px), (max-aspect-ratio: 4/5)');
+  const desktopChoice = resolveIntroVariant(paired, false);
+  const mobileChoice = resolveIntroVariant(paired, true);
+  assert.equal(desktopChoice.variant, 'desktop');
+  assert.equal(desktopChoice.asset.src, paired.desktop.src);
+  assert.equal(mobileChoice.variant, 'mobile');
+  assert.equal(mobileChoice.asset.src, paired.mobile.src);
+});
+
+test('two untagged videos with landscape and portrait aspect ratios auto-pair into desktop and mobile', async t => {
+  const f = await fixture(t);
+  video(path.join(f.folder, '1000100811.mp4'), { size: '180x320' });
+  video(path.join(f.folder, '1000100812.mp4'), { size: '320x180' });
+  const paired = await f.generate();
+  assert.equal(paired.desktop.source, '1000100812.mp4');
+  assert.equal(paired.mobile.source, '1000100811.mp4');
+  assert.equal(f.warnings.length, 0);
+});
+
 test('corrupt and misleading extension files are rejected without losing a valid campaign', async t => {
   const f = await fixture(t);
   await fs.writeFile(path.join(f.folder, 'a.mp4'), 'fake mp4 contents');
@@ -120,6 +167,33 @@ test('WebM is recognized from its container and streams and generates poster', a
   const { asset } = await f.generate();
   assert.equal(asset.mimeType, 'video/webm');
   assert.ok((await fs.stat(path.join(f.root, 'public', asset.poster))).size > 0);
+});
+
+test('embedded audio tracks are stripped so intro assets are silent and mobile browsers do not classify them as standalone media', async t => {
+  const f = await fixture(t);
+  const withAudio = path.join(f.folder, 'with-audio.mp4');
+  execFileSync(
+    mediaTools.ffmpeg,
+    [
+      '-v', 'error', '-y',
+      '-f', 'lavfi', '-i', 'color=c=0xf4ede5:s=180x320:d=0.4',
+      '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo',
+      '-shortest',
+      '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
+      '-c:a', 'aac',
+      withAudio,
+    ],
+    { windowsHide: true },
+  );
+  const { asset } = await f.generate();
+  assert.equal(asset.hasAudio, false);
+  const outProbe = await probe(path.join(f.root, 'public', asset.src));
+  assert.equal(outProbe.streams.some(s => s.codec_type === 'audio'), false, 'generated MP4 contains zero audio streams');
+
+  assert.equal(prefersDataSaving({ connection: { saveData: true, effectiveType: '4g' } }), true);
+  assert.equal(prefersDataSaving({ connection: { saveData: false, effectiveType: '2g' } }), true);
+  assert.equal(prefersDataSaving({ connection: { saveData: false, effectiveType: '4g' } }), false);
+  assert.equal(prefersDataSaving({}), false);
 });
 
 test('replacement changes version, orientation, duration, poster, and cleans stale files without source edits', async t => {

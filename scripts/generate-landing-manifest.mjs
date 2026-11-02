@@ -51,13 +51,13 @@ export async function probe(file) {
 }
 
 async function digest(file) {
-  const hash = createHash('sha256').update('threadlabz-intro-v2\0');
+  const hash = createHash('sha256').update('threadlabz-intro-v3\0');
   for await (const chunk of createReadStream(file)) hash.update(chunk);
   return hash.digest('hex');
 }
 
 async function decode(file, videoIndex = 0) {
-  await run(mediaTools.ffmpeg, ['-v', 'error', '-xerror', '-i', file, '-map', `0:${videoIndex}`, '-map', '0:a:0?', '-f', 'null', '-']);
+  await run(mediaTools.ffmpeg, ['-v', 'error', '-xerror', '-i', file, '-map', `0:${videoIndex}`, '-an', '-f', 'null', '-']);
 }
 
 const toHex = value => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, '0');
@@ -101,6 +101,22 @@ async function generatePosterAndColor(videoFile, outputFile) {
   return backgroundColor;
 }
 
+async function listRoleFolderCandidates(sourceDir, roleFolder) {
+  const folderPath = path.join(sourceDir, roleFolder);
+  const stat = await fs.stat(folderPath).catch(() => null);
+  if (!stat || !stat.isDirectory()) return [];
+  const entries = await fs.readdir(folderPath, { withFileTypes: true });
+  return entries
+    .filter(isCandidateVideoFile)
+    .map(entry => entry.name)
+    .sort(compareCodePoint)
+    .map(name => ({
+      source: `${roleFolder}/${name}`,
+      file: path.join(folderPath, name),
+      forcedRole: roleFolder,
+    }));
+}
+
 export async function generateLandingManifest({ root = path.resolve(fileURLToPath(new URL('..', import.meta.url))), warn = console.warn } = {}) {
   const source = path.join(root, 'public/landing-video');
   const output = path.join(root, 'public/_landing-intro');
@@ -110,20 +126,36 @@ export async function generateLandingManifest({ root = path.resolve(fileURLToPat
   await fs.mkdir(path.dirname(manifestFile), { recursive: true });
 
   const entries = await fs.readdir(source, { withFileTypes: true });
-  const names = entries
+  const rootCandidates = entries
     .filter(isCandidateVideoFile)
     .map(entry => entry.name)
-    .sort(compareCodePoint);
+    .sort(compareCodePoint)
+    .map(name => ({
+      source: name,
+      file: path.join(source, name),
+      forcedRole: null,
+    }));
+
+  const [desktopFolderCandidates, mobileFolderCandidates] = await Promise.all([
+    listRoleFolderCandidates(source, 'desktop'),
+    listRoleFolderCandidates(source, 'mobile'),
+  ]);
+
+  const candidates = [
+    ...desktopFolderCandidates,
+    ...mobileFolderCandidates,
+    ...rootCandidates,
+  ];
 
   const buckets = { desktop: [], mobile: [], universal: [] };
 
-  for (const name of names) {
-    const file = path.join(source, name);
+  for (const candidate of candidates) {
+    const { source: sourceLabel, file, forcedRole } = candidate;
     try {
       const metadata = await probe(file);
       const video = metadata.streams.find(stream => stream.codec_type === 'video' && !stream.disposition?.attached_pic);
       const audio = metadata.streams.find(stream => stream.codec_type === 'audio');
-      const extension = path.extname(name).toLowerCase();
+      const extension = path.extname(file).toLowerCase();
       const container = metadata.format.format_name.split(',');
       if (extension === '.webm' ? !container.includes('webm') : !container.includes('mov')) {
         throw Error('Extension does not match an MP4/MOV or WebM container');
@@ -133,32 +165,47 @@ export async function generateLandingManifest({ root = path.resolve(fileURLToPat
       }
       await decode(file, video.index);
       const version = await digest(file);
-      const directMp4 = extension === '.mp4'
+      const compatibleMp4 = extension === '.mp4'
         && video.codec_name === 'h264'
         && video.pix_fmt === 'yuv420p'
-        && (!audio || audio.codec_name === 'aac')
         && !video.tags?.rotate
         && !video.side_data_list?.some(item => item.rotation);
-      const directWebm = extension === '.webm'
+      const compatibleWebm = extension === '.webm'
         && ['vp8', 'vp9'].includes(video.codec_name)
-        && ['yuv420p', 'yuvj420p'].includes(video.pix_fmt)
-        && (!audio || ['opus', 'vorbis'].includes(audio.codec_name));
-      const ext = directWebm ? 'webm' : 'mp4';
+        && ['yuv420p', 'yuvj420p'].includes(video.pix_fmt);
+      const ext = compatibleWebm ? 'webm' : 'mp4';
       const target = path.join(output, `${version}.${ext}`);
 
       const targetExists = await fs.stat(target).then(s => s.size > 0).catch(() => false);
       if (!targetExists) {
-        if (directWebm) {
-          await fs.copyFile(file, target);
-        } else if (directMp4) {
-          await run(mediaTools.ffmpeg, ['-v', 'error', '-y', '-i', file, '-map', `0:${video.index}`, '-map', '0:a:0?', '-c', 'copy', '-movflags', '+faststart', target]);
+        if (compatibleWebm) {
+          if (!audio) {
+            await fs.copyFile(file, target);
+          } else {
+            await run(mediaTools.ffmpeg, ['-v', 'error', '-y', '-i', file, '-map', `0:${video.index}`, '-an', '-c:v', 'copy', target]);
+          }
         } else {
-          warn(`[landing-intro] Converting ${name} to browser-compatible H.264/AAC MP4.`);
-          await run(mediaTools.ffmpeg, ['-v', 'error', '-y', '-i', file, '-map', `0:${video.index}`, '-map', '0:a:0?', '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', '-c:v', 'libx264', '-preset', 'fast', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-movflags', '+faststart', target]);
+          if (!compatibleMp4) {
+            warn(`[landing-intro] Converting ${sourceLabel} to browser-compatible silent H.264 MP4.`);
+          }
+          await run(mediaTools.ffmpeg, [
+            '-v', 'error',
+            '-y',
+            '-i', file,
+            '-map', `0:${video.index}`,
+            '-an',
+            '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2,setsar=1:1',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '23',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', '+faststart',
+            target,
+          ]);
           await decode(target);
         }
-      } else if (!directMp4 && !directWebm) {
-        warn(`[landing-intro] Converting ${name} to browser-compatible H.264/AAC MP4.`);
+      } else if (!compatibleMp4 && !compatibleWebm) {
+        warn(`[landing-intro] Converting ${sourceLabel} to browser-compatible silent H.264 MP4.`);
       }
 
       const normalized = await probe(target);
@@ -170,9 +217,9 @@ export async function generateLandingManifest({ root = path.resolve(fileURLToPat
       const posterTarget = path.join(output, posterFilename);
       const backgroundColor = await generatePosterAndColor(target, posterTarget);
 
-      const role = classifyVideoRole(name);
+      const role = forcedRole ?? classifyVideoRole(sourceLabel);
       buckets[role].push({
-        source: name,
+        source: sourceLabel,
         role,
         src: `/_landing-intro/${version}.${ext}`,
         poster: `/_landing-intro/${posterFilename}`,
@@ -183,21 +230,29 @@ export async function generateLandingManifest({ root = path.resolve(fileURLToPat
         height: stream.height,
         aspectRatio,
         duration: Number(normalized.format.duration),
-        hasAudio: Boolean(audio),
+        hasAudio: false,
       });
     } catch (error) {
-      warn(`[landing-intro] Ignoring ${name}: ${error.code === 'ENOENT' ? 'Media tooling missing. Run npm ci including optional/dev dependencies, or set FFMPEG_PATH and FFPROBE_PATH.' : String(error.message).slice(0, 700)}. Replace/re-encode the file as H.264/AAC MP4 and rebuild.`);
+      warn(`[landing-intro] Ignoring ${sourceLabel}: ${error.code === 'ENOENT' ? 'Media tooling missing. Run npm ci including optional/dev dependencies, or set FFMPEG_PATH and FFPROBE_PATH.' : String(error.message).slice(0, 700)}. Replace/re-encode the file as H.264/AAC MP4 and rebuild.`);
     }
   }
 
+  const landscapeUniversal = buckets.universal.find(item => item.aspectRatio > 1.05) ?? null;
+  const portraitUniversal = buckets.universal.find(item => item.aspectRatio < 0.95) ?? null;
+  const autoPairedUniversal = buckets.desktop.length === 0
+    && buckets.mobile.length === 0
+    && buckets.universal.length === 2
+    && Boolean(landscapeUniversal && portraitUniversal);
+
   for (const [role, list] of Object.entries(buckets)) {
+    if (role === 'universal' && autoPairedUniversal) continue;
     if (list.length > 1) {
       warn(`[landing-intro] Multiple valid ${role} videos found; selected alphabetically first: ${list[0].source}. Remove extra files from public/landing-video/.`);
     }
   }
 
-  const desktop = buckets.desktop[0] ?? buckets.universal[0] ?? buckets.mobile[0] ?? null;
-  const mobile = buckets.mobile[0] ?? buckets.universal[0] ?? buckets.desktop[0] ?? null;
+  const desktop = buckets.desktop[0] ?? landscapeUniversal ?? buckets.universal[0] ?? buckets.mobile[0] ?? null;
+  const mobile = buckets.mobile[0] ?? portraitUniversal ?? buckets.universal[0] ?? buckets.desktop[0] ?? null;
   const asset = desktop ?? mobile ?? null;
 
   if (!asset) {
@@ -241,10 +296,16 @@ export async function generateLandingManifest({ root = path.resolve(fileURLToPat
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const result = await generateLandingManifest();
-  const summary = result.asset
-    ? (result.desktop?.source !== result.mobile?.source
-      ? `desktop=${result.desktop?.source}, mobile=${result.mobile?.source}`
-      : result.asset.source)
-    : 'intro disabled';
+  let summary = 'intro disabled';
+  if (result.desktop && result.mobile && result.desktop.source !== result.mobile.source) {
+    summary = `desktop=${result.desktop.source} (${result.desktop.width}x${result.desktop.height}), mobile=${result.mobile.source} (${result.mobile.width}x${result.mobile.height})`;
+  } else if (result.asset) {
+    const hint = result.asset.role === 'mobile'
+      ? ' (desktop fallback -> mobile; add a widescreen video to public/landing-video/desktop/)'
+      : result.asset.role === 'desktop'
+        ? ' (mobile fallback -> desktop; add a vertical video to public/landing-video/mobile/)'
+        : '';
+    summary = `${result.asset.source}${hint}`;
+  }
   console.log(`[landing-intro] Manifest ready: ${summary}`);
 }

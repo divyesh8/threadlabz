@@ -1,25 +1,42 @@
 # ThreadLabz Cinematic Landing Intro
 
-## Replacing or Updating the Campaign Film (No Code Edits Required)
+## Replacing or Updating the Campaign Films (No Code Edits Required)
 
-1. Open `public/landing-video/` and remove the previous video file(s).
-2. Add either:
-   - **Single universal campaign video** (e.g. `campaign.mp4`), or
-   - **Optional desktop + mobile variants** using `-desktop` / `-landscape` and `-mobile` / `-portrait` suffixes (e.g. `campaign-desktop.mp4` and `campaign-mobile.mp4`).
-3. Run `npm run dev` (locally) or `npm run build` (Vercel / production). Both automatically invoke `scripts/generate-landing-manifest.mjs`. You can also run `npm run intro:generate` directly.
+The landing intro supports **two separate videos** so desktop and mobile each play their native composition at full sharpness:
 
-Removing all video files from `public/landing-video/` cleanly disables the intro without touching JSX, CSS, or configuration.
+1. **Mobile video (`9:16` vertical, e.g. `1080 × 1920`)**:
+   - Place your mobile video inside `public/landing-video/mobile/` (any filename works, e.g. `1000100811.mp4`).
+2. **Desktop video (`16:9` widescreen, e.g. `1920 × 1080`)**:
+   - Place your desktop video inside `public/landing-video/desktop/` (any filename works, e.g. `desktop-intro.mp4`).
+3. *(Alternative flat-folder options)*: You can also drop files directly in `public/landing-video/` using `-desktop` / `-landscape` and `-mobile` / `-portrait` suffixes, or drop one widescreen (`> 1.05` aspect ratio) and one portrait (`< 0.95` aspect ratio) video directly into `public/landing-video/` to have them paired automatically.
+4. Run `npm run dev` (locally) or `npm run build` (Vercel / production). Both automatically run `scripts/generate-landing-manifest.mjs` (or run `npm run intro:generate` directly).
+
+Removing all video files from `public/landing-video/` (including `desktop/` and `mobile/`) cleanly disables the intro without touching JSX, CSS, or configuration.
+
+---
+
+## Browser Mode Detection (Mobile vs Desktop)
+
+Before First Paint (`<InlineBootstrap>`) and on client mount (`resolveIntroVariant`), the browser evaluates:
+
+```css
+(max-width: 767px), (max-aspect-ratio: 4/5)
+```
+
+- **Mobile mode (`variant = "mobile"`)**: Phones (`≤ 767px` wide) and portrait tablets (`768 × 1024`, aspect ratio `≤ 4/5`) preload **only** the mobile Frame-0 poster and stream **only** the mobile video (`manifest.mobile`).
+- **Desktop mode (`variant = "desktop"`)**: Laptops, desktops, ultrawide monitors, and desktop windows with side-docked DevTools (`> 767px` and aspect ratio `> 4/5`) preload **only** the desktop Frame-0 poster and stream **only** the desktop video (`manifest.desktop`).
+- Neither mode downloads the other device's video or poster.
 
 ---
 
 ## Smart Asset Pipeline & Deterministic Selection Rules
 
-- **Source directory**: `public/landing-video/` (only `.mp4`, `.webm`, and `.mov` files are considered).
-- **Ignored files**: Images (`.png`, `.jpg`, `.webp`, `.svg`, `.avif`), `.json`, `.md`, `.txt`, dotfiles, directories, and any file containing `poster` as a stem token (`poster.*`, `*-poster.*`, `*.poster.*`) are automatically ignored.
-- **Validation & normalization**: Every candidate is verified with `ffprobe` and decoded end-to-end with `ffmpeg`:
-  - Compatible H.264 (`yuv420p`) / AAC MP4 files are remuxed with `-movflags +faststart`.
-  - Compatible VP8/VP9 WebM files are copied directly.
-  - Decodable MOV or non-H.264 files are automatically transcoded to H.264/AAC MP4 with `+faststart`.
+- **Source directories**: `public/landing-video/desktop/`, `public/landing-video/mobile/`, and `public/landing-video/` (only `.mp4`, `.webm`, and `.mov` files are considered).
+- **Ignored files**: `.gitkeep`, images (`.png`, `.jpg`, `.webp`, `.svg`, `.avif`), `.json`, `.md`, `.txt`, dotfiles, non-role directories, and any file containing `poster` as a stem token (`poster.*`, `*-poster.*`, `*.poster.*`) are automatically ignored.
+- **Validation & silent normalization**: Every candidate is verified with `ffprobe` and decoded end-to-end with `ffmpeg`:
+  - Audio streams are always stripped (`-an`, `hasAudio: false`) and MP4 streams are normalized to silent H.264 (`yuv420p`, `-crf 23`, `-movflags +faststart`, `setsar=1:1`) so mobile browsers never classify the intro as a standalone audio/video broadcast.
+  - Compatible VP8/VP9 WebM files are copied (or audio-stripped) directly.
+  - Decodable MOV or non-H.264 files are automatically transcoded to silent H.264 MP4 with `+faststart`.
   - Corrupt or misnamed files are skipped with a build warning without breaking the storefront or overwriting a valid campaign.
 - **Frame-0 poster & tonal surface**: For each selected video, `generate-landing-manifest.mjs` extracts Frame 0 into `public/_landing-intro/<sha256>.poster.webp` and samples the perimeter color (`backgroundColor`) so First Paint matches Frame 0 before video decoding completes.
 - **Role resolution & fallback**:
@@ -62,12 +79,14 @@ For zero peripheral crop across both tall phones and 21:9 ultrawide monitors, dr
 - **Zero blank page on startup**:
   - `src/app/page.tsx` isolates `NewArrivals` inside its own `<Suspense>` boundary so the root `loading.tsx` never blocks `<LandingIntro />` or `<Hero />`.
   - A synchronous inline bootstrap script in `LandingIntro.tsx` activates `.bootOverlay` (`html[data-intro-boot]`) before First Paint on eligible `/` visits, displaying the sampled Frame-0 cream surface (`#f1ede3`) and preloaded Frame-0 WebP poster immediately while skipping repeat sessions, `prefers-reduced-motion: reduce`, internal navigations, and JS-disabled browsers.
-- **Uninterrupted full-bleed presentation**:
-  - Opened as a top-layer native `<dialog>` via `showModal()` (`position: fixed; inset: 0; width: 100%; height: 100dvh; object-fit: cover`) with zero visible buttons, player icons, or text overlays.
-- **2-second playback-gated skip**:
+- **Native website `<canvas>` surface & mobile cellular protection**:
+  - Opened as a top-layer native `<dialog>` via `showModal()` (`position: fixed; inset: 0; width: 100%; height: 100dvh`) with zero visible buttons, player icons, or text overlays.
+  - Video bytes are fetched via `fetch()` into a revocable in-memory `Blob` URL (`blob:...`), decoded on a hidden `2×2px` silent `<video>` element, and painted at `object-fit: cover` onto a full-bleed `<canvas>`. This prevents mobile OEM browsers (Xiaomi, Vivo/OPPO, Samsung Internet, UC, Opera) from displaying *"More mobile data is consuming, do you want to play video?"* dialogs or attaching floating Video Assistant toolbars.
+  - Visitors with OS/browser Data Saver enabled (`navigator.connection.saveData === true` or `2g` / `slow-2g`) bypass the intro cleanly with zero media bytes requested.
+- **2-second playback-gated skip & spatial dock into `<Hero />`**:
   - Active playback time is tracked from the actual `'playing'` / frame-progression state (`skipUnlockDelay: 2000ms`), pausing if the tab is hidden or buffering.
   - From `0–2s` of playback, pointer/touch/click/keyboard dismissal is ignored while absorbing events so nothing reaches the storefront underneath.
-  - After `2s` of playback (or upon natural `ended`), clicking/tapping anywhere or pressing `Enter`, `Space`, or `Escape` triggers an idempotent `850ms` editorial dissolve (`scale(1 → 1.045)`, warm cream/sand veil, `opacity(1 → 0)`) synchronized with the subtle settle of `<Hero />` underneath.
+  - After `2s` of playback (or upon natural `ended`), clicking/tapping anywhere or pressing `Enter`, `Space`, or `Escape` triggers an idempotent `900ms` spatial morph: `.stage` geometrically docks into `.home .hero`'s exact rounded bounding box (`clip-path: inset(... round ...)` + uniform compositor `translate3d` / `scale` + warm sand veil) while the ThreadLabz announcement bar, header navigation, and hero editorial content glide cleanly into place.
 
 ---
 

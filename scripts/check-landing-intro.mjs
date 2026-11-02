@@ -55,6 +55,7 @@ const gone = async page => {
     () =>
       !document.querySelector('dialog[data-landing-intro]') &&
       !document.documentElement.dataset.introBoot &&
+      !document.documentElement.dataset.introVariant &&
       !document.documentElement.dataset.introStage,
     { timeout: 20000 },
   );
@@ -108,26 +109,29 @@ try {
     await gone(page);
   });
 
-  // 2. Responsive viewports across mobile (320, 375, 390, 430), tablet (768), desktop (1280, 1440), ultrawide (2560)
+  // 2. Responsive viewports & browser mode detection across mobile (320, 375, 390, 430), tablet (768), side-DevTools desktop (890x900), desktop (1280, 1440), ultrawide (2560)
   const viewports = [
-    { width: 320, height: 568, label: '320x568' },
-    { width: 375, height: 812, label: '375x812' },
-    { width: 390, height: 844, label: '390x844' },
-    { width: 430, height: 932, label: '430x932' },
-    { width: 768, height: 1024, label: '768x1024' },
-    { width: 1280, height: 900, label: '1280x900' },
-    { width: 1440, height: 900, label: '1440x900' },
-    { width: 2560, height: 1080, label: '2560x1080' },
+    { width: 320, height: 568, label: '320x568', expectedVariant: 'mobile' },
+    { width: 375, height: 812, label: '375x812', expectedVariant: 'mobile' },
+    { width: 390, height: 844, label: '390x844', expectedVariant: 'mobile' },
+    { width: 430, height: 932, label: '430x932', expectedVariant: 'mobile' },
+    { width: 768, height: 1024, label: '768x1024', expectedVariant: 'mobile' },
+    { width: 890, height: 900, label: '890x900', expectedVariant: 'desktop' },
+    { width: 1280, height: 900, label: '1280x900', expectedVariant: 'desktop' },
+    { width: 1440, height: 900, label: '1440x900', expectedVariant: 'desktop' },
+    { width: 2560, height: 1080, label: '2560x1080', expectedVariant: 'desktop' },
   ];
 
   for (const vp of viewports) {
-    await check(`responsive full-bleed cover & zero visible controls at ${vp.label}`, async page => {
+    await check(`responsive full-bleed cover, ${vp.expectedVariant} mode & zero visible controls at ${vp.label}`, async page => {
+      const expectedAsset = vp.expectedVariant === 'mobile' ? manifest.mobile : manifest.desktop;
       await open(page);
       await page.waitForFunction(() => (document.querySelector('video')?.currentTime ?? 0) > 0.25);
 
       const state = await page.evaluate(() => {
         const dialog = document.querySelector('dialog[data-landing-intro]');
-        const video = dialog?.querySelector('video');
+        const canvas = dialog?.querySelector('canvas[data-intro-canvas]');
+        const video = dialog?.querySelector('video[data-intro-decoder]');
         const visibleButtons = [...(dialog?.querySelectorAll('button') ?? [])].filter(btn => {
           const r = btn.getBoundingClientRect();
           return r.width > 2 && r.height > 2;
@@ -135,14 +139,19 @@ try {
         const heroImg = document.querySelector('.hero-slide-0 .hero-photo img');
         return {
           isModal: dialog?.matches(':modal') ?? false,
+          variant: dialog?.getAttribute('data-intro-variant'),
+          source: dialog?.getAttribute('data-intro-source'),
+          src: dialog?.getAttribute('data-intro-src'),
+          poster: dialog?.getAttribute('data-intro-poster'),
+          decoderCurrentSrc: video?.currentSrc ?? '',
+          canvasPainted: canvas?.dataset.painted ?? 'false',
           dialogRect: dialog?.getBoundingClientRect().toJSON(),
-          videoRect: video?.getBoundingClientRect().toJSON(),
+          canvasRect: canvas?.getBoundingClientRect().toJSON(),
+          decoderRect: video?.getBoundingClientRect().toJSON(),
           muted: video?.muted,
           loop: video?.loop,
           inline: video?.playsInline,
           controls: video?.controls,
-          fit: video ? getComputedStyle(video).objectFit : null,
-          poster: video?.getAttribute('poster'),
           visibleButtonCount: visibleButtons.length,
           scrollWidth: document.documentElement.scrollWidth,
           heroReadyUnderneath: Boolean(heroImg && heroImg.complete && heroImg.naturalWidth > 0),
@@ -150,19 +159,26 @@ try {
       });
 
       assert.equal(state.isModal, true);
+      assert.equal(state.variant, vp.expectedVariant);
+      assert.equal(state.source, expectedAsset.source);
+      assert.equal(state.src, expectedAsset.src);
+      assert.equal(state.poster, expectedAsset.poster);
+      assert.equal(expectedAsset.hasAudio, false, 'silent stream with stripped audio');
+      assert.match(state.decoderCurrentSrc, /^blob:/, 'decoder uses in-memory blob URL to prevent mobile browser streaming prompts');
+      assert.equal(state.canvasPainted, 'true', 'canvas actively painting full-bleed frames');
       assert.equal(state.muted, true);
       assert.equal(state.loop, false);
       assert.equal(state.inline, true);
       assert.equal(state.controls, false);
-      assert.equal(state.fit, 'cover');
       assert.match(state.poster ?? '', /\.poster\.webp$/);
       assert.equal(state.visibleButtonCount, 0, 'zero visible skip/mute/player controls');
       assert.equal(state.dialogRect.x, 0);
       assert.equal(state.dialogRect.y, 0);
       assert.equal(state.dialogRect.width, vp.width);
       assert.equal(state.dialogRect.height, vp.height);
-      assert.equal(state.videoRect.width, vp.width);
-      assert.equal(state.videoRect.height, vp.height);
+      assert.equal(state.canvasRect.width, vp.width);
+      assert.equal(state.canvasRect.height, vp.height);
+      assert.ok(state.decoderRect.width <= 4 && state.decoderRect.height <= 4, 'decoder stays tiny so mobile Video Assistants never attach');
       assert.equal(state.scrollWidth, vp.width, 'no horizontal overflow');
       assert.equal(state.heroReadyUnderneath, true, 'storefront hero already decoded underneath intro');
 
@@ -451,6 +467,23 @@ try {
     assert.equal(await intro(page).count(), 0);
     assert.equal(mediaRequests, 0);
   }, { reducedMotion: 'reduce' });
+
+  // 15b. Mobile Data Saver (saveData: true) bypasses cleanly with 0 media bytes
+  await check('mobile Data Saver (saveData) bypasses cleanly without fetching media', async page => {
+    let mediaRequests = 0;
+    page.on('request', req => { if (req.url().includes('/_landing-intro/')) mediaRequests++; });
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'connection', {
+        configurable: true,
+        get: () => ({ saveData: true, effectiveType: '4g' }),
+      });
+    });
+    await page.goto(base);
+    await page.waitForTimeout(800);
+    assert.equal(await intro(page).count(), 0);
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.introBoot), undefined);
+    assert.equal(mediaRequests, 0);
+  });
 
   // 16. JavaScript-disabled storefront remains immediately visible
   await check('JavaScript-disabled storefront remains visible', async page => {

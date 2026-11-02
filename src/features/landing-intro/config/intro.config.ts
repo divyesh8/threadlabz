@@ -20,7 +20,7 @@ export const introConfig = schema.parse({
   muted: true,
   loop: false,
   skipUnlockDelay: 2000,
-  transitionDuration: 850,
+  transitionDuration: 900,
   reducedMotionTransitionDuration: 200,
   startupTimeout: 4500,
   stallTimeout: 5000,
@@ -45,6 +45,10 @@ export type IntroAsset = {
   hasAudio: boolean;
 };
 
+export type IntroVariant = 'desktop' | 'mobile';
+
+export const MOBILE_MODE_MEDIA_QUERY = '(max-width: 767px), (max-aspect-ratio: 4/5)';
+
 export type IntroManifest = {
   schemaVersion: number;
   version: string | null;
@@ -52,3 +56,31 @@ export type IntroManifest = {
   desktop: IntroAsset | null;
   mobile: IntroAsset | null;
 };
+
+export function resolveIntroVariant(
+  manifest: IntroManifest,
+  isMobileMode: boolean,
+): { variant: IntroVariant; asset: IntroAsset } | null {
+  const desktop = manifest.desktop ?? manifest.asset ?? manifest.mobile;
+  const mobile = manifest.mobile ?? manifest.asset ?? manifest.desktop;
+  if (!desktop && !mobile) return null;
+  if (isMobileMode) {
+    return { variant: 'mobile', asset: (mobile ?? desktop)! };
+  }
+  return { variant: 'desktop', asset: (desktop ?? mobile)! };
+}
+
+export type NetworkInformationLike = {
+  saveData?: boolean;
+  effectiveType?: string;
+};
+
+export function prefersDataSaving(
+  nav: { connection?: NetworkInformationLike } | undefined = typeof navigator !== 'undefined'
+    ? (navigator as Navigator & { connection?: NetworkInformationLike })
+    : undefined,
+): boolean {
+  const conn = nav?.connection;
+  if (!conn) return false;
+  return Boolean(conn.saveData) || conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g';
+}
