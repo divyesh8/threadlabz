@@ -59,7 +59,7 @@ const gone = async page => {
     { timeout: 20000 },
   );
   assert.equal(await page.evaluate(() => document.documentElement.style.overflow), '');
-  assert.equal(await page.locator('#main-content').isVisible(), true);
+  await page.locator('#main-content').waitFor({ state: 'visible', timeout: 10000 });
 };
 
 try {

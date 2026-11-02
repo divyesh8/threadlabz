@@ -124,35 +124,42 @@ export function LandingIntro({ manifest }: { manifest: IntroManifest }) {
         clearTimeout(window.__tlIntroSafety);
         window.__tlIntroSafety = undefined;
       }
-      const clearBootState = () => {
+      const deactivate = () => {
         delete document.documentElement.dataset.introBoot;
         delete document.documentElement.dataset.introStage;
+        setSelectedAsset(null);
       };
-      if (cancelled || pathname !== '/' || initialPathnameRef.current !== '/') {
-        clearBootState();
+      if (cancelled) return;
+      if (pathname !== '/') {
+        initialPathnameRef.current = pathname;
+        deactivate();
+        return;
+      }
+      if (initialPathnameRef.current !== '/') {
+        deactivate();
         return;
       }
       if (!campaignVersion || !introConfig.enabled || !introConfig.autoplay) {
-        clearBootState();
+        deactivate();
         return;
       }
       const chosen = selectResponsiveAsset(manifest);
       if (!chosen) {
-        clearBootState();
+        deactivate();
         return;
       }
       const entry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
       if (entry && new URL(entry.name).pathname !== '/') {
-        clearBootState();
+        deactivate();
         return;
       }
       if (introConfig.playbackPolicy === 'once-per-session' && wasAttempted(campaignVersion)) {
-        clearBootState();
+        deactivate();
         return;
       }
       if (introConfig.respectReducedMotion && matchMedia('(prefers-reduced-motion: reduce)').matches) {
         markAttempted(campaignVersion);
-        clearBootState();
+        deactivate();
         return;
       }
       markAttempted(campaignVersion);
