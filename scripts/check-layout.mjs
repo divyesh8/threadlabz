@@ -20,7 +20,8 @@ const baseUrl = process.env.QA_BASE_URL || "http://127.0.0.1:3000";
     assert.equal(response.status(), 200);
     const intro = page.locator('dialog[data-landing-intro]');
     if (await intro.isVisible()) {
-      await page.getByRole('button', { name: 'Skip intro' }).click();
+      await page.waitForFunction(() => document.querySelector('dialog[data-landing-intro]')?.dataset.skipReady === 'true');
+      await intro.click({ position: { x: 40, y: 40 } });
       await intro.waitFor({ state: 'detached' });
     }
     await page.evaluate(() => document.fonts.ready);

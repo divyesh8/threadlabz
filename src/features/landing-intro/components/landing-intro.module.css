@@ -1,26 +1,159 @@
-.dialog {
-  position: fixed; inset: 0; width: 100vw; max-width: none;
-  height: 100vh; height: 100dvh; max-height: none;
-  margin: 0; padding: 0; border: 0; overflow: hidden;
-  background: transparent; color: #fff; overscroll-behavior: contain;
+.bootOverlay {
+  display: none;
 }
-.dialog::backdrop { background: transparent; }
-.stage { position: absolute; inset: 0; background: #080808; overflow: hidden; }
-.video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; object-position: center; }
-.curtains { position: absolute; inset: 0; pointer-events: none; }
-.curtain { position: absolute; left: 0; width: 100%; height: 50.1%; background: #080808; will-change: transform, opacity; }
-.top { top: 0; }
-.bottom { bottom: 0; }
-.controls {
-  position: absolute; inset: auto 0 0; display: flex; justify-content: space-between; align-items: center;
-  padding: 24px max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
-  transition: opacity 180ms ease;
+
+:global(html[data-intro-boot]) .bootOverlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--intro-bg-desktop, #f4ede5);
+  background-image: var(--intro-poster-desktop);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50.8%;
 }
-.controls button { min-width: 44px; min-height: 44px; border: 1px solid #ffffff40; background: #080808b8; color: #fff; cursor: pointer; }
-.controls button:focus-visible { outline: 2px solid white; outline-offset: 5px; }
-.controls button:hover { background: #252525; border-color: #ffffff80; }
-.sound { display: grid; place-items: center; border-radius: 50%; }
-.skip { margin-left: auto; display: inline-flex; align-items: center; gap: 18px; padding: 0 18px; border-radius: 24px; font-size: 12px; letter-spacing: .06em; }
-.dialog[data-phase='revealing'] .controls { opacity: 0; }
-@media (min-width: 768px) { .controls { padding: 32px max(36px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(36px, env(safe-area-inset-left)); } }
-@media (prefers-reduced-motion: reduce) { .controls { transition: none; } }
+
+@media (max-width: 767px), (orientation: portrait) {
+  :global(html[data-intro-boot]) .bootOverlay {
+    background-color: var(--intro-bg-mobile, #f4ede5);
+    background-image: var(--intro-poster-mobile);
+    background-position: 50% 50%;
+  }
+}
+
+.dialog[open] {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.dialog:modal {
+  overscroll-behavior: contain;
+}
+
+.dialog::backdrop {
+  background: transparent;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--intro-bg, #f4ede5);
+  transform-origin: 50% 50%;
+  opacity: 1;
+  transform: scale(1);
+  will-change: transform, opacity;
+  transition:
+    opacity var(--intro-duration, 850ms) cubic-bezier(0.4, 0, 0.2, 1),
+    transform var(--intro-duration, 850ms) cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transform: none;
+    transition: opacity 200ms ease-out;
+  }
+}
+
+.dialog[data-phase='revealing'] .stage {
+  opacity: 0;
+  transform: scale(1.045);
+
+  @media (prefers-reduced-motion: reduce) {
+    transform: none;
+  }
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  object-position: 50% 50.8%;
+  pointer-events: none;
+  background-color: var(--intro-bg, #f4ede5);
+
+  @media (max-width: 767px), (orientation: portrait) {
+    object-position: 50% 50%;
+  }
+}
+
+.video::-webkit-media-controls,
+.video::-webkit-media-controls-enclosure,
+.video::-webkit-media-controls-panel,
+.video::-webkit-media-controls-play-button,
+.video::-webkit-media-controls-start-playback-button,
+.video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  opacity: 0 !important;
+  -webkit-appearance: none;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(244, 237, 229, 0.1) 0%,
+    rgba(232, 215, 196, 0.38) 100%
+  );
+  transition: opacity calc(var(--intro-duration, 850ms) * 0.65) cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
+}
+
+.dialog[data-phase='revealing'] .veil {
+  opacity: 1;
+}
+
+.srSkip {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  background: #1f1a17;
+  color: #ffffff;
+  outline: none;
+}
+
+.srSkip:focus,
+.srSkip:focus-visible {
+  outline: none;
+}

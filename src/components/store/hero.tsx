@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight, ArrowLeft, MoveUpRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
 const slides = [
@@ -17,7 +16,6 @@ const slides = [
 export function Hero() {
   const [emblaRef, embla] = useEmblaCarousel({ loop: true });
   const [selected, setSelected] = useState(0);
-  const reducedMotion = useReducedMotion();
   const onSelect = useCallback(() => { if (embla) setSelected(embla.selectedScrollSnap()); }, [embla]);
   useEffect(() => { if (!embla) return; embla.on("select", onSelect); return () => { embla.off("select", onSelect); }; }, [embla, onSelect]);
 
@@ -25,9 +23,9 @@ export function Hero() {
     <div className="hero-viewport" ref={emblaRef}><div className="hero-container">
       {slides.map((slide, i) => <div className={`hero-slide hero-slide-${i}`} key={slide.line1} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${slides.length}`} inert={selected !== i}>
         <div className="hero-copy"><p className="eyebrow">{slide.kicker}</p>
-          <motion.div initial={reducedMotion ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
+          <div>
             {i === 0 ? <h1>{slide.line1}<br /><span className="outline-word">{slide.line2}</span><br />{slide.line3}</h1> : <h2>{slide.line1}<br /><span className="outline-word">{slide.line2}</span><br />{slide.line3}</h2>}
-          </motion.div>
+          </div>
           <p className="hero-description">{slide.text}</p><Button asChild><Link href={slide.href}>{slide.cta}<ArrowRight /></Link></Button>
         </div>
         <div className="hero-photo"><Image src={slide.image} alt={slide.alt} fill sizes="(max-width: 640px) 70vw, 55vw" priority={i === 0} /><span className="photo-caption">The ThreadLabz edit / 01</span></div>

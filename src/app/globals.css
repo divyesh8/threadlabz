@@ -410,6 +410,38 @@ button, input { border-radius: 0; }
   .related-products { margin-top: 40px; }
   .catalogue-pagination { gap: 18px; }
 }
+
+/* Continuous campaign-film-to-hero editorial reveal */
+html[data-intro-boot] #main-content > .status-page,
+html[data-intro-stage] #main-content > .status-page {
+  display: none;
+}
+html[data-intro-stage="playing"] .hero-slide-0 .hero-photo img {
+  transform: scale(1.038);
+}
+html[data-intro-stage="playing"] .hero-slide-0 .hero-copy {
+  opacity: 0;
+  transform: translateY(14px);
+}
+html[data-intro-stage="playing"] .hero-slide-0 .hero-sticker {
+  opacity: 0;
+  transform: rotate(6deg) scale(0.95);
+}
+html[data-intro-stage="revealing"] .hero-slide-0 .hero-photo img {
+  transform: scale(1);
+  transition: transform 850ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+html[data-intro-stage="revealing"] .hero-slide-0 .hero-copy {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 760ms cubic-bezier(0.22, 1, 0.36, 1) 70ms, transform 760ms cubic-bezier(0.22, 1, 0.36, 1) 70ms;
+}
+html[data-intro-stage="revealing"] .hero-slide-0 .hero-sticker {
+  opacity: 1;
+  transform: rotate(12deg) scale(1);
+  transition: opacity 720ms cubic-bezier(0.22, 1, 0.36, 1) 130ms, transform 720ms cubic-bezier(0.22, 1, 0.36, 1) 130ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 }

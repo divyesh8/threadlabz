@@ -19,6 +19,12 @@ export function Categories() {
   </div></section>;
 }
 
+export function NewArrivalsFallback() {
+  return <section className="store-section" id="new-arrivals" aria-busy="true"><SectionHeading outline="The latest" solid="pieces" href="/shop" eyebrow="Explore the collection" /><div className="product-grid">
+    {[0, 1, 2, 3].map((slot) => <div className="product-card" key={slot} aria-hidden="true"><div className="product-image" /></div>)}
+  </div></section>;
+}
+
 export async function NewArrivals() {
   const catalogue = await getCatalogue({});
   if (catalogue.state === "ready") return <section className="store-section" id="new-arrivals"><SectionHeading outline="The latest" solid="pieces" href="/shop" eyebrow="Explore the collection" /><div className="product-grid">{catalogue.products.slice(0, 4).map(p => <ProductCard key={p.id} product={p} />)}</div></section>;
